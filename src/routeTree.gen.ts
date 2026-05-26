@@ -14,7 +14,11 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
+import { Route as AppReportsRouteImport } from './routes/app.reports'
+import { Route as AppQaQcRouteImport } from './routes/app.qa-qc'
+import { Route as AppPreparationRouteImport } from './routes/app.preparation'
 import { Route as AppIntakeRouteImport } from './routes/app.intake'
+import { Route as AppAnalysisRouteImport } from './routes/app.analysis'
 import { Route as AppSamplesIndexRouteImport } from './routes/app.samples.index'
 import { Route as AppSamplesIdRouteImport } from './routes/app.samples.$id'
 
@@ -43,9 +47,29 @@ const AppIndexRoute = AppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppRoute,
 } as any)
+const AppReportsRoute = AppReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppQaQcRoute = AppQaQcRouteImport.update({
+  id: '/qa-qc',
+  path: '/qa-qc',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPreparationRoute = AppPreparationRouteImport.update({
+  id: '/preparation',
+  path: '/preparation',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppIntakeRoute = AppIntakeRouteImport.update({
   id: '/intake',
   path: '/intake',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAnalysisRoute = AppAnalysisRouteImport.update({
+  id: '/analysis',
+  path: '/analysis',
   getParentRoute: () => AppRoute,
 } as any)
 const AppSamplesIndexRoute = AppSamplesIndexRouteImport.update({
@@ -64,7 +88,11 @@ export interface FileRoutesByFullPath {
   '/app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/app/analysis': typeof AppAnalysisRoute
   '/app/intake': typeof AppIntakeRoute
+  '/app/preparation': typeof AppPreparationRoute
+  '/app/qa-qc': typeof AppQaQcRoute
+  '/app/reports': typeof AppReportsRoute
   '/app/': typeof AppIndexRoute
   '/app/samples/$id': typeof AppSamplesIdRoute
   '/app/samples/': typeof AppSamplesIndexRoute
@@ -73,7 +101,11 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/app/analysis': typeof AppAnalysisRoute
   '/app/intake': typeof AppIntakeRoute
+  '/app/preparation': typeof AppPreparationRoute
+  '/app/qa-qc': typeof AppQaQcRoute
+  '/app/reports': typeof AppReportsRoute
   '/app': typeof AppIndexRoute
   '/app/samples/$id': typeof AppSamplesIdRoute
   '/app/samples': typeof AppSamplesIndexRoute
@@ -84,7 +116,11 @@ export interface FileRoutesById {
   '/app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/app/analysis': typeof AppAnalysisRoute
   '/app/intake': typeof AppIntakeRoute
+  '/app/preparation': typeof AppPreparationRoute
+  '/app/qa-qc': typeof AppQaQcRoute
+  '/app/reports': typeof AppReportsRoute
   '/app/': typeof AppIndexRoute
   '/app/samples/$id': typeof AppSamplesIdRoute
   '/app/samples/': typeof AppSamplesIndexRoute
@@ -96,7 +132,11 @@ export interface FileRouteTypes {
     | '/app'
     | '/login'
     | '/register'
+    | '/app/analysis'
     | '/app/intake'
+    | '/app/preparation'
+    | '/app/qa-qc'
+    | '/app/reports'
     | '/app/'
     | '/app/samples/$id'
     | '/app/samples/'
@@ -105,7 +145,11 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/register'
+    | '/app/analysis'
     | '/app/intake'
+    | '/app/preparation'
+    | '/app/qa-qc'
+    | '/app/reports'
     | '/app'
     | '/app/samples/$id'
     | '/app/samples'
@@ -115,7 +159,11 @@ export interface FileRouteTypes {
     | '/app'
     | '/login'
     | '/register'
+    | '/app/analysis'
     | '/app/intake'
+    | '/app/preparation'
+    | '/app/qa-qc'
+    | '/app/reports'
     | '/app/'
     | '/app/samples/$id'
     | '/app/samples/'
@@ -165,11 +213,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/reports': {
+      id: '/app/reports'
+      path: '/reports'
+      fullPath: '/app/reports'
+      preLoaderRoute: typeof AppReportsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/qa-qc': {
+      id: '/app/qa-qc'
+      path: '/qa-qc'
+      fullPath: '/app/qa-qc'
+      preLoaderRoute: typeof AppQaQcRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/preparation': {
+      id: '/app/preparation'
+      path: '/preparation'
+      fullPath: '/app/preparation'
+      preLoaderRoute: typeof AppPreparationRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/intake': {
       id: '/app/intake'
       path: '/intake'
       fullPath: '/app/intake'
       preLoaderRoute: typeof AppIntakeRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/analysis': {
+      id: '/app/analysis'
+      path: '/analysis'
+      fullPath: '/app/analysis'
+      preLoaderRoute: typeof AppAnalysisRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/samples/': {
@@ -190,14 +266,22 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppRouteChildren {
+  AppAnalysisRoute: typeof AppAnalysisRoute
   AppIntakeRoute: typeof AppIntakeRoute
+  AppPreparationRoute: typeof AppPreparationRoute
+  AppQaQcRoute: typeof AppQaQcRoute
+  AppReportsRoute: typeof AppReportsRoute
   AppIndexRoute: typeof AppIndexRoute
   AppSamplesIdRoute: typeof AppSamplesIdRoute
   AppSamplesIndexRoute: typeof AppSamplesIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppAnalysisRoute: AppAnalysisRoute,
   AppIntakeRoute: AppIntakeRoute,
+  AppPreparationRoute: AppPreparationRoute,
+  AppQaQcRoute: AppQaQcRoute,
+  AppReportsRoute: AppReportsRoute,
   AppIndexRoute: AppIndexRoute,
   AppSamplesIdRoute: AppSamplesIdRoute,
   AppSamplesIndexRoute: AppSamplesIndexRoute,
