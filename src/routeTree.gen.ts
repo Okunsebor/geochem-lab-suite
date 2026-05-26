@@ -13,6 +13,10 @@ import { Route as RegisterRouteImport } from './routes/register'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppIndexRouteImport } from './routes/app.index'
+import { Route as AppIntakeRouteImport } from './routes/app.intake'
+import { Route as AppSamplesIndexRouteImport } from './routes/app.samples.index'
+import { Route as AppSamplesIdRouteImport } from './routes/app.samples.$id'
 
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
@@ -34,37 +38,92 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppIndexRoute = AppIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppIntakeRoute = AppIntakeRouteImport.update({
+  id: '/intake',
+  path: '/intake',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSamplesIndexRoute = AppSamplesIndexRouteImport.update({
+  id: '/samples/',
+  path: '/samples/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSamplesIdRoute = AppSamplesIdRouteImport.update({
+  id: '/samples/$id',
+  path: '/samples/$id',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/app': typeof AppRoute
+  '/app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/app/intake': typeof AppIntakeRoute
+  '/app/': typeof AppIndexRoute
+  '/app/samples/$id': typeof AppSamplesIdRoute
+  '/app/samples/': typeof AppSamplesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/app': typeof AppRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/app/intake': typeof AppIntakeRoute
+  '/app': typeof AppIndexRoute
+  '/app/samples/$id': typeof AppSamplesIdRoute
+  '/app/samples': typeof AppSamplesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/app': typeof AppRoute
+  '/app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/app/intake': typeof AppIntakeRoute
+  '/app/': typeof AppIndexRoute
+  '/app/samples/$id': typeof AppSamplesIdRoute
+  '/app/samples/': typeof AppSamplesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/app' | '/login' | '/register'
+  fullPaths:
+    | '/'
+    | '/app'
+    | '/login'
+    | '/register'
+    | '/app/intake'
+    | '/app/'
+    | '/app/samples/$id'
+    | '/app/samples/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/app' | '/login' | '/register'
-  id: '__root__' | '/' | '/app' | '/login' | '/register'
+  to:
+    | '/'
+    | '/login'
+    | '/register'
+    | '/app/intake'
+    | '/app'
+    | '/app/samples/$id'
+    | '/app/samples'
+  id:
+    | '__root__'
+    | '/'
+    | '/app'
+    | '/login'
+    | '/register'
+    | '/app/intake'
+    | '/app/'
+    | '/app/samples/$id'
+    | '/app/samples/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AppRoute: typeof AppRoute
+  AppRoute: typeof AppRouteWithChildren
   LoginRoute: typeof LoginRoute
   RegisterRoute: typeof RegisterRoute
 }
@@ -99,12 +158,56 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/app/': {
+      id: '/app/'
+      path: '/'
+      fullPath: '/app/'
+      preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/intake': {
+      id: '/app/intake'
+      path: '/intake'
+      fullPath: '/app/intake'
+      preLoaderRoute: typeof AppIntakeRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/samples/': {
+      id: '/app/samples/'
+      path: '/samples'
+      fullPath: '/app/samples/'
+      preLoaderRoute: typeof AppSamplesIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/samples/$id': {
+      id: '/app/samples/$id'
+      path: '/samples/$id'
+      fullPath: '/app/samples/$id'
+      preLoaderRoute: typeof AppSamplesIdRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
+interface AppRouteChildren {
+  AppIntakeRoute: typeof AppIntakeRoute
+  AppIndexRoute: typeof AppIndexRoute
+  AppSamplesIdRoute: typeof AppSamplesIdRoute
+  AppSamplesIndexRoute: typeof AppSamplesIndexRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppIntakeRoute: AppIntakeRoute,
+  AppIndexRoute: AppIndexRoute,
+  AppSamplesIdRoute: AppSamplesIdRoute,
+  AppSamplesIndexRoute: AppSamplesIndexRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AppRoute: AppRoute,
+  AppRoute: AppRouteWithChildren,
   LoginRoute: LoginRoute,
   RegisterRoute: RegisterRoute,
 }
