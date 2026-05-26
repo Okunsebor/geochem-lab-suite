@@ -5,7 +5,14 @@ export type SampleStatus =
   | "In Analysis"
   | "Completed"
   | "Report Ready";
-
+export const SAMPLE_STATUSES: SampleStatus[] = [
+  "Received",
+  "Verified",
+  "In Preparation",
+  "In Analysis",
+  "Completed",
+  "Report Ready",
+];
 export type Priority = "Low" | "Normal" | "High" | "Rush";
 
 export interface Sample {

@@ -5,7 +5,7 @@ import { useLimsState } from "../../hooks/use-lims-state";
 import { generateCode39Svg } from "../../lib/barcode-utils";
 import { StatCard } from "../../components/lims/stat-card";
 import { StatusBadge } from "../../components/lims/status-badge";
-import { SAMPLE_STATUSES } from "../../lib/mock-data";
+import { SAMPLE_STATUSES } from "../../types";
 import { InputField, TextAreaField, SelectField } from "../../components/shared/form-controls";
 import { toast } from "sonner";
 import { Priority } from "../../types";

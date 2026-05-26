@@ -14,14 +14,7 @@ import {
   SampleNote,
   CustodyLogEntry,
 } from "../types";
-import {
-  samples as initialSamples,
-  instruments as initialInstruments,
-  reports as initialReports,
-  activity as initialActivity,
-  notifications as initialNotifications,
-  users as initialUsers,
-} from "../lib/mock-data";
+// Removed mock-data imports; production data is fetched from Supabase.
 
 interface LimsStateContextType {
   samples: Sample[];
@@ -175,29 +168,8 @@ export function LimsStateProvider({ children }: { children: React.ReactNode }) {
       if (local) {
         setSamples(JSON.parse(local));
       } else {
-        // Populate standard initial samples
-        const hydrated = (initialSamples as any[]).map((s) => ({
-          ...s,
-          notes: [],
-          results: [
-            { element: "Au", value: "2.41", unit: "g/t", method: "FA-AAS", qa: "Pass" },
-            { element: "Ag", value: "18.2", unit: "g/t", method: "ICP-MS", qa: "Pass" },
-            { element: "Cu", value: "1.24", unit: "%", method: "ICP-OES", qa: "Pass" },
-            { element: "Pb", value: "0.34", unit: "%", method: "ICP-OES", qa: "Pass" },
-            { element: "Zn", value: "2.08", unit: "%", method: "ICP-OES", qa: "Flag" },
-            { element: "As", value: "82", unit: "ppm", method: "ICP-MS", qa: "Pass" },
-          ],
-          custody: [
-            { action: "Received at intake", technician: "S. Patel", time: "2d ago" },
-            { action: "Verified & weighed", technician: "M. Rivera", time: "2d ago" },
-            { action: "Moved to drying oven A2", technician: "K. Nakamura", time: "1d ago" },
-            { action: "Crushed at JC-400", technician: "E. Okafor", time: "18h ago" },
-            { action: "Pulverized · 95% passing", technician: "E. Okafor", time: "12h ago" },
-            { action: "Assigned to ICP-MS-01", technician: "System", time: "4h ago" },
-          ],
-        }));
-        setSamples(hydrated);
-        localStorage.setItem("gcs_samples", JSON.stringify(hydrated));
+        setSamples([]);
+        localStorage.removeItem("gcs_samples");
       }
     }
   };
@@ -296,51 +268,43 @@ export function LimsStateProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     syncSamplesFromDb();
     syncReportsFromDb();
-    const localInstruments = localStorage.getItem("gcs_instruments");
-    const localReports = localStorage.getItem("gcs_reports");
-    const localActivity = localStorage.getItem("gcs_activity");
-    const localNotifications = localStorage.getItem("gcs_notifications");
-    const localUsers = localStorage.getItem("gcs_users");
+    // Load initial data from Supabase or fallback to empty defaults
+    (async () => {
+      // Instruments
+      const { data: instrumentsData, error: instrumentsErr } = await supabase.from("instruments").select("*");
+      if (!instrumentsErr && instrumentsData) {
+        const mapped = instrumentsData.map((i: any) => ({
+          ...i,
+          status: i.status as Instrument["status"],
+          lastCalibrated: "14h ago",
+        }));
+        setInstruments(mapped);
+        localStorage.setItem("gcs_instruments", JSON.stringify(mapped));
+      } else {
+        setInstruments([]);
+        localStorage.setItem("gcs_instruments", JSON.stringify([]));
+      }
 
-    if (localInstruments) {
-      setInstruments(JSON.parse(localInstruments));
-    } else {
-      const mapped = initialInstruments.map((i) => ({
-        ...i,
-        status: i.status as Instrument["status"],
-        lastCalibrated: "14h ago",
-      }));
-      setInstruments(mapped);
-      localStorage.setItem("gcs_instruments", JSON.stringify(mapped));
-    }
+      // Reports are handled by syncReportsFromDb
 
-    if (localReports) {
-      setReports(JSON.parse(localReports));
-    } else {
-      setReports(initialReports as any);
-      localStorage.setItem("gcs_reports", JSON.stringify(initialReports));
-    }
+      // Activity – start empty
+      setActivity([]);
+      localStorage.setItem("gcs_activity", JSON.stringify([]));
 
-    if (localActivity) {
-      setActivity(JSON.parse(localActivity));
-    } else {
-      setActivity(initialActivity);
-      localStorage.setItem("gcs_activity", JSON.stringify(initialActivity));
-    }
+      // Notifications – start empty
+      setNotifications([]);
+      localStorage.setItem("gcs_notifications", JSON.stringify([]));
 
-    if (localNotifications) {
-      setNotifications(JSON.parse(localNotifications));
-    } else {
-      setNotifications(initialNotifications.map(n => ({ ...n, isRead: false })) as any);
-      localStorage.setItem("gcs_notifications", JSON.stringify(initialNotifications));
-    }
-
-    if (localUsers) {
-      setUsers(JSON.parse(localUsers));
-    } else {
-      setUsers(initialUsers as any);
-      localStorage.setItem("gcs_users", JSON.stringify(initialUsers));
-    }
+      // Users
+      const { data: usersData, error: usersErr } = await supabase.from("users").select("*");
+      if (!usersErr && usersData) {
+        setUsers(usersData);
+        localStorage.setItem("gcs_users", JSON.stringify(usersData));
+      } else {
+        setUsers([]);
+        localStorage.setItem("gcs_users", JSON.stringify([]));
+      }
+    })();
   }, []);
 
   // Save updates helper

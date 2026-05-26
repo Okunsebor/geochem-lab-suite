@@ -6,7 +6,7 @@ import { useSampleActions } from "../../../hooks/use-sample-actions";
 import { generateQrCodeSvg, generateCode39Svg } from "../../../lib/barcode-utils";
 import { PageHeader } from "../../../components/lims/page-header";
 import { StatusBadge } from "../../../components/lims/status-badge";
-import { SAMPLE_STATUSES } from "../../../lib/mock-data";
+import { SAMPLE_STATUSES } from "../../../types";
 import { SampleStatus } from "../../../types";
 import { toast } from "sonner";
 

@@ -5,7 +5,7 @@ import { useLimsState } from "../../../hooks/use-lims-state";
 import { DataTable } from "../../../components/shared/data-table";
 import { StatusBadge } from "../../../components/lims/status-badge";
 import { PageHeader } from "../../../components/lims/page-header";
-import { SAMPLE_STATUSES } from "../../../lib/mock-data";
+import { SAMPLE_STATUSES } from "../../../types";
 
 export function SamplesFilterTable() {
   const { samples } = useLimsState();

@@ -33,7 +33,7 @@ import { useLimsState } from "../../hooks/use-lims-state";
 import { PageHeader } from "../../components/lims/page-header";
 import { StatCard } from "../../components/lims/stat-card";
 import { StatusBadge } from "../../components/lims/status-badge";
-import { throughput } from "../../lib/mock-data";
+import { throughput } from "../../lib/dashboard-service";
 
 const PIE_COLORS = [
   "var(--color-chart-1)",
