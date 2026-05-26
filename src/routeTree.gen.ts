@@ -9,38 +9,429 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as RegisterRouteImport } from './routes/register'
+import { Route as PortalRouteImport } from './routes/portal'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PortalIndexRouteImport } from './routes/portal.index'
+import { Route as AppIndexRouteImport } from './routes/app.index'
+import { Route as PortalSupportRouteImport } from './routes/portal.support'
+import { Route as PortalSubmitRouteImport } from './routes/portal.submit'
+import { Route as PortalReportsRouteImport } from './routes/portal.reports'
+import { Route as PortalNotificationsRouteImport } from './routes/portal.notifications'
+import { Route as AppUsersRouteImport } from './routes/app.users'
+import { Route as AppStorageRouteImport } from './routes/app.storage'
+import { Route as AppSettingsRouteImport } from './routes/app.settings'
+import { Route as AppReportsRouteImport } from './routes/app.reports'
+import { Route as AppQaQcRouteImport } from './routes/app.qa-qc'
+import { Route as AppPreparationRouteImport } from './routes/app.preparation'
+import { Route as AppNotificationsRouteImport } from './routes/app.notifications'
+import { Route as AppIntakeRouteImport } from './routes/app.intake'
+import { Route as AppInstrumentsRouteImport } from './routes/app.instruments'
+import { Route as AppAnalyticsRouteImport } from './routes/app.analytics'
+import { Route as AppAnalysisRouteImport } from './routes/app.analysis'
+import { Route as AppActivityRouteImport } from './routes/app.activity'
+import { Route as AppSettingsIndexRouteImport } from './routes/app.settings.index'
+import { Route as AppSamplesIndexRouteImport } from './routes/app.samples.index'
+import { Route as AppSettingsSecurityRouteImport } from './routes/app.settings.security'
+import { Route as AppSettingsNotificationsRouteImport } from './routes/app.settings.notifications'
+import { Route as AppSettingsLaboratoryRouteImport } from './routes/app.settings.laboratory'
+import { Route as AppSettingsBrandingRouteImport } from './routes/app.settings.branding'
+import { Route as AppSettingsApiRouteImport } from './routes/app.settings.api'
+import { Route as AppSamplesIdRouteImport } from './routes/app.samples.$id'
 
+const RegisterRoute = RegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PortalRoute = PortalRouteImport.update({
+  id: '/portal',
+  path: '/portal',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppRoute = AppRouteImport.update({
+  id: '/app',
+  path: '/app',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PortalIndexRoute = PortalIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => PortalRoute,
+} as any)
+const AppIndexRoute = AppIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const PortalSupportRoute = PortalSupportRouteImport.update({
+  id: '/support',
+  path: '/support',
+  getParentRoute: () => PortalRoute,
+} as any)
+const PortalSubmitRoute = PortalSubmitRouteImport.update({
+  id: '/submit',
+  path: '/submit',
+  getParentRoute: () => PortalRoute,
+} as any)
+const PortalReportsRoute = PortalReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => PortalRoute,
+} as any)
+const PortalNotificationsRoute = PortalNotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
+  getParentRoute: () => PortalRoute,
+} as any)
+const AppUsersRoute = AppUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppStorageRoute = AppStorageRouteImport.update({
+  id: '/storage',
+  path: '/storage',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppReportsRoute = AppReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppQaQcRoute = AppQaQcRouteImport.update({
+  id: '/qa-qc',
+  path: '/qa-qc',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPreparationRoute = AppPreparationRouteImport.update({
+  id: '/preparation',
+  path: '/preparation',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppNotificationsRoute = AppNotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppIntakeRoute = AppIntakeRouteImport.update({
+  id: '/intake',
+  path: '/intake',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppInstrumentsRoute = AppInstrumentsRouteImport.update({
+  id: '/instruments',
+  path: '/instruments',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAnalyticsRoute = AppAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAnalysisRoute = AppAnalysisRouteImport.update({
+  id: '/analysis',
+  path: '/analysis',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppActivityRoute = AppActivityRouteImport.update({
+  id: '/activity',
+  path: '/activity',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSettingsIndexRoute = AppSettingsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppSettingsRoute,
+} as any)
+const AppSamplesIndexRoute = AppSamplesIndexRouteImport.update({
+  id: '/samples/',
+  path: '/samples/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSettingsSecurityRoute = AppSettingsSecurityRouteImport.update({
+  id: '/security',
+  path: '/security',
+  getParentRoute: () => AppSettingsRoute,
+} as any)
+const AppSettingsNotificationsRoute =
+  AppSettingsNotificationsRouteImport.update({
+    id: '/notifications',
+    path: '/notifications',
+    getParentRoute: () => AppSettingsRoute,
+  } as any)
+const AppSettingsLaboratoryRoute = AppSettingsLaboratoryRouteImport.update({
+  id: '/laboratory',
+  path: '/laboratory',
+  getParentRoute: () => AppSettingsRoute,
+} as any)
+const AppSettingsBrandingRoute = AppSettingsBrandingRouteImport.update({
+  id: '/branding',
+  path: '/branding',
+  getParentRoute: () => AppSettingsRoute,
+} as any)
+const AppSettingsApiRoute = AppSettingsApiRouteImport.update({
+  id: '/api',
+  path: '/api',
+  getParentRoute: () => AppSettingsRoute,
+} as any)
+const AppSamplesIdRoute = AppSamplesIdRouteImport.update({
+  id: '/samples/$id',
+  path: '/samples/$id',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/app': typeof AppRouteWithChildren
+  '/login': typeof LoginRoute
+  '/portal': typeof PortalRouteWithChildren
+  '/register': typeof RegisterRoute
+  '/app/activity': typeof AppActivityRoute
+  '/app/analysis': typeof AppAnalysisRoute
+  '/app/analytics': typeof AppAnalyticsRoute
+  '/app/instruments': typeof AppInstrumentsRoute
+  '/app/intake': typeof AppIntakeRoute
+  '/app/notifications': typeof AppNotificationsRoute
+  '/app/preparation': typeof AppPreparationRoute
+  '/app/qa-qc': typeof AppQaQcRoute
+  '/app/reports': typeof AppReportsRoute
+  '/app/settings': typeof AppSettingsRouteWithChildren
+  '/app/storage': typeof AppStorageRoute
+  '/app/users': typeof AppUsersRoute
+  '/portal/notifications': typeof PortalNotificationsRoute
+  '/portal/reports': typeof PortalReportsRoute
+  '/portal/submit': typeof PortalSubmitRoute
+  '/portal/support': typeof PortalSupportRoute
+  '/app/': typeof AppIndexRoute
+  '/portal/': typeof PortalIndexRoute
+  '/app/samples/$id': typeof AppSamplesIdRoute
+  '/app/settings/api': typeof AppSettingsApiRoute
+  '/app/settings/branding': typeof AppSettingsBrandingRoute
+  '/app/settings/laboratory': typeof AppSettingsLaboratoryRoute
+  '/app/settings/notifications': typeof AppSettingsNotificationsRoute
+  '/app/settings/security': typeof AppSettingsSecurityRoute
+  '/app/samples/': typeof AppSamplesIndexRoute
+  '/app/settings/': typeof AppSettingsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
+  '/app/activity': typeof AppActivityRoute
+  '/app/analysis': typeof AppAnalysisRoute
+  '/app/analytics': typeof AppAnalyticsRoute
+  '/app/instruments': typeof AppInstrumentsRoute
+  '/app/intake': typeof AppIntakeRoute
+  '/app/notifications': typeof AppNotificationsRoute
+  '/app/preparation': typeof AppPreparationRoute
+  '/app/qa-qc': typeof AppQaQcRoute
+  '/app/reports': typeof AppReportsRoute
+  '/app/storage': typeof AppStorageRoute
+  '/app/users': typeof AppUsersRoute
+  '/portal/notifications': typeof PortalNotificationsRoute
+  '/portal/reports': typeof PortalReportsRoute
+  '/portal/submit': typeof PortalSubmitRoute
+  '/portal/support': typeof PortalSupportRoute
+  '/app': typeof AppIndexRoute
+  '/portal': typeof PortalIndexRoute
+  '/app/samples/$id': typeof AppSamplesIdRoute
+  '/app/settings/api': typeof AppSettingsApiRoute
+  '/app/settings/branding': typeof AppSettingsBrandingRoute
+  '/app/settings/laboratory': typeof AppSettingsLaboratoryRoute
+  '/app/settings/notifications': typeof AppSettingsNotificationsRoute
+  '/app/settings/security': typeof AppSettingsSecurityRoute
+  '/app/samples': typeof AppSamplesIndexRoute
+  '/app/settings': typeof AppSettingsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/app': typeof AppRouteWithChildren
+  '/login': typeof LoginRoute
+  '/portal': typeof PortalRouteWithChildren
+  '/register': typeof RegisterRoute
+  '/app/activity': typeof AppActivityRoute
+  '/app/analysis': typeof AppAnalysisRoute
+  '/app/analytics': typeof AppAnalyticsRoute
+  '/app/instruments': typeof AppInstrumentsRoute
+  '/app/intake': typeof AppIntakeRoute
+  '/app/notifications': typeof AppNotificationsRoute
+  '/app/preparation': typeof AppPreparationRoute
+  '/app/qa-qc': typeof AppQaQcRoute
+  '/app/reports': typeof AppReportsRoute
+  '/app/settings': typeof AppSettingsRouteWithChildren
+  '/app/storage': typeof AppStorageRoute
+  '/app/users': typeof AppUsersRoute
+  '/portal/notifications': typeof PortalNotificationsRoute
+  '/portal/reports': typeof PortalReportsRoute
+  '/portal/submit': typeof PortalSubmitRoute
+  '/portal/support': typeof PortalSupportRoute
+  '/app/': typeof AppIndexRoute
+  '/portal/': typeof PortalIndexRoute
+  '/app/samples/$id': typeof AppSamplesIdRoute
+  '/app/settings/api': typeof AppSettingsApiRoute
+  '/app/settings/branding': typeof AppSettingsBrandingRoute
+  '/app/settings/laboratory': typeof AppSettingsLaboratoryRoute
+  '/app/settings/notifications': typeof AppSettingsNotificationsRoute
+  '/app/settings/security': typeof AppSettingsSecurityRoute
+  '/app/samples/': typeof AppSamplesIndexRoute
+  '/app/settings/': typeof AppSettingsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/app'
+    | '/login'
+    | '/portal'
+    | '/register'
+    | '/app/activity'
+    | '/app/analysis'
+    | '/app/analytics'
+    | '/app/instruments'
+    | '/app/intake'
+    | '/app/notifications'
+    | '/app/preparation'
+    | '/app/qa-qc'
+    | '/app/reports'
+    | '/app/settings'
+    | '/app/storage'
+    | '/app/users'
+    | '/portal/notifications'
+    | '/portal/reports'
+    | '/portal/submit'
+    | '/portal/support'
+    | '/app/'
+    | '/portal/'
+    | '/app/samples/$id'
+    | '/app/settings/api'
+    | '/app/settings/branding'
+    | '/app/settings/laboratory'
+    | '/app/settings/notifications'
+    | '/app/settings/security'
+    | '/app/samples/'
+    | '/app/settings/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/login'
+    | '/register'
+    | '/app/activity'
+    | '/app/analysis'
+    | '/app/analytics'
+    | '/app/instruments'
+    | '/app/intake'
+    | '/app/notifications'
+    | '/app/preparation'
+    | '/app/qa-qc'
+    | '/app/reports'
+    | '/app/storage'
+    | '/app/users'
+    | '/portal/notifications'
+    | '/portal/reports'
+    | '/portal/submit'
+    | '/portal/support'
+    | '/app'
+    | '/portal'
+    | '/app/samples/$id'
+    | '/app/settings/api'
+    | '/app/settings/branding'
+    | '/app/settings/laboratory'
+    | '/app/settings/notifications'
+    | '/app/settings/security'
+    | '/app/samples'
+    | '/app/settings'
+  id:
+    | '__root__'
+    | '/'
+    | '/app'
+    | '/login'
+    | '/portal'
+    | '/register'
+    | '/app/activity'
+    | '/app/analysis'
+    | '/app/analytics'
+    | '/app/instruments'
+    | '/app/intake'
+    | '/app/notifications'
+    | '/app/preparation'
+    | '/app/qa-qc'
+    | '/app/reports'
+    | '/app/settings'
+    | '/app/storage'
+    | '/app/users'
+    | '/portal/notifications'
+    | '/portal/reports'
+    | '/portal/submit'
+    | '/portal/support'
+    | '/app/'
+    | '/portal/'
+    | '/app/samples/$id'
+    | '/app/settings/api'
+    | '/app/settings/branding'
+    | '/app/settings/laboratory'
+    | '/app/settings/notifications'
+    | '/app/settings/security'
+    | '/app/samples/'
+    | '/app/settings/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AppRoute: typeof AppRouteWithChildren
+  LoginRoute: typeof LoginRoute
+  PortalRoute: typeof PortalRouteWithChildren
+  RegisterRoute: typeof RegisterRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/register': {
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/portal': {
+      id: '/portal'
+      path: '/portal'
+      fullPath: '/portal'
+      preLoaderRoute: typeof PortalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/app': {
+      id: '/app'
+      path: '/app'
+      fullPath: '/app'
+      preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,22 +439,277 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/portal/': {
+      id: '/portal/'
+      path: '/'
+      fullPath: '/portal/'
+      preLoaderRoute: typeof PortalIndexRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/app/': {
+      id: '/app/'
+      path: '/'
+      fullPath: '/app/'
+      preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/portal/support': {
+      id: '/portal/support'
+      path: '/support'
+      fullPath: '/portal/support'
+      preLoaderRoute: typeof PortalSupportRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/portal/submit': {
+      id: '/portal/submit'
+      path: '/submit'
+      fullPath: '/portal/submit'
+      preLoaderRoute: typeof PortalSubmitRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/portal/reports': {
+      id: '/portal/reports'
+      path: '/reports'
+      fullPath: '/portal/reports'
+      preLoaderRoute: typeof PortalReportsRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/portal/notifications': {
+      id: '/portal/notifications'
+      path: '/notifications'
+      fullPath: '/portal/notifications'
+      preLoaderRoute: typeof PortalNotificationsRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/app/users': {
+      id: '/app/users'
+      path: '/users'
+      fullPath: '/app/users'
+      preLoaderRoute: typeof AppUsersRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/storage': {
+      id: '/app/storage'
+      path: '/storage'
+      fullPath: '/app/storage'
+      preLoaderRoute: typeof AppStorageRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/settings': {
+      id: '/app/settings'
+      path: '/settings'
+      fullPath: '/app/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/reports': {
+      id: '/app/reports'
+      path: '/reports'
+      fullPath: '/app/reports'
+      preLoaderRoute: typeof AppReportsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/qa-qc': {
+      id: '/app/qa-qc'
+      path: '/qa-qc'
+      fullPath: '/app/qa-qc'
+      preLoaderRoute: typeof AppQaQcRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/preparation': {
+      id: '/app/preparation'
+      path: '/preparation'
+      fullPath: '/app/preparation'
+      preLoaderRoute: typeof AppPreparationRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/notifications': {
+      id: '/app/notifications'
+      path: '/notifications'
+      fullPath: '/app/notifications'
+      preLoaderRoute: typeof AppNotificationsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/intake': {
+      id: '/app/intake'
+      path: '/intake'
+      fullPath: '/app/intake'
+      preLoaderRoute: typeof AppIntakeRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/instruments': {
+      id: '/app/instruments'
+      path: '/instruments'
+      fullPath: '/app/instruments'
+      preLoaderRoute: typeof AppInstrumentsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/analytics': {
+      id: '/app/analytics'
+      path: '/analytics'
+      fullPath: '/app/analytics'
+      preLoaderRoute: typeof AppAnalyticsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/analysis': {
+      id: '/app/analysis'
+      path: '/analysis'
+      fullPath: '/app/analysis'
+      preLoaderRoute: typeof AppAnalysisRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/activity': {
+      id: '/app/activity'
+      path: '/activity'
+      fullPath: '/app/activity'
+      preLoaderRoute: typeof AppActivityRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/settings/': {
+      id: '/app/settings/'
+      path: '/'
+      fullPath: '/app/settings/'
+      preLoaderRoute: typeof AppSettingsIndexRouteImport
+      parentRoute: typeof AppSettingsRoute
+    }
+    '/app/samples/': {
+      id: '/app/samples/'
+      path: '/samples'
+      fullPath: '/app/samples/'
+      preLoaderRoute: typeof AppSamplesIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/settings/security': {
+      id: '/app/settings/security'
+      path: '/security'
+      fullPath: '/app/settings/security'
+      preLoaderRoute: typeof AppSettingsSecurityRouteImport
+      parentRoute: typeof AppSettingsRoute
+    }
+    '/app/settings/notifications': {
+      id: '/app/settings/notifications'
+      path: '/notifications'
+      fullPath: '/app/settings/notifications'
+      preLoaderRoute: typeof AppSettingsNotificationsRouteImport
+      parentRoute: typeof AppSettingsRoute
+    }
+    '/app/settings/laboratory': {
+      id: '/app/settings/laboratory'
+      path: '/laboratory'
+      fullPath: '/app/settings/laboratory'
+      preLoaderRoute: typeof AppSettingsLaboratoryRouteImport
+      parentRoute: typeof AppSettingsRoute
+    }
+    '/app/settings/branding': {
+      id: '/app/settings/branding'
+      path: '/branding'
+      fullPath: '/app/settings/branding'
+      preLoaderRoute: typeof AppSettingsBrandingRouteImport
+      parentRoute: typeof AppSettingsRoute
+    }
+    '/app/settings/api': {
+      id: '/app/settings/api'
+      path: '/api'
+      fullPath: '/app/settings/api'
+      preLoaderRoute: typeof AppSettingsApiRouteImport
+      parentRoute: typeof AppSettingsRoute
+    }
+    '/app/samples/$id': {
+      id: '/app/samples/$id'
+      path: '/samples/$id'
+      fullPath: '/app/samples/$id'
+      preLoaderRoute: typeof AppSamplesIdRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
+interface AppSettingsRouteChildren {
+  AppSettingsApiRoute: typeof AppSettingsApiRoute
+  AppSettingsBrandingRoute: typeof AppSettingsBrandingRoute
+  AppSettingsLaboratoryRoute: typeof AppSettingsLaboratoryRoute
+  AppSettingsNotificationsRoute: typeof AppSettingsNotificationsRoute
+  AppSettingsSecurityRoute: typeof AppSettingsSecurityRoute
+  AppSettingsIndexRoute: typeof AppSettingsIndexRoute
+}
+
+const AppSettingsRouteChildren: AppSettingsRouteChildren = {
+  AppSettingsApiRoute: AppSettingsApiRoute,
+  AppSettingsBrandingRoute: AppSettingsBrandingRoute,
+  AppSettingsLaboratoryRoute: AppSettingsLaboratoryRoute,
+  AppSettingsNotificationsRoute: AppSettingsNotificationsRoute,
+  AppSettingsSecurityRoute: AppSettingsSecurityRoute,
+  AppSettingsIndexRoute: AppSettingsIndexRoute,
+}
+
+const AppSettingsRouteWithChildren = AppSettingsRoute._addFileChildren(
+  AppSettingsRouteChildren,
+)
+
+interface AppRouteChildren {
+  AppActivityRoute: typeof AppActivityRoute
+  AppAnalysisRoute: typeof AppAnalysisRoute
+  AppAnalyticsRoute: typeof AppAnalyticsRoute
+  AppInstrumentsRoute: typeof AppInstrumentsRoute
+  AppIntakeRoute: typeof AppIntakeRoute
+  AppNotificationsRoute: typeof AppNotificationsRoute
+  AppPreparationRoute: typeof AppPreparationRoute
+  AppQaQcRoute: typeof AppQaQcRoute
+  AppReportsRoute: typeof AppReportsRoute
+  AppSettingsRoute: typeof AppSettingsRouteWithChildren
+  AppStorageRoute: typeof AppStorageRoute
+  AppUsersRoute: typeof AppUsersRoute
+  AppIndexRoute: typeof AppIndexRoute
+  AppSamplesIdRoute: typeof AppSamplesIdRoute
+  AppSamplesIndexRoute: typeof AppSamplesIndexRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppActivityRoute: AppActivityRoute,
+  AppAnalysisRoute: AppAnalysisRoute,
+  AppAnalyticsRoute: AppAnalyticsRoute,
+  AppInstrumentsRoute: AppInstrumentsRoute,
+  AppIntakeRoute: AppIntakeRoute,
+  AppNotificationsRoute: AppNotificationsRoute,
+  AppPreparationRoute: AppPreparationRoute,
+  AppQaQcRoute: AppQaQcRoute,
+  AppReportsRoute: AppReportsRoute,
+  AppSettingsRoute: AppSettingsRouteWithChildren,
+  AppStorageRoute: AppStorageRoute,
+  AppUsersRoute: AppUsersRoute,
+  AppIndexRoute: AppIndexRoute,
+  AppSamplesIdRoute: AppSamplesIdRoute,
+  AppSamplesIndexRoute: AppSamplesIndexRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
+interface PortalRouteChildren {
+  PortalNotificationsRoute: typeof PortalNotificationsRoute
+  PortalReportsRoute: typeof PortalReportsRoute
+  PortalSubmitRoute: typeof PortalSubmitRoute
+  PortalSupportRoute: typeof PortalSupportRoute
+  PortalIndexRoute: typeof PortalIndexRoute
+}
+
+const PortalRouteChildren: PortalRouteChildren = {
+  PortalNotificationsRoute: PortalNotificationsRoute,
+  PortalReportsRoute: PortalReportsRoute,
+  PortalSubmitRoute: PortalSubmitRoute,
+  PortalSupportRoute: PortalSupportRoute,
+  PortalIndexRoute: PortalIndexRoute,
+}
+
+const PortalRouteWithChildren =
+  PortalRoute._addFileChildren(PortalRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AppRoute: AppRouteWithChildren,
+  LoginRoute: LoginRoute,
+  PortalRoute: PortalRouteWithChildren,
+  RegisterRoute: RegisterRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
