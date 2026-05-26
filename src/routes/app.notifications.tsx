@@ -32,10 +32,14 @@ function Notifications() {
         <div className="space-y-4">
           <div className="rounded-xl border border-border bg-card p-5">
             <h3 className="text-sm font-semibold">Channels</h3>
-            {[[Bell,"In-app",true],[Mail,"Email",true],[MessageSquare,"SMS (coming soon)",false]].map(([Icon,label,on],i)=>(
+            {([
+              { Icon: Bell, label: "In-app", on: true },
+              { Icon: Mail, label: "Email", on: true },
+              { Icon: MessageSquare, label: "SMS (coming soon)", on: false },
+            ]).map(({ Icon, label, on }, i) => (
               <label key={i} className="mt-3 flex items-center justify-between text-sm">
-                <span className="inline-flex items-center gap-2 text-muted-foreground"><Icon className="size-4"/> {label as string}</span>
-                <input type="checkbox" defaultChecked={on as boolean} />
+                <span className="inline-flex items-center gap-2 text-muted-foreground"><Icon className="size-4"/> {label}</span>
+                <input type="checkbox" defaultChecked={on} />
               </label>
             ))}
           </div>
