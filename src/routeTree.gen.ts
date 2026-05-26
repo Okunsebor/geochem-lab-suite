@@ -14,11 +14,18 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
+import { Route as AppUsersRouteImport } from './routes/app.users'
+import { Route as AppStorageRouteImport } from './routes/app.storage'
+import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as AppReportsRouteImport } from './routes/app.reports'
 import { Route as AppQaQcRouteImport } from './routes/app.qa-qc'
 import { Route as AppPreparationRouteImport } from './routes/app.preparation'
+import { Route as AppNotificationsRouteImport } from './routes/app.notifications'
 import { Route as AppIntakeRouteImport } from './routes/app.intake'
+import { Route as AppInstrumentsRouteImport } from './routes/app.instruments'
+import { Route as AppAnalyticsRouteImport } from './routes/app.analytics'
 import { Route as AppAnalysisRouteImport } from './routes/app.analysis'
+import { Route as AppActivityRouteImport } from './routes/app.activity'
 import { Route as AppSamplesIndexRouteImport } from './routes/app.samples.index'
 import { Route as AppSamplesIdRouteImport } from './routes/app.samples.$id'
 
@@ -47,6 +54,21 @@ const AppIndexRoute = AppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppRoute,
 } as any)
+const AppUsersRoute = AppUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppStorageRoute = AppStorageRouteImport.update({
+  id: '/storage',
+  path: '/storage',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppReportsRoute = AppReportsRouteImport.update({
   id: '/reports',
   path: '/reports',
@@ -62,14 +84,34 @@ const AppPreparationRoute = AppPreparationRouteImport.update({
   path: '/preparation',
   getParentRoute: () => AppRoute,
 } as any)
+const AppNotificationsRoute = AppNotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppIntakeRoute = AppIntakeRouteImport.update({
   id: '/intake',
   path: '/intake',
   getParentRoute: () => AppRoute,
 } as any)
+const AppInstrumentsRoute = AppInstrumentsRouteImport.update({
+  id: '/instruments',
+  path: '/instruments',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAnalyticsRoute = AppAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppAnalysisRoute = AppAnalysisRouteImport.update({
   id: '/analysis',
   path: '/analysis',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppActivityRoute = AppActivityRouteImport.update({
+  id: '/activity',
+  path: '/activity',
   getParentRoute: () => AppRoute,
 } as any)
 const AppSamplesIndexRoute = AppSamplesIndexRouteImport.update({
@@ -88,11 +130,18 @@ export interface FileRoutesByFullPath {
   '/app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/app/activity': typeof AppActivityRoute
   '/app/analysis': typeof AppAnalysisRoute
+  '/app/analytics': typeof AppAnalyticsRoute
+  '/app/instruments': typeof AppInstrumentsRoute
   '/app/intake': typeof AppIntakeRoute
+  '/app/notifications': typeof AppNotificationsRoute
   '/app/preparation': typeof AppPreparationRoute
   '/app/qa-qc': typeof AppQaQcRoute
   '/app/reports': typeof AppReportsRoute
+  '/app/settings': typeof AppSettingsRoute
+  '/app/storage': typeof AppStorageRoute
+  '/app/users': typeof AppUsersRoute
   '/app/': typeof AppIndexRoute
   '/app/samples/$id': typeof AppSamplesIdRoute
   '/app/samples/': typeof AppSamplesIndexRoute
@@ -101,11 +150,18 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/app/activity': typeof AppActivityRoute
   '/app/analysis': typeof AppAnalysisRoute
+  '/app/analytics': typeof AppAnalyticsRoute
+  '/app/instruments': typeof AppInstrumentsRoute
   '/app/intake': typeof AppIntakeRoute
+  '/app/notifications': typeof AppNotificationsRoute
   '/app/preparation': typeof AppPreparationRoute
   '/app/qa-qc': typeof AppQaQcRoute
   '/app/reports': typeof AppReportsRoute
+  '/app/settings': typeof AppSettingsRoute
+  '/app/storage': typeof AppStorageRoute
+  '/app/users': typeof AppUsersRoute
   '/app': typeof AppIndexRoute
   '/app/samples/$id': typeof AppSamplesIdRoute
   '/app/samples': typeof AppSamplesIndexRoute
@@ -116,11 +172,18 @@ export interface FileRoutesById {
   '/app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/app/activity': typeof AppActivityRoute
   '/app/analysis': typeof AppAnalysisRoute
+  '/app/analytics': typeof AppAnalyticsRoute
+  '/app/instruments': typeof AppInstrumentsRoute
   '/app/intake': typeof AppIntakeRoute
+  '/app/notifications': typeof AppNotificationsRoute
   '/app/preparation': typeof AppPreparationRoute
   '/app/qa-qc': typeof AppQaQcRoute
   '/app/reports': typeof AppReportsRoute
+  '/app/settings': typeof AppSettingsRoute
+  '/app/storage': typeof AppStorageRoute
+  '/app/users': typeof AppUsersRoute
   '/app/': typeof AppIndexRoute
   '/app/samples/$id': typeof AppSamplesIdRoute
   '/app/samples/': typeof AppSamplesIndexRoute
@@ -132,11 +195,18 @@ export interface FileRouteTypes {
     | '/app'
     | '/login'
     | '/register'
+    | '/app/activity'
     | '/app/analysis'
+    | '/app/analytics'
+    | '/app/instruments'
     | '/app/intake'
+    | '/app/notifications'
     | '/app/preparation'
     | '/app/qa-qc'
     | '/app/reports'
+    | '/app/settings'
+    | '/app/storage'
+    | '/app/users'
     | '/app/'
     | '/app/samples/$id'
     | '/app/samples/'
@@ -145,11 +215,18 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/register'
+    | '/app/activity'
     | '/app/analysis'
+    | '/app/analytics'
+    | '/app/instruments'
     | '/app/intake'
+    | '/app/notifications'
     | '/app/preparation'
     | '/app/qa-qc'
     | '/app/reports'
+    | '/app/settings'
+    | '/app/storage'
+    | '/app/users'
     | '/app'
     | '/app/samples/$id'
     | '/app/samples'
@@ -159,11 +236,18 @@ export interface FileRouteTypes {
     | '/app'
     | '/login'
     | '/register'
+    | '/app/activity'
     | '/app/analysis'
+    | '/app/analytics'
+    | '/app/instruments'
     | '/app/intake'
+    | '/app/notifications'
     | '/app/preparation'
     | '/app/qa-qc'
     | '/app/reports'
+    | '/app/settings'
+    | '/app/storage'
+    | '/app/users'
     | '/app/'
     | '/app/samples/$id'
     | '/app/samples/'
@@ -213,6 +297,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/users': {
+      id: '/app/users'
+      path: '/users'
+      fullPath: '/app/users'
+      preLoaderRoute: typeof AppUsersRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/storage': {
+      id: '/app/storage'
+      path: '/storage'
+      fullPath: '/app/storage'
+      preLoaderRoute: typeof AppStorageRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/settings': {
+      id: '/app/settings'
+      path: '/settings'
+      fullPath: '/app/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/reports': {
       id: '/app/reports'
       path: '/reports'
@@ -234,6 +339,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPreparationRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/notifications': {
+      id: '/app/notifications'
+      path: '/notifications'
+      fullPath: '/app/notifications'
+      preLoaderRoute: typeof AppNotificationsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/intake': {
       id: '/app/intake'
       path: '/intake'
@@ -241,11 +353,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIntakeRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/instruments': {
+      id: '/app/instruments'
+      path: '/instruments'
+      fullPath: '/app/instruments'
+      preLoaderRoute: typeof AppInstrumentsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/analytics': {
+      id: '/app/analytics'
+      path: '/analytics'
+      fullPath: '/app/analytics'
+      preLoaderRoute: typeof AppAnalyticsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/analysis': {
       id: '/app/analysis'
       path: '/analysis'
       fullPath: '/app/analysis'
       preLoaderRoute: typeof AppAnalysisRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/activity': {
+      id: '/app/activity'
+      path: '/activity'
+      fullPath: '/app/activity'
+      preLoaderRoute: typeof AppActivityRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/samples/': {
@@ -266,22 +399,36 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppRouteChildren {
+  AppActivityRoute: typeof AppActivityRoute
   AppAnalysisRoute: typeof AppAnalysisRoute
+  AppAnalyticsRoute: typeof AppAnalyticsRoute
+  AppInstrumentsRoute: typeof AppInstrumentsRoute
   AppIntakeRoute: typeof AppIntakeRoute
+  AppNotificationsRoute: typeof AppNotificationsRoute
   AppPreparationRoute: typeof AppPreparationRoute
   AppQaQcRoute: typeof AppQaQcRoute
   AppReportsRoute: typeof AppReportsRoute
+  AppSettingsRoute: typeof AppSettingsRoute
+  AppStorageRoute: typeof AppStorageRoute
+  AppUsersRoute: typeof AppUsersRoute
   AppIndexRoute: typeof AppIndexRoute
   AppSamplesIdRoute: typeof AppSamplesIdRoute
   AppSamplesIndexRoute: typeof AppSamplesIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppActivityRoute: AppActivityRoute,
   AppAnalysisRoute: AppAnalysisRoute,
+  AppAnalyticsRoute: AppAnalyticsRoute,
+  AppInstrumentsRoute: AppInstrumentsRoute,
   AppIntakeRoute: AppIntakeRoute,
+  AppNotificationsRoute: AppNotificationsRoute,
   AppPreparationRoute: AppPreparationRoute,
   AppQaQcRoute: AppQaQcRoute,
   AppReportsRoute: AppReportsRoute,
+  AppSettingsRoute: AppSettingsRoute,
+  AppStorageRoute: AppStorageRoute,
+  AppUsersRoute: AppUsersRoute,
   AppIndexRoute: AppIndexRoute,
   AppSamplesIdRoute: AppSamplesIdRoute,
   AppSamplesIndexRoute: AppSamplesIndexRoute,
