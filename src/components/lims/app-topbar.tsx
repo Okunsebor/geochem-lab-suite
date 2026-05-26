@@ -1,9 +1,16 @@
 import { Search, Bell, Sun, Moon, Command, HelpCircle, ChevronDown } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
+import { useLimsState } from "@/hooks/use-lims-state";
 
 export function AppTopbar() {
   const [dark, setDark] = useState(false);
+  const { currentUser, notifications } = useLimsState();
+  const unreadCount = notifications.filter(n => !n.isRead).length;
+  
+  const initials = currentUser.name.split(" ").map((x) => x[0]).join("").slice(0, 2);
+  const firstName = currentUser.name.split(" ")[0];
+
   useEffect(() => {
     document.documentElement.classList.toggle("dark", dark);
   }, [dark]);
@@ -32,11 +39,15 @@ export function AppTopbar() {
         </button>
         <Link to="/app/notifications" className="relative rounded-md p-2 text-muted-foreground hover:bg-muted hover:text-foreground">
           <Bell className="size-4" />
-          <span className="absolute right-1.5 top-1.5 grid size-4 place-items-center rounded-full bg-destructive text-[9px] font-semibold text-destructive-foreground">5</span>
+          {unreadCount > 0 && (
+            <span className="absolute right-1.5 top-1.5 grid size-4 place-items-center rounded-full bg-destructive text-[9px] font-semibold text-destructive-foreground">
+              {unreadCount}
+            </span>
+          )}
         </Link>
         <div className="ml-2 flex items-center gap-2 rounded-lg border border-border bg-card px-2 py-1 text-sm">
-          <div className="grid size-6 place-items-center rounded-full gradient-primary text-[10px] font-semibold text-white">AN</div>
-          <span className="hidden md:inline font-medium">Adaeze</span>
+          <div className="grid size-6 place-items-center rounded-full gradient-primary text-[10px] font-semibold text-white">{initials}</div>
+          <span className="hidden md:inline font-medium text-foreground">{firstName}</span>
           <ChevronDown className="size-3.5 text-muted-foreground" />
         </div>
       </div>

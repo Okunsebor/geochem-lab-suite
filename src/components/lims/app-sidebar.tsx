@@ -45,8 +45,12 @@ const nav = [
   },
 ];
 
+import { useLimsState } from "@/hooks/use-lims-state";
+
 export function AppSidebar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { currentUser } = useLimsState();
+  const initials = currentUser.name.split(" ").map((x) => x[0]).join("").slice(0, 2);
 
   return (
     <aside className="hidden lg:flex w-64 shrink-0 flex-col bg-sidebar text-sidebar-foreground border-r border-sidebar-border">
@@ -90,10 +94,10 @@ export function AppSidebar() {
       </nav>
       <div className="border-t border-sidebar-border p-3">
         <div className="flex items-center gap-2 rounded-lg bg-sidebar-accent/50 p-2.5">
-          <div className="grid size-8 place-items-center rounded-full bg-gradient-to-br from-primary to-info text-white text-xs font-semibold">AN</div>
+          <div className="grid size-8 place-items-center rounded-full bg-gradient-to-br from-primary to-info text-white text-xs font-semibold">{initials}</div>
           <div className="flex-1 min-w-0">
-            <p className="truncate text-sm font-medium text-white">Adaeze Nwosu</p>
-            <p className="truncate text-[11px] text-sidebar-foreground/60">Administrator</p>
+            <p className="truncate text-sm font-medium text-white">{currentUser.name}</p>
+            <p className="truncate text-[11px] text-sidebar-foreground/60">{currentUser.role}</p>
           </div>
         </div>
       </div>

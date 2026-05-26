@@ -9,6 +9,8 @@ import {
 } from "@tanstack/react-router";
 
 import { Toaster } from "sonner";
+import { LimsStateProvider } from "../hooks/use-lims-state";
+import { AuthProvider } from "../hooks/use-auth";
 
 import appCss from "../styles.css?url";
 
@@ -110,13 +112,18 @@ function RootShell({ children }: { children: React.ReactNode }) {
   );
 }
 
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Outlet />
-      <Toaster position="top-right" richColors />
+      <AuthProvider>
+        <LimsStateProvider>
+          <Outlet />
+          <Toaster position="top-right" richColors />
+        </LimsStateProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
