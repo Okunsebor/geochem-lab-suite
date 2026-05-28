@@ -14,6 +14,7 @@ import {
   SampleNote,
   CustodyLogEntry,
 } from "../types";
+import { toast } from "sonner";
 // Removed mock-data imports; production data is fetched from Supabase.
 
 interface LimsStateContextType {
@@ -25,6 +26,8 @@ interface LimsStateContextType {
   users: User[];
   currentUser: User | null;
   loading: boolean;
+  tickets: any[];
+  settings: any;
   
   // Actions
   login: (email: string, password: string) => Promise<any>;
@@ -57,6 +60,10 @@ interface LimsStateContextType {
   rejectSample: (sampleId: string, reason: string) => Promise<void>;
   assignStorageLocation: (sampleId: string, location: string) => Promise<void>;
   uploadSampleAttachment: (sampleId: string, file: File) => Promise<any>;
+  logBarcodeScan: (sampleId: string, location: string, actionDetails: string) => Promise<void>;
+  fetchSampleDetails: (sampleId: string) => Promise<void>;
+  addSupportTicket: (ticket: any) => void;
+  updateSettings: (newSettings: any) => void;
 }
 
 // Helper to transform Supabase DB rows into LIMS UI-ready shapes
@@ -126,17 +133,74 @@ export function LimsStateProvider({ children }: { children: React.ReactNode }) {
   const { currentUser, loading, login, registerUser, logout, switchUserRole } = useAuth();
   const currentName = currentUser?.name || "System";
 
+  const [tickets, setTickets] = useState<any[]>(() => {
+    try {
+      const saved = localStorage.getItem("gcs_tickets");
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [settings, setSettings] = useState<any>(() => {
+    try {
+      const saved = localStorage.getItem("gcs_settings");
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return {
+      orgName: "GeoChem Labs Inc.",
+      orgUrl: "geochemlabs.suite.io",
+      timezone: "UTC+01 · Lagos",
+      currency: "USD",
+      labProtocol: "ISO 17025 Accreditation",
+      calInterval: "14 days",
+      auditRetention: "7 years",
+      matrixType: "Sulphide",
+      primaryColor: "#2563eb",
+      logo: "",
+      reportFooter: "© GeoChem Labs Inc. · ISO 17025 Accredited · contact@geochem.io",
+      triggers: ["Report awaiting approval", "QA anomaly raised", "Sample overdue", "Instrument calibration due", "New customer signup"],
+      channels: ["In-app", "Email"],
+      require2fa: true,
+      sessionExpire: true,
+      passRotation: "90 days",
+      maxFailures: "5 attempts",
+      apiKey: "sk_live_51Ny931Jkdsj92842Jksdlf...",
+      webhookUrl: "https://api.geochemlabs.io/v1/webhooks",
+      webhookHash: "whsec_kdjf892429..."
+    };
+  });
+
+  // Inject primary color variable dynamically to enforce branding selection globally
+  useEffect(() => {
+    if (settings?.primaryColor) {
+      document.documentElement.style.setProperty("--primary", settings.primaryColor);
+    }
+  }, [settings?.primaryColor]);
+
   // Load samples from database or fallback to localStorage
   const syncSamplesFromDb = async () => {
     try {
       const { data, error } = await supabase
         .from("samples")
         .select(`
-          *,
-          sample_notes (*),
-          custody_logs (*),
-          analytical_results (*),
-          sample_attachments (*)
+          id,
+          client_name,
+          project_name,
+          sample_type,
+          status,
+          priority,
+          storage_location,
+          weight_kg,
+          created_at,
+          technician,
+          matrix,
+          container,
+          received_from,
+          special_instructions,
+          acceptance_status,
+          rejection_reason,
+          verification_notes
         `);
 
       if (error) {
@@ -144,17 +208,20 @@ export function LimsStateProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (data && data.length > 0) {
-        const mapped = data.map((s: any) => {
-          return mapDbSampleToUi(
-            s,
-            s.sample_notes || [],
-            s.analytical_results || [],
-            s.custody_logs || [],
-            s.sample_attachments || []
-          );
+        setSamples((prev) => {
+          const mapped = data.map((s: any) => {
+            const existing = prev.find((x) => x.id === s.id);
+            return mapDbSampleToUi(
+              s,
+              existing?.notes || [],
+              existing?.results || [],
+              existing?.custody || [],
+              existing?.attachments || []
+            );
+          });
+          localStorage.setItem("gcs_samples", JSON.stringify(mapped));
+          return mapped;
         });
-        setSamples(mapped);
-        localStorage.setItem("gcs_samples", JSON.stringify(mapped));
       } else {
         // Fallback to local storage if DB is empty but connected
         const local = localStorage.getItem("gcs_samples");
@@ -382,6 +449,10 @@ export function LimsStateProvider({ children }: { children: React.ReactNode }) {
       ],
     };
 
+    const priorSamples = [...samples];
+    const priorActivity = [...activity];
+    const priorNotifications = [...notifications];
+
     // 1. Perform background database write
     const writeToDb = async () => {
       try {
@@ -420,7 +491,15 @@ export function LimsStateProvider({ children }: { children: React.ReactNode }) {
         console.log(`Live DB write completed for sample ${newSampleId}`);
         syncSamplesFromDb();
       } catch (err: any) {
-        console.warn("Could not insert sample in remote Supabase, running inside LIMS sandbox simulation:", err.message);
+        console.warn("Could not insert sample in remote Supabase, falling back to LIMS Sandbox:", err.message);
+        if (err.message?.includes("schema cache") || err.message?.includes("relation") || err.message?.includes("fetch") || err.message?.includes("table") || err.message?.includes("database")) {
+          toast.info("Database offline: saved to LIMS Sandbox memory");
+        } else {
+          saveSamples(priorSamples);
+          saveActivity(priorActivity);
+          saveNotifications(priorNotifications);
+          toast.error(`LIMS Database Write Failed: ${err.message || "Could not register sample."}`);
+        }
       }
     };
 
@@ -461,6 +540,9 @@ export function LimsStateProvider({ children }: { children: React.ReactNode }) {
       timestamp: new Date().toISOString(),
     };
 
+    const priorSamples = [...samples];
+    const priorActivity = [...activity];
+
     const updated = samples.map((s) => {
       if (s.id === sampleId) {
         return {
@@ -487,7 +569,14 @@ export function LimsStateProvider({ children }: { children: React.ReactNode }) {
         console.log(`Live DB write completed for sample note on ${sampleId}`);
         syncSamplesFromDb();
       } catch (err: any) {
-        console.warn("Could not insert sample note in remote Supabase, running inside LIMS sandbox simulation:", err.message);
+        console.warn("Could not insert sample note in remote Supabase, falling back to LIMS Sandbox:", err.message);
+        if (err.message?.includes("schema cache") || err.message?.includes("relation") || err.message?.includes("fetch") || err.message?.includes("table") || err.message?.includes("database")) {
+          toast.info("Database offline: saved to LIMS Sandbox memory");
+        } else {
+          saveSamples(priorSamples);
+          saveActivity(priorActivity);
+          toast.error(`LIMS Database Write Failed: ${err.message || "Could not add sample note."}`);
+        }
       }
     };
 
@@ -504,6 +593,9 @@ export function LimsStateProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateSampleStatus = (sampleId: string, status: SampleStatus) => {
+    const priorSamples = [...samples];
+    const priorActivity = [...activity];
+
     const updated = samples.map((s) => {
       if (s.id === sampleId) {
         const newCustody: CustodyLogEntry = {
@@ -543,7 +635,14 @@ export function LimsStateProvider({ children }: { children: React.ReactNode }) {
         console.log(`Live DB update completed for sample ${sampleId}`);
         syncSamplesFromDb();
       } catch (err: any) {
-        console.warn("Could not update sample status in remote Supabase, running inside LIMS sandbox simulation:", err.message);
+        console.warn("Could not update sample status in remote Supabase, falling back to LIMS Sandbox:", err.message);
+        if (err.message?.includes("schema cache") || err.message?.includes("relation") || err.message?.includes("fetch") || err.message?.includes("table") || err.message?.includes("database")) {
+          toast.info("Database offline: saved to LIMS Sandbox memory");
+        } else {
+          saveSamples(priorSamples);
+          saveActivity(priorActivity);
+          toast.error(`LIMS Database Write Failed: ${err.message || "Could not update sample status."}`);
+        }
       }
     };
 
@@ -819,10 +918,10 @@ export function LimsStateProvider({ children }: { children: React.ReactNode }) {
 
   const downloadReportPdf = async (reportId: string) => {
     const report = reports.find(r => r.id === reportId);
-    if (!report) return;
+    if (!report) throw new Error("Report not found in LIMS registry.");
 
     const sample = samples.find(s => s.id === report.sample);
-    if (!sample) return;
+    if (!sample) throw new Error(`Associated sample "${report.sample}" not found in LIMS registry.`);
 
     try {
       const { generateReportPdfBlob, downloadBlob } = await import("../lib/report-service");
@@ -830,6 +929,7 @@ export function LimsStateProvider({ children }: { children: React.ReactNode }) {
       downloadBlob(pdfBlob, `${reportId}.pdf`);
     } catch (err) {
       console.error("Failed to generate and download PDF:", err);
+      throw err;
     }
   };
 
@@ -882,6 +982,9 @@ export function LimsStateProvider({ children }: { children: React.ReactNode }) {
   };
 
   const verifySample = async (sampleId: string, notes: string, storageLocation: string) => {
+    const priorSamples = [...samples];
+    const priorActivity = [...activity];
+
     // 1. Local update
     const updated = samples.map((s) => {
       if (s.id === sampleId) {
@@ -926,7 +1029,15 @@ export function LimsStateProvider({ children }: { children: React.ReactNode }) {
 
       syncSamplesFromDb();
     } catch (err: any) {
-      console.warn("verifySample DB write bypassed:", err.message);
+      console.warn("verifySample DB write bypassed, falling back to LIMS Sandbox:", err.message);
+      if (err.message?.includes("schema cache") || err.message?.includes("relation") || err.message?.includes("fetch") || err.message?.includes("table") || err.message?.includes("database")) {
+        toast.info("Database offline: saved to LIMS Sandbox memory");
+      } else {
+        saveSamples(priorSamples);
+        saveActivity(priorActivity);
+        toast.error(`LIMS Database Write Failed: ${err.message || "Could not accept and verify sample."}`);
+      }
+      return;
     }
 
     // Add activity
@@ -941,6 +1052,9 @@ export function LimsStateProvider({ children }: { children: React.ReactNode }) {
   };
 
   const rejectSample = async (sampleId: string, reason: string) => {
+    const priorSamples = [...samples];
+    const priorActivity = [...activity];
+
     // 1. Local update
     const updated = samples.map((s) => {
       if (s.id === sampleId) {
@@ -981,7 +1095,15 @@ export function LimsStateProvider({ children }: { children: React.ReactNode }) {
 
       syncSamplesFromDb();
     } catch (err: any) {
-      console.warn("rejectSample DB write bypassed:", err.message);
+      console.warn("rejectSample DB write bypassed, falling back to LIMS Sandbox:", err.message);
+      if (err.message?.includes("schema cache") || err.message?.includes("relation") || err.message?.includes("fetch") || err.message?.includes("table") || err.message?.includes("database")) {
+        toast.info("Database offline: saved to LIMS Sandbox memory");
+      } else {
+        saveSamples(priorSamples);
+        saveActivity(priorActivity);
+        toast.error(`LIMS Database Write Failed: ${err.message || "Could not reject sample."}`);
+      }
+      return;
     }
 
     const newActivity: ActivityLog = {
@@ -995,6 +1117,9 @@ export function LimsStateProvider({ children }: { children: React.ReactNode }) {
   };
 
   const assignStorageLocation = async (sampleId: string, location: string) => {
+    const priorSamples = [...samples];
+    const priorActivity = [...activity];
+
     // 1. Local update
     const updated = samples.map((s) => {
       if (s.id === sampleId) {
@@ -1033,7 +1158,15 @@ export function LimsStateProvider({ children }: { children: React.ReactNode }) {
 
       syncSamplesFromDb();
     } catch (err: any) {
-      console.warn("assignStorageLocation DB write bypassed:", err.message);
+      console.warn("assignStorageLocation DB write bypassed, falling back to LIMS Sandbox:", err.message);
+      if (err.message?.includes("schema cache") || err.message?.includes("relation") || err.message?.includes("fetch") || err.message?.includes("table") || err.message?.includes("database")) {
+        toast.info("Database offline: saved to LIMS Sandbox memory");
+      } else {
+        saveSamples(priorSamples);
+        saveActivity(priorActivity);
+        toast.error(`LIMS Database Write Failed: ${err.message || "Could not assign storage location."}`);
+      }
+      return;
     }
 
     const newActivity: ActivityLog = {
@@ -1108,6 +1241,119 @@ export function LimsStateProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const logBarcodeScan = async (sampleId: string, location: string, actionDetails: string) => {
+    const priorSamples = [...samples];
+    const priorActivity = [...activity];
+
+    const updated = samples.map((s) => {
+      if (s.id === sampleId) {
+        const newCustodyEntry: CustodyLogEntry = {
+          action: `Barcode Scanned: ${actionDetails}`,
+          technician: currentName,
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        };
+        return {
+          ...s,
+          location: location || s.location,
+          custody: [newCustodyEntry, ...(s.custody || [])],
+        };
+      }
+      return s;
+    });
+    saveSamples(updated);
+
+    try {
+      if (location) {
+        await supabase
+          .from("samples")
+          .update({ storage_location: location })
+          .eq("id", sampleId);
+      }
+
+      await supabase.from("custody_logs").insert({
+        sample_id: sampleId,
+        performed_by_user_id: currentUser?.id?.toString() || "1",
+        action: `Barcode Scanned: ${actionDetails}`,
+        comments: `Scanned at: ${location || "Assigned station"}`,
+      });
+
+      syncSamplesFromDb();
+    } catch (err: any) {
+      console.warn("logBarcodeScan DB write bypassed, falling back to LIMS Sandbox:", err.message);
+      if (err.message?.includes("schema cache") || err.message?.includes("relation") || err.message?.includes("fetch") || err.message?.includes("table") || err.message?.includes("database")) {
+        toast.info("Database offline: saved to LIMS Sandbox memory");
+      } else {
+        saveSamples(priorSamples);
+        saveActivity(priorActivity);
+        toast.error(`LIMS Database Write Failed: ${err.message || "Could not log barcode scan."}`);
+      }
+      return;
+    }
+
+    const newActivity: ActivityLog = {
+      who: currentName,
+      what: `scanned barcode for ${sampleId}`,
+      target: sampleId,
+      when: "Just now",
+      ip: "10.0.1.50",
+    };
+    saveActivity([newActivity, ...activity]);
+  };
+
+  const fetchSampleDetails = async (sampleId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("samples")
+        .select(`
+          *,
+          sample_notes (*),
+          custody_logs (*),
+          analytical_results (*),
+          sample_attachments (*)
+        `)
+        .eq("id", sampleId)
+        .single();
+
+      if (error) throw error;
+
+      if (data) {
+        const mapped = mapDbSampleToUi(
+          data,
+          data.sample_notes || [],
+          data.analytical_results || [],
+          data.custody_logs || [],
+          data.sample_attachments || []
+        );
+
+        setSamples((prev) => {
+          const idx = prev.findIndex((s) => s.id === sampleId);
+          if (idx >= 0) {
+            const updated = [...prev];
+            updated[idx] = mapped;
+            // Update localStorage sync for offline recovery
+            localStorage.setItem("gcs_samples", JSON.stringify(updated));
+            return updated;
+          }
+          return [mapped, ...prev];
+        });
+      }
+    } catch (err: any) {
+      console.warn(`Could not lazy load relations for ${sampleId}, using LIMS cache:`, err.message);
+    }
+  };
+
+  const addSupportTicket = (ticket: any) => {
+    const updated = [ticket, ...tickets];
+    setTickets(updated);
+    localStorage.setItem("gcs_tickets", JSON.stringify(updated));
+  };
+
+  const updateSettings = (newSettings: any) => {
+    const updated = { ...settings, ...newSettings };
+    setSettings(updated);
+    localStorage.setItem("gcs_settings", JSON.stringify(updated));
+  };
+
   return (
     <LimsStateContext.Provider
       value={{
@@ -1119,6 +1365,8 @@ export function LimsStateProvider({ children }: { children: React.ReactNode }) {
         users,
         currentUser,
         loading,
+        tickets,
+        settings,
         login,
         registerUser,
         logout,
@@ -1138,6 +1386,10 @@ export function LimsStateProvider({ children }: { children: React.ReactNode }) {
         rejectSample,
         assignStorageLocation,
         uploadSampleAttachment,
+        logBarcodeScan,
+        fetchSampleDetails,
+        addSupportTicket,
+        updateSettings,
       }}
     >
       {children}

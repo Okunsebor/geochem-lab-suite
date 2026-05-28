@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import type { SampleStatus } from "@/lib/dataService";
+import type { SampleStatus } from "../../types";
 
 const styles: Record<string, string> = {
   Received: "bg-muted text-muted-foreground border-border",

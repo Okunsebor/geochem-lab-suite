@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&display=swap');
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
@@ -47,7 +48,7 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
-  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-sans: "Plus Jakarta Sans", "Inter", system-ui, -apple-system, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
 }
 
@@ -83,14 +84,14 @@
   --chart-3: oklch(0.65 0.14 195);
   --chart-4: oklch(0.75 0.16 75);
   --chart-5: oklch(0.55 0.2 320);
-  --sidebar: oklch(0.16 0.025 250);
-  --sidebar-foreground: oklch(0.85 0.01 240);
-  --sidebar-primary: oklch(0.62 0.18 220);
+  --sidebar: oklch(0.98 0.005 250);
+  --sidebar-foreground: oklch(0.25 0.02 250);
+  --sidebar-primary: oklch(0.52 0.16 240);
   --sidebar-primary-foreground: oklch(0.99 0 0);
-  --sidebar-accent: oklch(0.22 0.03 250);
-  --sidebar-accent-foreground: oklch(0.95 0.01 240);
-  --sidebar-border: oklch(0.24 0.025 250);
-  --sidebar-ring: oklch(0.62 0.18 220);
+  --sidebar-accent: oklch(0.94 0.02 250);
+  --sidebar-accent-foreground: oklch(0.18 0.02 250);
+  --sidebar-border: oklch(0.92 0.008 240);
+  --sidebar-ring: oklch(0.52 0.16 240);
 }
 
 .dark {
@@ -143,6 +144,9 @@
     -webkit-font-smoothing: antialiased;
   }
   html { scroll-behavior: smooth; }
+  h1, h2, h3, h4, h5, h6, .font-extrabold, .font-bold, .text-xl, .text-lg, .text-2xl, .text-3xl, .text-4xl, .text-5xl, .text-6xl {
+    letter-spacing: -0.024em;
+  }
 }
 
 @layer utilities {
@@ -163,8 +167,122 @@
   }
   .grid-pattern {
     background-image:
-      linear-gradient(oklch(0.92 0.008 240) 1px, transparent 1px),
-      linear-gradient(90deg, oklch(0.92 0.008 240) 1px, transparent 1px);
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
     background-size: 32px 32px;
+  }
+
+  /* Scientific high-fidelity Triple-Ring Orbit Loader */
+  .lims-orbit-container {
+    position: relative;
+    width: 64px;
+    height: 64px;
+    perspective: 800px;
+  }
+  .lims-orbit-ring {
+    position: absolute;
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 2px solid transparent;
+  }
+  .lims-orbit-ring:nth-child(1) {
+    left: 0; top: 0;
+    border-top: 2.5px solid var(--primary);
+    animation: lims-orbit-one 1.2s linear infinite;
+  }
+  .lims-orbit-ring:nth-child(2) {
+    right: 0; top: 0;
+    border-right: 2.5px solid oklch(0.62 0.18 195);
+    animation: lims-orbit-two 1.2s linear infinite;
+  }
+  .lims-orbit-ring:nth-child(3) {
+    right: 0; bottom: 0;
+    border-bottom: 2.5px solid oklch(0.75 0.16 75);
+    animation: lims-orbit-three 1.2s linear infinite;
+  }
+
+  @keyframes lims-orbit-one {
+    0% { transform: rotateX(35deg) rotateY(-45deg) rotateZ(0deg); }
+    100% { transform: rotateX(35deg) rotateY(-45deg) rotateZ(360deg); }
+  }
+  @keyframes lims-orbit-two {
+    0% { transform: rotateX(50deg) rotateY(10deg) rotateZ(0deg); }
+    100% { transform: rotateX(50deg) rotateY(10deg) rotateZ(360deg); }
+  }
+  @keyframes lims-orbit-three {
+    0% { transform: rotateX(35deg) rotateY(55deg) rotateZ(0deg); }
+    100% { transform: rotateX(35deg) rotateY(55deg) rotateZ(360deg); }
+  }
+
+  /* DNA Helix pulse loading dots */
+  .dna-helix-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3.5px;
+    height: 24px;
+  }
+  .dna-helix-node {
+    width: 3.5px;
+    height: 16px;
+    background-color: var(--primary);
+    border-radius: 1px;
+    animation: dna-helix-wave 1.4s ease-in-out infinite;
+  }
+  .dna-helix-node:nth-child(even) {
+    background-color: oklch(0.62 0.18 195);
+  }
+  .dna-helix-node:nth-child(3n) {
+    background-color: oklch(0.75 0.16 75);
+  }
+  .dna-helix-node:nth-child(1) { animation-delay: -1.2s; }
+  .dna-helix-node:nth-child(2) { animation-delay: -1.05s; }
+  .dna-helix-node:nth-child(3) { animation-delay: -0.9s; }
+  .dna-helix-node:nth-child(4) { animation-delay: -0.75s; }
+  .dna-helix-node:nth-child(5) { animation-delay: -0.6s; }
+  .dna-helix-node:nth-child(6) { animation-delay: -0.45s; }
+  .dna-helix-node:nth-child(7) { animation-delay: -0.3s; }
+  .dna-helix-node:nth-child(8) { animation-delay: -0.15s; }
+
+  @keyframes dna-helix-wave {
+    0%, 100% { transform: scaleY(0.35); opacity: 0.35; }
+    50% { transform: scaleY(1.3); opacity: 1; }
+  }
+
+  /* Scannable physical component laser indicator keyframes */
+  .scan-laser-glow {
+    position: relative;
+    overflow: hidden;
+  }
+  .scan-laser-glow::after {
+    content: "";
+    position: absolute;
+    top: 0; left: -100%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(59, 130, 246, 0.18),
+      transparent
+    );
+    animation: laser-slide 3s infinite linear;
+  }
+  @keyframes laser-slide {
+    0% { left: -100%; }
+    100% { left: 160%; }
+  }
+
+  /* Micro scale interaction springs */
+  .active-scale-spring {
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  .active-scale-spring:active {
+    transform: scale(0.96);
+  }
+  .active-scale-spring:hover {
+    transform: scale(1.015);
   }
 }

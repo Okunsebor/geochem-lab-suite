@@ -50,7 +50,7 @@ import { useLimsState } from "@/hooks/use-lims-state";
 export function AppSidebar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { currentUser } = useLimsState();
-  const initials = currentUser.name.split(" ").map((x) => x[0]).join("").slice(0, 2);
+  const initials = currentUser?.name?.split(" ").map((x) => x[0]).join("").slice(0, 2) || "US";
 
   return (
     <aside className="hidden lg:flex w-64 shrink-0 flex-col bg-sidebar text-sidebar-foreground border-r border-sidebar-border">
@@ -59,7 +59,7 @@ export function AppSidebar() {
           <FlaskConical className="size-4" />
         </div>
         <div className="flex flex-col leading-tight">
-          <span className="text-sm font-semibold text-white">GeoChem Suite</span>
+          <span className="text-sm font-semibold text-sidebar-foreground">GeoChem Suite</span>
           <span className="text-[10px] uppercase tracking-wider text-sidebar-foreground/60">LIMS · v0.9</span>
         </div>
       </div>
@@ -76,13 +76,13 @@ export function AppSidebar() {
                     <Link
                       to={item.to}
                       className={cn(
-                        "flex items-center gap-2.5 rounded-md px-3 py-1.5 text-sm transition",
+                        "flex items-center gap-2.5 rounded-md px-3 py-1.5 text-sm transition font-medium",
                         active
-                          ? "bg-sidebar-primary/15 text-white font-medium"
-                          : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-white",
+                          ? "bg-primary/10 text-primary"
+                          : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                       )}
                     >
-                      <Icon className={cn("size-4", active ? "text-sidebar-primary" : "text-sidebar-foreground/60")} />
+                      <Icon className={cn("size-4", active ? "text-primary" : "text-sidebar-foreground/60")} />
                       {item.label}
                     </Link>
                   </li>
@@ -93,11 +93,11 @@ export function AppSidebar() {
         ))}
       </nav>
       <div className="border-t border-sidebar-border p-3">
-        <div className="flex items-center gap-2 rounded-lg bg-sidebar-accent/50 p-2.5">
+        <div className="flex items-center gap-2 rounded-lg bg-sidebar-accent/40 border border-sidebar-border/40 p-2.5">
           <div className="grid size-8 place-items-center rounded-full bg-gradient-to-br from-primary to-info text-white text-xs font-semibold">{initials}</div>
           <div className="flex-1 min-w-0">
-            <p className="truncate text-sm font-medium text-white">{currentUser.name}</p>
-            <p className="truncate text-[11px] text-sidebar-foreground/60">{currentUser.role}</p>
+            <p className="truncate text-sm font-semibold text-sidebar-foreground">{currentUser?.name || "Staff User"}</p>
+            <p className="truncate text-[11px] text-sidebar-foreground/60">{currentUser?.role || "LIMS Technician"}</p>
           </div>
         </div>
       </div>

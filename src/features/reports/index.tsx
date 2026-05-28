@@ -268,11 +268,14 @@ export function ReportsFeature() {
                           <Eye className="size-3.5 text-muted-foreground" />
                         </button>
                         <button
-                          onClick={() => {
-                            toast.loading(`Generating & exporting PDF for ${r.id}...`);
-                            downloadReportPdf(r.id);
-                            toast.dismiss();
-                            toast.success(`PDF download started for ${r.id}`);
+                          onClick={async () => {
+                            const toastId = toast.loading(`Generating & exporting PDF for ${r.id}...`);
+                            try {
+                              await downloadReportPdf(r.id);
+                              toast.success(`PDF downloaded for ${r.id}`, { id: toastId });
+                            } catch (err: any) {
+                              toast.error(`Failed to export PDF: ${err?.message || err}`, { id: toastId });
+                            }
                           }}
                           className="rounded p-1 hover:bg-muted cursor-pointer transition"
                           title="Download"
@@ -413,11 +416,14 @@ export function ReportsFeature() {
               )}
 
               <button
-                onClick={() => {
-                  toast.loading(`Compiling PDF for ${activeReport.id}...`);
-                  downloadReportPdf(activeReport.id);
-                  toast.dismiss();
-                  toast.success(`Downloaded PDF for ${activeReport.id}`);
+                onClick={async () => {
+                  const toastId = toast.loading(`Compiling PDF for ${activeReport.id}...`);
+                  try {
+                    await downloadReportPdf(activeReport.id);
+                    toast.success(`PDF downloaded for ${activeReport.id}`, { id: toastId });
+                  } catch (err: any) {
+                    toast.error(`Failed to download PDF: ${err?.message || err}`, { id: toastId });
+                  }
                 }}
                 className="w-full inline-flex items-center justify-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-xs hover:bg-muted font-semibold text-muted-foreground hover:text-foreground cursor-pointer transition"
               >

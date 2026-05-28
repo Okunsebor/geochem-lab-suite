@@ -1,11 +1,11 @@
-import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { AppSidebar } from "@/components/lims/app-sidebar";
 import { AppTopbar } from "@/components/lims/app-topbar";
 import { supabaseHelpers } from "@/lib/supabase";
 import { useAuth } from "@/hooks/use-auth";
-import { Beaker } from "lucide-react";
 import { toast } from "sonner";
+import { motion } from "framer-motion";
 
 export const Route = createFileRoute("/app")({
   component: AppLayout,
@@ -14,6 +14,7 @@ export const Route = createFileRoute("/app")({
 function AppLayout() {
   const { currentUser, loading } = useAuth();
   const navigate = useNavigate();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   useEffect(() => {
     supabaseHelpers.healthCheck();
@@ -33,9 +34,25 @@ function AppLayout() {
   if (loading) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
-        <div className="text-center space-y-4">
-          <Beaker className="size-8 text-primary animate-pulse mx-auto" />
-          <p className="text-xs text-muted-foreground font-semibold">Synchronizing LIMS secure session...</p>
+        <div className="text-center space-y-6">
+          <div className="lims-orbit-container mx-auto">
+            <div className="lims-orbit-ring" />
+            <div className="lims-orbit-ring" />
+            <div className="lims-orbit-ring" />
+          </div>
+          <div className="space-y-2">
+            <div className="dna-helix-container mx-auto">
+              <div className="dna-helix-node" />
+              <div className="dna-helix-node" />
+              <div className="dna-helix-node" />
+              <div className="dna-helix-node" />
+              <div className="dna-helix-node" />
+              <div className="dna-helix-node" />
+              <div className="dna-helix-node" />
+              <div className="dna-helix-node" />
+            </div>
+            <p className="text-[9px] uppercase font-mono tracking-widest text-primary font-bold">Synchronizing Secure LIMS Session</p>
+          </div>
         </div>
       </div>
     );
@@ -44,12 +61,20 @@ function AppLayout() {
   if (!currentUser) return null;
 
   return (
-    <div className="flex min-h-screen w-full bg-background animate-in fade-in duration-300">
+    <div className="flex min-h-screen w-full bg-background">
       <AppSidebar />
       <div className="flex min-w-0 flex-1 flex-col">
         <AppTopbar />
-        <main className="flex-1 px-4 py-6 lg:px-8">
-          <Outlet />
+        <main className="flex-1 px-4 py-6 lg:px-8 overflow-x-hidden">
+          <motion.div
+            key={pathname}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.28, ease: [0.25, 1, 0.5, 1] }}
+            className="will-change-[transform,opacity]"
+          >
+            <Outlet />
+          </motion.div>
         </main>
       </div>
     </div>

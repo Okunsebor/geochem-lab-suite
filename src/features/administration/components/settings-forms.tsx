@@ -1,6 +1,7 @@
 import React from "react";
 import { toast } from "sonner";
 import { InputField, CheckboxField, TextAreaField } from "../../../components/shared/form-controls";
+import { useLimsState } from "../../../hooks/use-lims-state";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -13,18 +14,27 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 // 1. Organization Settings
 export function OrgSettingsFields() {
-  const handleSubmit = (e: React.FormEvent) => {
+  const { settings, updateSettings } = useLimsState();
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const data = new FormData(e.currentTarget);
+    updateSettings({
+      orgName: data.get("orgName") as string,
+      orgUrl: data.get("orgUrl") as string,
+      timezone: data.get("timezone") as string,
+      currency: data.get("currency") as string,
+    });
     toast.success("Organization preferences saved successfully");
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <Section title="Organization">
-        <InputField label="Name" defaultValue="GeoChem Labs Inc." />
-        <InputField label="Workspace URL" defaultValue="geochemlabs.suite.io" />
-        <InputField label="Timezone" defaultValue="UTC+01 · Lagos" />
-        <InputField label="Default currency" defaultValue="USD" />
+        <InputField label="Name" name="orgName" defaultValue={settings.orgName} />
+        <InputField label="Workspace URL" name="orgUrl" defaultValue={settings.orgUrl} />
+        <InputField label="Timezone" name="timezone" defaultValue={settings.timezone} />
+        <InputField label="Default currency" name="currency" defaultValue={settings.currency} />
       </Section>
       
       <Section title="Billing">
@@ -57,18 +67,27 @@ export function OrgSettingsFields() {
 
 // 2. Laboratory Settings
 export function LabSettingsFields() {
-  const handleSubmit = (e: React.FormEvent) => {
+  const { settings, updateSettings } = useLimsState();
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const data = new FormData(e.currentTarget);
+    updateSettings({
+      labProtocol: data.get("labProtocol") as string,
+      calInterval: data.get("calInterval") as string,
+      auditRetention: data.get("auditRetention") as string,
+      matrixType: data.get("matrixType") as string,
+    });
     toast.success("Laboratory standards configurations saved");
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <Section title="Laboratory Standard Configurations">
-        <InputField label="Standard Protocol" defaultValue="ISO 17025 Accreditation" />
-        <InputField label="Default Calibration Interval" defaultValue="14 days" />
-        <InputField label="Audit Log Retention" defaultValue="7 years" />
-        <InputField label="Default Matrix Type" defaultValue="Sulphide" />
+        <InputField label="Standard Protocol" name="labProtocol" defaultValue={settings.labProtocol} />
+        <InputField label="Default Calibration Interval" name="calInterval" defaultValue={settings.calInterval} />
+        <InputField label="Audit Log Retention" name="auditRetention" defaultValue={settings.auditRetention} />
+        <InputField label="Default Matrix Type" name="matrixType" defaultValue={settings.matrixType} />
       </Section>
       <div className="flex justify-end">
         <button
@@ -84,8 +103,14 @@ export function LabSettingsFields() {
 
 // 3. Branding Settings
 export function BrandingSettingsFields() {
-  const handleSubmit = (e: React.FormEvent) => {
+  const { settings, updateSettings } = useLimsState();
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const data = new FormData(e.currentTarget);
+    updateSettings({
+      reportFooter: data.get("reportFooter") as string,
+    });
     toast.success("Certificate layout branding saved");
   };
 
@@ -99,8 +124,13 @@ export function BrandingSettingsFields() {
               <button
                 key={c}
                 type="button"
-                onClick={() => toast.success(`Selected theme primary: ${c}`)}
-                className="size-8 rounded-md border border-border cursor-pointer transition hover:scale-105"
+                onClick={() => {
+                  updateSettings({ primaryColor: c });
+                  toast.success(`Selected theme primary: ${c}`);
+                }}
+                className={`size-8 rounded-md border cursor-pointer transition-all hover:scale-105 ${
+                  settings.primaryColor === c ? "border-foreground ring-2 ring-primary scale-110" : "border-border"
+                }`}
                 style={{ background: c }}
               />
             ))}
@@ -120,7 +150,8 @@ export function BrandingSettingsFields() {
         <div className="sm:col-span-2">
           <TextAreaField
             label="Report footer"
-            defaultValue="© GeoChem Labs Inc. · ISO 17025 Accredited · contact@geochem.io"
+            name="reportFooter"
+            defaultValue={settings.reportFooter}
           />
         </div>
       </Section>
@@ -138,23 +169,38 @@ export function BrandingSettingsFields() {
 
 // 4. Notifications Settings
 export function NotificationsSettingsFields() {
-  const handleSubmit = (e: React.FormEvent) => {
+  const { settings, updateSettings } = useLimsState();
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const data = new FormData(e.currentTarget);
+    const selectedTriggers = data.getAll("triggers") as string[];
+    updateSettings({
+      triggers: selectedTriggers,
+    });
     toast.success("Notification preferences synchronized");
   };
+
+  const triggersList = [
+    "Report awaiting approval",
+    "QA anomaly raised",
+    "Sample overdue",
+    "Instrument calibration due",
+    "New customer signup",
+  ];
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <Section title="Alerts & Notification Subscriptions">
         <div className="sm:col-span-2 space-y-3">
-          {[
-            "Report awaiting approval",
-            "QA anomaly raised",
-            "Sample overdue",
-            "Instrument calibration due",
-            "New customer signup",
-          ].map((t) => (
-            <CheckboxField key={t} label={t} defaultChecked />
+          {triggersList.map((t) => (
+            <CheckboxField
+              key={t}
+              label={t}
+              name="triggers"
+              value={t}
+              defaultChecked={settings.triggers?.includes(t)}
+            />
           ))}
         </div>
       </Section>
@@ -172,18 +218,45 @@ export function NotificationsSettingsFields() {
 
 // 5. Security Settings
 export function SecuritySettingsFields() {
-  const handleSubmit = (e: React.FormEvent) => {
+  const { settings, updateSettings } = useLimsState();
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const data = new FormData(e.currentTarget);
+    updateSettings({
+      require2fa: data.get("require2fa") === "on",
+      sessionExpire: data.get("sessionExpire") === "on",
+      passRotation: data.get("passRotation") as string,
+      maxFailures: data.get("maxFailures") as string,
+    });
     toast.success("Security policies saved successfully");
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <Section title="Security & Authentication Policies">
-        <CheckboxField label="Require Two-Factor Authentication (2FA) for admin roles" defaultChecked />
-        <CheckboxField label="Auto-expire session after 15 minutes of inactivity" defaultChecked />
-        <InputField label="Password rotation interval" defaultValue="90 days" containerClassName="mt-2" />
-        <InputField label="Max login failures before lockout" defaultValue="5 attempts" containerClassName="mt-2" />
+        <CheckboxField
+          label="Require Two-Factor Authentication (2FA) for admin roles"
+          name="require2fa"
+          defaultChecked={settings.require2fa}
+        />
+        <CheckboxField
+          label="Auto-expire session after 15 minutes of inactivity"
+          name="sessionExpire"
+          defaultChecked={settings.sessionExpire}
+        />
+        <InputField
+          label="Password rotation interval"
+          name="passRotation"
+          defaultValue={settings.passRotation}
+          containerClassName="mt-2"
+        />
+        <InputField
+          label="Max login failures before lockout"
+          name="maxFailures"
+          defaultValue={settings.maxFailures}
+          containerClassName="mt-2"
+        />
       </Section>
       <div className="flex justify-end">
         <button
@@ -199,9 +272,25 @@ export function SecuritySettingsFields() {
 
 // 6. API & Webhooks Settings
 export function ApiWebhooksFields() {
-  const handleSubmit = (e: React.FormEvent) => {
+  const { settings, updateSettings } = useLimsState();
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const data = new FormData(e.currentTarget);
+    updateSettings({
+      webhookUrl: data.get("webhookUrl") as string,
+    });
     toast.success("API keys and webhook endpoints stored");
+  };
+
+  const handleRegenerateKey = () => {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    let newKey = "sk_live_";
+    for (let i = 0; i < 32; i++) {
+      newKey += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    updateSettings({ apiKey: newKey });
+    toast.success("New API key regenerated successfully!");
   };
 
   return (
@@ -211,20 +300,29 @@ export function ApiWebhooksFields() {
           <InputField
             label="Live Secret API Key"
             type="password"
-            defaultValue="sk_live_51Ny931Jkdsj92842Jksdlf..."
+            value={settings.apiKey}
             disabled
           />
           <button
             type="button"
-            onClick={() => toast.success("New API key regenerated successfully!")}
+            onClick={handleRegenerateKey}
             className="rounded border border-border bg-background px-2.5 py-1 text-xs hover:bg-muted font-semibold cursor-pointer transition"
           >
             Regenerate key
           </button>
           
           <div className="border-t border-border pt-4 mt-2">
-            <InputField label="Webhook Ingestion Endpoint" defaultValue="https://api.geochemlabs.io/v1/webhooks" />
-            <InputField label="Secret Signing Hash" type="password" defaultValue="whsec_kdjf892429..." disabled />
+            <InputField
+              label="Webhook Ingestion Endpoint"
+              name="webhookUrl"
+              defaultValue={settings.webhookUrl}
+            />
+            <InputField
+              label="Secret Signing Hash"
+              type="password"
+              value={settings.webhookHash}
+              disabled
+            />
           </div>
         </div>
       </Section>

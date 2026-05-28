@@ -46,7 +46,7 @@ export function generateCode39Svg(value: string): string {
   }
 
   return `
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${totalWidth} ${height + padding * 2 + 15}" class="w-full h-full text-foreground">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${totalWidth} ${height + padding * 2 + 15}" class="w-full h-full">
       <rect width="100%" height="100%" fill="transparent" />
       ${rectsSvg}
       <text x="${totalWidth / 2}" y="${height + padding + 15}" font-family="monospace" font-size="12" font-weight="bold" text-anchor="middle" fill="currentColor">${value}</text>
@@ -91,7 +91,7 @@ export function generateQrCodeSvg(value: string): string {
   }
 
   return `
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" class="w-full h-full text-foreground">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" class="w-full h-full">
       <rect width="100%" height="100%" fill="transparent" />
       ${blocksSvg}
     </svg>

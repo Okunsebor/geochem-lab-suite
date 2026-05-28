@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useMemo } from "react";
 import { Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import {
@@ -33,7 +33,7 @@ import { useLimsState } from "../../hooks/use-lims-state";
 import { PageHeader } from "../../components/lims/page-header";
 import { StatCard } from "../../components/lims/stat-card";
 import { StatusBadge } from "../../components/lims/status-badge";
-import { throughput } from "../../lib/dashboard-service";
+import { calculateThroughput } from "../../lib/dashboard-service";
 
 const PIE_COLORS = [
   "var(--color-chart-1)",
@@ -44,32 +44,44 @@ const PIE_COLORS = [
 
 export function DashboardFeature() {
   const { samples, instruments, activity, notifications } = useLimsState();
+  const [timeframe, setTimeframe] = useState<14 | 30 | 90>(14);
 
   // Compute actual dynamic KPIs
-  const activeSamples = samples.filter((s) => s.status !== "Completed" && s.status !== "Report Ready").length;
+  const activeSamples = useMemo(() => {
+    return samples.filter((s) => s.status !== "Completed" && s.status !== "Report Ready").length;
+  }, [samples]);
   
   // Static KPI structure synced to state
-  const kpis = [
+  const kpis = useMemo(() => [
     { label: "Active Samples", value: activeSamples.toString(), delta: "+12.4%", trend: "up" as const, icon: FlaskConical },
     { label: "Avg. Turnaround", value: "3.2d", delta: "-0.4d", trend: "up" as const, icon: Clock },
     { label: "QA/QC Pass Rate", value: "98.6%", delta: "+0.8%", trend: "up" as const, icon: ShieldCheck },
     { label: "Overdue", value: "7", delta: "-3", trend: "up" as const, icon: AlertTriangle },
-  ];
+  ], [activeSamples]);
 
-  const recent = samples.slice(0, 6);
+  const recent = useMemo(() => {
+    return samples.slice(0, 6);
+  }, [samples]);
 
   // Compute actual workflow splits
-  const prepCount = samples.filter(s => s.status === "In Preparation" || s.status === "Verified").length;
-  const analysisCount = samples.filter(s => s.status === "In Analysis").length;
-  const qaCount = samples.filter(s => s.status === "Completed").length;
-  const reportingCount = samples.filter(s => s.status === "Report Ready").length;
+  const workflowSplit = useMemo(() => {
+    const prepCount = samples.filter(s => s.status === "In Preparation" || s.status === "Verified").length;
+    const analysisCount = samples.filter(s => s.status === "In Analysis").length;
+    const qaCount = samples.filter(s => s.status === "Completed").length;
+    const reportingCount = samples.filter(s => s.status === "Report Ready").length;
 
-  const workflowSplit = [
-    { name: "Preparation", value: prepCount || 312 },
-    { name: "Analysis", value: analysisCount || 268 },
-    { name: "QA/QC", value: qaCount || 96 },
-    { name: "Reporting", value: reportingCount || 84 },
-  ];
+    return [
+      { name: "Preparation", value: prepCount || 312 },
+      { name: "Analysis", value: analysisCount || 268 },
+      { name: "QA/QC", value: qaCount || 96 },
+      { name: "Reporting", value: reportingCount || 84 },
+    ];
+  }, [samples]);
+
+  // Dynamically calculate operational throughput based on live samples or realistic fallbacks
+  const dynamicThroughput = useMemo(() => {
+    return calculateThroughput(samples, timeframe);
+  }, [samples, timeframe]);
 
   return (
     <div className="space-y-6">
@@ -125,26 +137,27 @@ export function DashboardFeature() {
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-sm font-semibold">Throughput</h3>
-              <p className="text-xs text-muted-foreground">Samples received vs completed · 14 days</p>
+              <p className="text-xs text-muted-foreground">Samples received vs completed · {timeframe} days</p>
             </div>
             <div className="flex gap-1 rounded-md border border-border bg-background p-0.5 text-xs">
-              {["14d", "30d", "90d"].map((p, i) => (
+              {([14, 30, 90] as const).map((daysNum) => (
                 <button
-                  key={p}
+                  key={daysNum}
+                  onClick={() => setTimeframe(daysNum)}
                   className={
-                    i === 0
-                      ? "rounded bg-primary px-2 py-0.5 text-primary-foreground font-medium"
-                      : "px-2 py-0.5 text-muted-foreground"
+                    timeframe === daysNum
+                      ? "rounded bg-primary px-2.5 py-1 text-primary-foreground font-semibold cursor-pointer"
+                      : "px-2.5 py-1 text-muted-foreground cursor-pointer hover:bg-muted/40 rounded transition"
                   }
                 >
-                  {p}
+                  {daysNum}d
                 </button>
               ))}
             </div>
           </div>
           <div className="mt-4 h-64">
             <ResponsiveContainer>
-              <AreaChart data={throughput}>
+              <AreaChart data={dynamicThroughput}>
                 <defs>
                   <linearGradient id="r" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="var(--color-chart-1)" stopOpacity={0.4} />
@@ -296,7 +309,7 @@ export function DashboardFeature() {
           <div className="mt-3 h-40">
             <ResponsiveContainer>
               <BarChart
-                data={throughput.slice(0, 7).map((d, i) => ({
+                data={dynamicThroughput.slice(0, 7).map((d, i) => ({
                   day: d.day,
                   pass: 92 + (i % 5),
                   fail: (i % 5) * 1.5,

@@ -12,20 +12,22 @@ import { Priority } from "../../types";
 
 // 1. Customer Dashboard Feature
 export function PortalDashboardFeature() {
-  const { samples, reports, downloadReportPdf } = useLimsState();
+  const { samples, reports, downloadReportPdf, currentUser } = useLimsState();
   const [selectedSampleId, setSelectedSampleId] = useState<string | null>(null);
 
-  // Filter samples that belong to the customer's firm: Auric Mining Ltd
-  const mine = samples.filter((s) => s.client === "Auric Mining Ltd").slice(0, 8);
-  const activeCount = samples.filter((s) => s.client === "Auric Mining Ltd" && s.status !== "Completed" && s.status !== "Report Ready").length;
-  const readyReports = reports.filter((r) => r.client === "Auric Mining Ltd" && r.status === "Approved").length;
+  const tenantClient = currentUser?.organization || "Auric Mining Ltd";
+
+  // Filter samples that belong to the customer's firm
+  const mine = samples.filter((s) => s.client === tenantClient).slice(0, 8);
+  const activeCount = samples.filter((s) => s.client === tenantClient && s.status !== "Completed" && s.status !== "Report Ready").length;
+  const readyReports = reports.filter((r) => r.client === tenantClient && r.status === "Approved").length;
   const selectedSample = samples.find(s => s.id === selectedSampleId);
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-foreground tracking-tight">Welcome back, Jane</h1>
-        <p className="text-sm text-muted-foreground mt-1">Auric Mining Ltd · {activeCount} active samples</p>
+        <h1 className="text-2xl font-bold text-foreground tracking-tight">Welcome back, {currentUser?.name?.split(" ")[0] || "Jane"}</h1>
+        <p className="text-sm text-muted-foreground mt-1">{tenantClient} · {activeCount} active samples</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -76,7 +78,7 @@ export function PortalDashboardFeature() {
           <h3 className="text-sm font-semibold text-foreground">Ready to download</h3>
           <ul className="mt-3 space-y-2 max-h-[350px] overflow-y-auto">
             {reports
-              .filter((r) => r.client === "Auric Mining Ltd" && r.status === "Approved")
+              .filter((r) => r.client === tenantClient && r.status === "Approved")
               .map((r) => (
                 <li key={r.id} className="flex items-center justify-between rounded border border-border p-2.5 text-xs bg-card">
                   <div>
@@ -189,7 +191,7 @@ export function PortalDashboardFeature() {
 
 // 2. Portal Submit Sample Feature
 export function PortalSubmitFeature() {
-  const { registerSample } = useLimsState();
+  const { registerSample, currentUser } = useLimsState();
   const [submittedId, setSubmittedId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     project: "Drillhole AX-205",
@@ -200,6 +202,8 @@ export function PortalSubmitFeature() {
   });
   const [priority, setPriority] = useState<Priority>("Normal");
 
+  const tenantClient = currentUser?.organization || "Auric Mining Ltd";
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -208,7 +212,7 @@ export function PortalSubmitFeature() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const registered = registerSample({
-      client: "Auric Mining Ltd",
+      client: tenantClient,
       project: formData.project,
       type: formData.type,
       weight: formData.weight,
@@ -216,7 +220,7 @@ export function PortalSubmitFeature() {
       location: "Inbound Bin",
       matrix: formData.matrix,
       container: "Poly Envelope",
-      receivedFrom: "Jane Chen (Portal)",
+      receivedFrom: currentUser?.name ? `${currentUser.name} (Portal)` : "Jane Chen (Portal)",
       specialInstructions: formData.specialInstructions,
     });
 
@@ -242,7 +246,87 @@ export function PortalSubmitFeature() {
             dangerouslySetInnerHTML={{ __html: generateCode39Svg(submittedId) }}
           />
           <div className="mt-6 flex justify-center">
-            <button className="rounded border border-border bg-background px-4 py-2 text-sm font-semibold hover:bg-muted transition cursor-pointer" onClick={() => window.print()}>
+            <button 
+              className="rounded border border-border bg-background px-4 py-2 text-sm font-semibold hover:bg-muted transition cursor-pointer" 
+              onClick={() => {
+                const barcodeWindow = window.open("", "_blank");
+                if (barcodeWindow) {
+                  barcodeWindow.document.write(`
+                    <html>
+                      <head>
+                        <title>Print Label ${submittedId}</title>
+                        <style>
+                          body {
+                            display: flex;
+                            flex-direction: column;
+                            align-items: center;
+                            justify-content: center;
+                            height: 100vh;
+                            margin: 0;
+                            font-family: 'Courier New', Courier, monospace;
+                            background-color: #fff;
+                            color: #000;
+                          }
+                          .label-container {
+                            border: 4px solid #000;
+                            padding: 24px;
+                            border-radius: 12px;
+                            text-align: center;
+                            width: 385px;
+                            position: relative;
+                          }
+                          .barcode-box {
+                            width: 100%;
+                            height: 120px;
+                            margin: 15px 0;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                          }
+                          .barcode-box svg {
+                            max-width: 100%;
+                            max-height: 100%;
+                          }
+                          button {
+                            margin-top: 20px;
+                            padding: 10px 24px;
+                            font-weight: bold;
+                            font-size: 14px;
+                            cursor: pointer;
+                            border: 2px solid #000;
+                            background: #000;
+                            color: #fff;
+                            border-radius: 6px;
+                          }
+                          button:hover {
+                            background: #fff;
+                            color: #000;
+                          }
+                          @media print {
+                            button { display: none !important; }
+                            body { padding: 0 !important; margin: 0 !important; background: #fff !important; }
+                            .label-container { border: none !important; margin: 0 !important; width: 100% !important; }
+                          }
+                        </style>
+                      </head>
+                      <body>
+                        <div class="label-container">
+                          <h2 style="margin: 0 0 5px 0; font-size: 18px; letter-spacing: 1px;">GEOChem LIMS Label</h2>
+                          <div class="barcode-box">
+                            ${generateCode39Svg(submittedId)}
+                          </div>
+                          <h3 style="margin: 5px 0; font-size: 20px; font-weight: bold; font-family: monospace;">ID: ${submittedId}</h3>
+                          <p style="margin: 4px 0; font-size: 13px; font-weight: bold;">Client: ${tenantClient}</p>
+                          <p style="margin: 4px 0; font-size: 13px; font-weight: bold;">Project: ${formData.project}</p>
+                          <button onclick="window.print()">Print Label Tag</button>
+                        </div>
+                      </body>
+                    </html>
+                  `);
+                  barcodeWindow.document.close();
+                }
+              }}
+            >
               Print Label
             </button>
           </div>
@@ -272,7 +356,7 @@ export function PortalSubmitFeature() {
 
       <form onSubmit={handleSubmit} className="rounded-xl border border-border bg-card p-6 space-y-5 max-w-2xl">
         <div className="grid sm:grid-cols-2 gap-4">
-          <InputField label="Firm" defaultValue="Auric Mining Ltd" disabled />
+          <InputField label="Firm" defaultValue={tenantClient} disabled />
           <InputField label="Project Reference" name="project" value={formData.project} onChange={handleChange} required />
           <InputField label="Sample Type" name="type" value={formData.type} onChange={handleChange} required />
           <InputField label="Estimated Matrix Type" name="matrix" value={formData.matrix} onChange={handleChange} />
@@ -344,8 +428,9 @@ export function PortalSubmitFeature() {
 
 // 3. Portal Reports Table Feature
 export function PortalReportsFeature() {
-  const { reports, downloadReportPdf } = useLimsState();
-  const mine = reports.filter((r) => r.client === "Auric Mining Ltd");
+  const { reports, downloadReportPdf, currentUser } = useLimsState();
+  const tenantClient = currentUser?.organization || "Auric Mining Ltd";
+  const mine = reports.filter((r) => r.client === tenantClient);
 
   return (
     <div className="space-y-4">
@@ -424,6 +509,7 @@ export function PortalNotificationsFeature() {
 
 // 5. Portal Support Ticket Feature
 export function PortalSupportFeature() {
+  const { tickets, addSupportTicket } = useLimsState();
   const [formData, setFormData] = useState({
     subject: "",
     priority: "Medium",
@@ -434,9 +520,26 @@ export function PortalSupportFeature() {
     e.preventDefault();
     if (!formData.subject || !formData.message) return;
 
-    toast.success("Support ticket created successfully! Ticket ID: GCS-HELP-9842");
+    const ticketId = `GCS-HELP-${Math.floor(9840 + Math.random() * 100)}`;
+    addSupportTicket({
+      id: ticketId,
+      subject: formData.subject,
+      priority: formData.priority,
+      message: formData.message,
+      status: "Open",
+      createdAt: new Date().toISOString(),
+    });
+
+    toast.success(`Support ticket created successfully! Ticket ID: ${ticketId}`);
     setFormData({ subject: "", priority: "Medium", message: "" });
   };
+
+  const defaultTickets = [
+    { id: "GCS-HELP-9811", subject: "Rerun request on GCS-24004", status: "Resolved" },
+    { id: "GCS-HELP-9721", subject: "LIMS API access token setup", status: "Open" },
+  ];
+
+  const allTickets = [...tickets, ...defaultTickets];
 
   return (
     <div className="space-y-6">
@@ -488,10 +591,7 @@ export function PortalSupportFeature() {
         <div className="rounded-xl border border-border bg-card p-5 h-fit space-y-4">
           <h3 className="text-sm font-semibold text-foreground">Recent Tickets</h3>
           <ul className="space-y-2 text-xs">
-            {[
-              { id: "GCS-HELP-9811", subject: "Rerun request on GCS-24004", status: "Resolved" },
-              { id: "GCS-HELP-9721", subject: "LIMS API access token setup", status: "Open" },
-            ].map((t) => (
+            {allTickets.map((t) => (
               <li key={t.id} className="rounded border border-border p-2.5 bg-card flex justify-between items-center font-medium">
                 <div>
                   <p className="font-semibold text-foreground">{t.subject}</p>
