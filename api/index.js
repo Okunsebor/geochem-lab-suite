@@ -3,10 +3,6 @@
 // HTTP interface that Vercel's serverless runtime expects.
 // No extra dependencies — pure Node.js built-ins only.
 
-import { readFileSync } from "node:fs";
-import { resolve, join } from "node:path";
-import { createRequire } from "node:module";
-
 // ─── Lazy-load the SSR bundle ────────────────────────────────────────────────
 let _handler = null;
 
