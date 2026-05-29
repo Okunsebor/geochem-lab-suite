@@ -1,7 +1,7 @@
 import React from "react";
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Legend, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { useLimsState } from "../../../hooks/use-lims-state";
-import { PageHeader } from "../../../components/lims/page-header";
+import { PageHeader } from "../../../components/layout/PageHeader";
 
 const C = ["var(--color-chart-1)", "var(--color-chart-2)", "var(--color-chart-3)", "var(--color-chart-4)", "var(--color-chart-5)"];
 

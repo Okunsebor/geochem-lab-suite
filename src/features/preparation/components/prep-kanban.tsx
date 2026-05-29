@@ -2,7 +2,7 @@ import React from "react";
 import { Flame, Hammer, Scissors, Wind, AlertCircle } from "lucide-react";
 import { PrepJob, PrepStage } from "../../../types";
 import { PREP_STAGES, STAGE_COLOR, UsePreparationReturn } from "../../../hooks/use-preparation";
-import { StatusBadge } from "../../../components/lims/status-badge";
+import { StatusBadge } from "../../../components/shared/StatusBadge";
 
 // ─── Stage Icon map ───────────────────────────────────────────────────────────
 

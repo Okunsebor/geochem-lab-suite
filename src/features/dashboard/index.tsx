@@ -30,9 +30,9 @@ import {
 } from "lucide-react";
 
 import { useLimsState } from "../../hooks/use-lims-state";
-import { PageHeader } from "../../components/lims/page-header";
-import { StatCard } from "../../components/lims/stat-card";
-import { StatusBadge } from "../../components/lims/status-badge";
+import { PageHeader } from "../../components/layout/PageHeader";
+import { StatCard } from "../../components/shared/StatCard";
+import { StatusBadge } from "../../components/shared/StatusBadge";
 import { calculateThroughput } from "../../lib/dashboard-service";
 
 const PIE_COLORS = [

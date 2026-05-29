@@ -1,5 +1,5 @@
 import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
-import { PageHeader } from "@/components/lims/page-header";
+import { PageHeader } from "@/components/layout/PageHeader";
 import { Building2, Bell, Lock, Palette, Plug, HardDrive } from "lucide-react";
 import { cn } from "@/lib/utils";
 

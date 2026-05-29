@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { X, Search, Plus, CheckCircle2 } from "lucide-react";
 import { Sample, Priority } from "../../../types";
-import { StatusBadge } from "../../../components/lims/status-badge";
+import { StatusBadge } from "../../../components/shared/StatusBadge";
 
 interface PrepEnrollModalProps {
   samples: Sample[];

@@ -3,8 +3,8 @@ import {
   Download, Eye, FileText, Check, X, Mail, FileCheck2, Clock, Send, Search, AlertCircle, Activity
 } from "lucide-react";
 import { useLimsState } from "../../hooks/use-lims-state";
-import { PageHeader } from "../../components/lims/page-header";
-import { StatusBadge } from "../../components/lims/status-badge";
+import { PageHeader } from "../../components/layout/PageHeader";
+import { StatusBadge } from "../../components/shared/StatusBadge";
 import { toast } from "sonner";
 import { AnalyticalReport } from "../../types";
 

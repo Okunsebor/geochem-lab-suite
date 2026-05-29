@@ -3,7 +3,7 @@ import { ScanBarcode, Upload, Check } from "lucide-react";
 import { useSampleActions } from "../../../hooks/use-sample-actions";
 import { generateQrCodeSvg } from "../../../lib/barcode-utils";
 import { supabaseHelpers } from "../../../lib/supabase";
-import { PageHeader } from "../../../components/lims/page-header";
+import { PageHeader } from "../../../components/layout/PageHeader";
 import { InputField, TextAreaField } from "../../../components/shared/form-controls";
 import { toast } from "sonner";
 import { Priority } from "../../../types";

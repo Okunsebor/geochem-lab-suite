@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Beaker, Plus, Settings } from "lucide-react";
 import { Instrument, Sample } from "../../../types";
-import { StatusBadge } from "../../../components/lims/status-badge";
+import { StatusBadge } from "../../../components/shared/StatusBadge";
 import { AnalyticalRun } from "../../../types";
 
 interface InstrumentStatusGridProps {

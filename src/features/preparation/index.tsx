@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Plus, FlaskConical } from "lucide-react";
 import { toast } from "sonner";
 import { PrepJob, Priority } from "../../types";
-import { PageHeader } from "../../components/lims/page-header";
+import { PageHeader } from "../../components/layout/PageHeader";
 import { useLimsState } from "../../hooks/use-lims-state";
 import { usePreparation } from "../../hooks/use-preparation";
 import { PrepStatsBar } from "./components/prep-stats-bar";

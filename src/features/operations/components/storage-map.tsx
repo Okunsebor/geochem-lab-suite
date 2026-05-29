@@ -1,6 +1,6 @@
 import React from "react";
 import { Boxes } from "lucide-react";
-import { PageHeader } from "../../../components/lims/page-header";
+import { PageHeader } from "../../../components/layout/PageHeader";
 import { toast } from "sonner";
 
 export function StorageMap() {

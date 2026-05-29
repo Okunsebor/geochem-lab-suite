@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useLimsState } from "../../../hooks/use-lims-state";
-import { PageHeader } from "../../../components/lims/page-header";
+import { PageHeader } from "../../../components/layout/PageHeader";
 import { DataTable } from "../../../components/shared/data-table";
 
 export function ActivityLogsTable() {

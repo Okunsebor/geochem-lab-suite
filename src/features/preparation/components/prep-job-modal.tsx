@@ -18,7 +18,7 @@ import {
   STAGE_COLOR,
   UsePreparationReturn,
 } from "../../../hooks/use-preparation";
-import { StatusBadge } from "../../../components/lims/status-badge";
+import { StatusBadge } from "../../../components/shared/StatusBadge";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 

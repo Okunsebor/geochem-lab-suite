@@ -1,6 +1,6 @@
 import React from "react";
 import { toast } from "sonner";
-import { PageHeader } from "../../components/lims/page-header";
+import { PageHeader } from "../../components/layout/PageHeader";
 import { useQaqc } from "../../hooks/use-qaqc";
 import { QaqcStatsBar } from "./components/qaqc-stats-bar";
 import { CrmTrendChart, DuplicateChart } from "./components/crm-trend-chart";

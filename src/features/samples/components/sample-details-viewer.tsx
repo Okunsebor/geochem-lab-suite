@@ -4,8 +4,8 @@ import { ArrowLeft, Printer, MessageSquare, Edit3, FileText, QrCode, Check, Shie
 import { useLimsState } from "../../../hooks/use-lims-state";
 import { useSampleActions } from "../../../hooks/use-sample-actions";
 import { generateQrCodeSvg, generateCode39Svg } from "../../../lib/barcode-utils";
-import { PageHeader } from "../../../components/lims/page-header";
-import { StatusBadge } from "../../../components/lims/status-badge";
+import { PageHeader } from "../../../components/layout/PageHeader";
+import { StatusBadge } from "../../../components/shared/StatusBadge";
 import { SAMPLE_STATUSES } from "../../../types";
 import { SampleStatus } from "../../../types";
 import { toast } from "sonner";

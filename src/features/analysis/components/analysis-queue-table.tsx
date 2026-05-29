@@ -1,7 +1,7 @@
 import React from "react";
 import { Play, CheckCircle2, XCircle, Clock } from "lucide-react";
 import { AnalyticalRun, RunStatus } from "../../../types";
-import { StatusBadge } from "../../../components/lims/status-badge";
+import { StatusBadge } from "../../../components/shared/StatusBadge";
 
 interface AnalysisQueueTableProps {
   runs: AnalyticalRun[];

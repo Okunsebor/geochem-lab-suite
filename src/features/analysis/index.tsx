@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Upload, Plus, ClipboardList } from "lucide-react";
 import { toast } from "sonner";
-import { PageHeader } from "../../components/lims/page-header";
+import { PageHeader } from "../../components/layout/PageHeader";
 import { useLimsState } from "../../hooks/use-lims-state";
 import { useAnalysis } from "../../hooks/use-analysis";
 import { useQaqc } from "../../hooks/use-qaqc";
