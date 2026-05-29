@@ -81,7 +81,7 @@ function PortalLayout() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <header className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur shrink-0">
+      <header className="sticky top-0 z-30 shrink-0 border-x-0 border-t-0 rounded-none shadow-sm glass">
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-6">
           
           <div className="flex items-center gap-3">

@@ -1,0 +1,87 @@
+/* ==== Premium Enterprise Design System Utilities ==== */
+
+/* Glassmorphism Systems */
+.glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px) saturate(120%);
+  -webkit-backdrop-filter: blur(12px) saturate(120%);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.03);
+}
+
+.dark .glass {
+  background: rgba(7, 17, 28, 0.6);
+  backdrop-filter: blur(12px) saturate(120%);
+  -webkit-backdrop-filter: blur(12px) saturate(120%);
+  border: 1px solid rgba(29, 161, 232, 0.12);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+}
+
+.glass-primary {
+  background: rgba(29, 161, 232, 0.08);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(29, 161, 232, 0.18);
+}
+
+.glass-accent {
+  background: rgba(244, 196, 48, 0.06);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(244, 196, 48, 0.15);
+}
+
+/* Layered Opacity utilities */
+.bg-primary-05 { background-color: var(--opacity-primary-05); }
+.bg-primary-08 { background-color: var(--opacity-primary-08); }
+.bg-white-03 { background-color: var(--opacity-white-03); }
+
+/* Scientific Typography */
+.font-display {
+  font-family: var(--font-display);
+}
+.font-mono-grotesk {
+  font-family: var(--font-mono);
+}
+
+/* Micro animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* Hover glow states */
+.hover-glow {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.hover-glow:hover {
+  border-color: rgba(29, 161, 232, 0.4);
+  box-shadow: 0 0 15px rgba(29, 161, 232, 0.15);
+}
+
+.hover-glow-accent {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.hover-glow-accent:hover {
+  border-color: rgba(244, 196, 48, 0.4);
+  box-shadow: 0 0 15px rgba(244, 196, 48, 0.15);
+}

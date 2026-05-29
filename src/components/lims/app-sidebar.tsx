@@ -53,7 +53,7 @@ export function AppSidebar() {
   const initials = currentUser?.name?.split(" ").map((x) => x[0]).join("").slice(0, 2) || "US";
 
   return (
-    <aside className="hidden lg:flex w-64 shrink-0 flex-col bg-sidebar text-sidebar-foreground border-r border-sidebar-border">
+    <aside className="hidden lg:flex w-64 shrink-0 flex-col text-sidebar-foreground border-y-0 border-l-0 rounded-none shadow-sm glass">
       <div className="flex h-14 items-center gap-2 px-5 border-b border-sidebar-border">
         <div className="grid size-8 place-items-center rounded-md gradient-primary text-white shadow-sm">
           <FlaskConical className="size-4" />

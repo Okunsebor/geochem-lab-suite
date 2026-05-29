@@ -296,7 +296,7 @@ export function AppTopbar() {
 
   return (
     <>
-      <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-border bg-background/80 px-4 backdrop-blur lg:px-6">
+      <header className="sticky top-0 z-30 flex h-14 items-center gap-3 px-4 lg:px-6 glass border-x-0 border-t-0 rounded-none shadow-sm">
         
         {/* Mobile Hamburger menu */}
         <button
@@ -440,7 +440,7 @@ export function AppTopbar() {
       {showSearch && (
         <div className="fixed inset-0 z-50 flex items-start justify-center pt-[15vh] px-4">
           <div className="absolute inset-0 bg-background/85 backdrop-blur-sm" onClick={() => setShowSearch(false)} />
-          <div className="relative z-10 w-full max-w-lg rounded-xl border border-border bg-card shadow-2xl p-4 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+          <div className="relative z-10 w-full max-w-lg shadow-2xl p-4 overflow-hidden animate-in fade-in zoom-in-95 duration-150 glass">
             <div className="flex items-center gap-2.5 border-b border-border pb-3">
               <Search className="size-4 text-primary" />
               <input
