@@ -46,13 +46,16 @@ interface Point3D {
   z: number;
 }
 
-interface Particle {
+interface FloatingMineral {
   x: number;
   y: number;
   z: number;
   size: number;
   speedY: number;
+  rot: number;
+  rotSpeed: number;
   color: string;
+  points: { x: number; y: number }[];
 }
 
 function CinematicGeologicalHeroVisualizer() {
@@ -121,15 +124,50 @@ function CinematicGeologicalHeroVisualizer() {
     const fragmentRadius = [135, 165, 195];
     const fragmentInclination = [0.2, -0.4, 0.5];
 
-    // 3. Atmospheric drifting particles
-    const particles: Particle[] = Array.from({ length: 65 }).map(() => ({
-      x: (Math.random() - 0.5) * 500,
-      y: (Math.random() - 0.5) * 500,
-      z: (Math.random() - 0.5) * 500,
-      size: Math.random() * 2 + 0.8,
-      speedY: -(Math.random() * 0.4 + 0.1),
-      color: Math.random() > 0.6 ? "#1DA1E8" : (Math.random() > 0.5 ? "#F4C430" : "rgba(255,255,255,0.4)")
-    }));
+    // 3. Floating Faceted Minerals (Gold, Silver, Chromium, Lithium, Amethyst Quartz)
+    const minerals: FloatingMineral[] = Array.from({ length: 55 }).map(() => {
+      const typeRand = Math.random();
+      let color = "#334155"; // obsidian default
+      let size = Math.random() * 8 + 4; // larger rock sizes
+
+      if (typeRand > 0.85) {
+        color = "#F4C430"; // Gold
+      } else if (typeRand > 0.7) {
+        color = "#e2e8f0"; // Silver
+      } else if (typeRand > 0.55) {
+        color = "#94a3b8"; // Chromium
+      } else if (typeRand > 0.4) {
+        color = "#1DA1E8"; // Lithium
+      } else if (typeRand > 0.25) {
+        color = "#c084fc"; // Amethyst Quartz
+      } else if (typeRand > 0.12) {
+        color = "#f97316"; // Copper ore
+      }
+
+      // Generate random jagged faceted stone coordinates
+      const pointsCount = 5 + Math.floor(Math.random() * 3);
+      const points = [];
+      for (let i = 0; i < pointsCount; i++) {
+        const angle = (i / pointsCount) * Math.PI * 2;
+        const r = size * (0.6 + Math.random() * 0.5);
+        points.push({
+          x: Math.cos(angle) * r,
+          y: Math.sin(angle) * r
+        });
+      }
+
+      return {
+        x: (Math.random() - 0.5) * 600,
+        y: Math.random() * 500 - 250,
+        z: (Math.random() - 0.5) * 400,
+        size,
+        speedY: -(Math.random() * 0.35 + 0.15), // float upwards
+        rot: Math.random() * Math.PI * 2,
+        rotSpeed: (Math.random() - 0.5) * 0.005,
+        color,
+        points
+      };
+    });
 
     const handleResize = () => {
       const rect = canvas.getBoundingClientRect();
@@ -196,11 +234,13 @@ function CinematicGeologicalHeroVisualizer() {
       const centerY = canvasHeight / 2;
       const cameraDistance = 420;
 
-      // 1. Draw atmospheric particles
-      ctx.fillStyle = "rgba(255, 255, 255, 0.2)";
-      particles.forEach(p => {
+      // 1. Draw floating faceted minerals (Gold, Silver, Chromium, Lithium, Quartz, copper, obsidian stones)
+      minerals.forEach(p => {
         p.y += p.speedY;
-        if (p.y < -250) p.y = 250; // wrap around
+        if (p.y < -300) {
+          p.y = 300; // Reset below screen to keep continuous upward float!
+          p.x = (Math.random() - 0.5) * canvasWidth;
+        }
         
         let x1 = p.x * cosY - p.z * sinY;
         let z1 = p.x * sinY + p.z * cosY;
@@ -211,11 +251,31 @@ function CinematicGeologicalHeroVisualizer() {
         const sx = centerX + x1 * scale;
         const sy = centerY + y2 * scale;
 
-        if (sx >= 0 && sx <= canvasWidth && sy >= 0 && sy <= canvasHeight) {
+        if (sx >= -50 && sx <= canvasWidth + 50 && sy >= -50 && sy <= canvasHeight + 50) {
+          ctx.save();
+          ctx.translate(sx, sy);
+          ctx.rotate(p.rot + scannerPhase * p.rotSpeed);
+
+          // Faceted rock body
           ctx.beginPath();
-          ctx.arc(sx, sy, p.size * scale, 0, Math.PI * 2);
+          p.points.forEach((pt, idx) => {
+            if (idx === 0) ctx.moveTo(pt.x * scale, pt.y * scale);
+            else ctx.lineTo(pt.x * scale, pt.y * scale);
+          });
+          ctx.closePath();
+
           ctx.fillStyle = p.color;
+          ctx.globalAlpha = isDark ? 0.15 : 0.22; // subtle backdrop opacity to keep text highly legible!
           ctx.fill();
+
+          // Highlighted faceted border
+          ctx.strokeStyle = p.color;
+          ctx.lineWidth = 0.9;
+          ctx.globalAlpha = isDark ? 0.35 : 0.45;
+          ctx.stroke();
+
+          ctx.restore();
+          ctx.globalAlpha = 1.0; // Reset
         }
       });
 
@@ -408,7 +468,7 @@ function CinematicGeologicalHeroVisualizer() {
   }, []);
 
   return (
-    <div className="relative w-full h-[360px] md:h-[450px] flex items-center justify-center overflow-hidden">
+    <div className="relative w-full h-full min-h-[calc(100vh-64px)] flex items-center justify-center overflow-hidden">
       <canvas 
         ref={canvasRef} 
         className="w-full h-full cursor-grab active:cursor-grabbing select-none"
@@ -416,7 +476,7 @@ function CinematicGeologicalHeroVisualizer() {
       />
       
       {/* Holographic Digital Overlay HUD */}
-      <div className="absolute top-6 left-6 text-left font-mono text-[9px] text-primary/70 bg-card/20 backdrop-blur-md border border-primary/20 py-2 px-3 rounded space-y-1 select-none pointer-events-none tracking-wider">
+      <div className="absolute top-6 left-6 text-left font-mono text-[9px] text-primary/70 bg-card/20 backdrop-blur-md border border-primary/20 py-2 px-3 rounded space-y-1 select-none pointer-events-none tracking-wider z-10">
         <div className="flex items-center gap-2">
           <span className="size-2 rounded-full bg-primary animate-pulse" />
           <span>ORE_METALLICITY: <span className="text-foreground">GOLD_LITHIUM_COPPER</span></span>
@@ -425,7 +485,7 @@ function CinematicGeologicalHeroVisualizer() {
         <div>SCANNER_GRID: <span className="text-accent font-bold">QR_BARCODE_READY</span></div>
       </div>
 
-      <div className="absolute bottom-6 right-6 font-mono text-[8px] text-muted-foreground bg-card/25 py-1.5 px-2.5 border border-border/40 rounded pointer-events-none select-none tracking-widest">
+      <div className="absolute bottom-6 right-6 font-mono text-[8px] text-muted-foreground bg-card/25 py-1.5 px-2.5 border border-border/40 rounded pointer-events-none select-none tracking-widest z-10">
         COORD_DEPTH: [Z_CAMERA: 420.00]
       </div>
     </div>
@@ -483,101 +543,76 @@ function Landing() {
         </div>
       </header>
 
-      {/* Fullscreen Immersive Hero Section */}
-      <section className="relative overflow-hidden border-b border-border/20 bg-background min-h-[calc(100vh-64px)] flex items-center">
+      {/* Fullscreen Immersive Centered Hero Section */}
+      <section className="relative overflow-hidden border-b border-border/20 bg-background min-h-[calc(100vh-64px)] flex items-center justify-center">
         {/* Soft atmospheric gradient mesh */}
-        <div className="absolute inset-0 gradient-mesh opacity-70" />
-        <div className="absolute inset-0 grid-pattern opacity-15 [mask-image:radial-gradient(ellipse_at_center,black_40%,transparent_80%)]" />
+        <div className="absolute inset-0 gradient-mesh opacity-60 z-0" />
+        <div className="absolute inset-0 grid-pattern opacity-10 [mask-image:radial-gradient(ellipse_at_center,black_40%,transparent_80%)] z-0" />
         
-        <div className="relative mx-auto max-w-7xl px-6 py-12 lg:py-20 w-full z-10">
-          <div className="grid gap-12 lg:grid-cols-12 lg:items-center">
-            
-            {/* Left Column: Heading and CTAs */}
-            <motion.div
-              variants={containerVariants}
-              initial="hidden"
-              animate="visible"
-              className="lg:col-span-7 text-left space-y-8"
-            >
-              <motion.div variants={childRevealVariants}>
-                <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1.5 text-[10px] font-bold font-mono tracking-widest text-primary uppercase select-none">
-                  <span className="size-2 rounded-full bg-primary animate-pulse" />
-                  UNDP Integrated · ISO 17025 Ready
-                </span>
-              </motion.div>
-              
-              <motion.h1 
-                variants={childRevealVariants}
-                className="text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl text-foreground leading-[1.05] font-display"
-              >
-                Track Every <span className="text-gradient font-black">Geological Sample</span> With Scientific Precision.
-              </motion.h1>
-              
-              <motion.p 
-                variants={childRevealVariants}
-                className="text-base sm:text-lg text-muted-foreground max-w-xl leading-relaxed font-sans"
-              >
-                GeoChem Suite digitizes laboratory workflows from intake to analytical reporting. Secure custodial tracking, automatic preparation tracking, and instant QA/QC flagging.
-              </motion.p>
-              
-              <motion.div 
-                variants={childRevealVariants}
-                className="flex flex-wrap items-center gap-4 pt-2"
-              >
-                <Link to="/app" className="inline-flex items-center gap-2 rounded-lg gradient-primary px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-primary/10 hover:shadow-primary/25 transition-all hover:-translate-y-0.5 active-scale-spring font-display">
-                  Launch Platform <ArrowRight className="size-4" />
-                </Link>
-                <Link to="/portal" className="inline-flex items-center gap-2 rounded-lg border border-border bg-card/45 backdrop-blur-md px-6 py-3.5 text-sm font-semibold hover:bg-muted text-foreground transition-all hover:-translate-y-0.5 active-scale-spring font-display">
-                  Request Demo
-                </Link>
-              </motion.div>
+        {/* Fullscreen 3D Geological Visualizer Canvas Backdrop */}
+        <div className="absolute inset-0 w-full h-full z-0 opacity-80 pointer-events-none select-none">
+          <CinematicGeologicalHeroVisualizer />
+        </div>
 
-              <motion.div 
-                variants={childRevealVariants}
-                className="grid grid-cols-3 gap-6 border-t border-border/40 pt-8 max-w-lg text-[10px] font-bold font-mono uppercase tracking-widest text-muted-foreground"
-              >
-                <div>
-                  <span className="text-2xl font-black text-foreground block font-display">99.98%</span>
-                  Uptime Guaranteed
-                </div>
-                <div>
-                  <span className="text-2xl font-black text-foreground block font-display">&lt; 1.5s</span>
-                  Intake Latency
-                </div>
-                <div>
-                  <span className="text-2xl font-black text-foreground block font-display">Zero</span>
-                  Manual Errors
-                </div>
-              </motion.div>
+        {/* Center-Aligned Content Container */}
+        <div className="relative mx-auto max-w-4xl px-6 py-16 text-center z-10 flex flex-col items-center justify-center space-y-8 select-none">
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="flex flex-col items-center text-center space-y-8"
+          >
+            <motion.div variants={childRevealVariants}>
+              <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1.5 text-[10px] font-bold font-mono tracking-widest text-primary uppercase select-none">
+                <span className="size-2 rounded-full bg-primary animate-pulse" />
+                UNDP Integrated · ISO 17025 Ready
+              </span>
             </motion.div>
             
-            {/* Right Column: 3D Geological Core Viewport */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 15 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ delay: 0.25, duration: 0.8, type: "spring", stiffness: 70 }}
-              className="lg:col-span-5 relative"
+            <motion.h1 
+              variants={childRevealVariants}
+              className="text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-7xl text-foreground leading-[1.05] font-display max-w-3xl"
             >
-              <div className="rounded-2xl border border-primary/25 bg-card/65 backdrop-blur-md shadow-2xl overflow-hidden relative group hover-glow">
-                {/* Visual Glare Layer */}
-                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent pointer-events-none z-10" />
-                
-                <div className="flex items-center justify-between border-b border-border/40 px-4 py-3 bg-muted/15">
-                  <div className="flex items-center gap-1.5 select-none">
-                    <span className="size-2 rounded-full bg-destructive/60" />
-                    <span className="size-2 rounded-full bg-warning/60" />
-                    <span className="size-2 rounded-full bg-success/60" />
-                    <span className="ml-2.5 text-[9px] text-muted-foreground font-mono font-bold tracking-widest">3D_ORE_SPECTROSCOPY</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-primary text-[9px] font-mono font-bold tracking-wider">
-                    <Sparkles className="size-3 animate-pulse text-accent" /> CINEMATIC_RENDER
-                  </div>
-                </div>
-                <CinematicGeologicalHeroVisualizer />
+              Track Every <span className="text-gradient font-black">Geological Sample</span> With Scientific Precision.
+            </motion.h1>
+            
+            <motion.p 
+              variants={childRevealVariants}
+              className="text-base sm:text-xl text-muted-foreground max-w-2xl leading-relaxed font-sans"
+            >
+              GeoChem Suite digitizes laboratory workflows from intake to analytical reporting. Secure custodial tracking, automatic preparation tracking, and instant QA/QC flagging.
+            </motion.p>
+            
+            <motion.div 
+              variants={childRevealVariants}
+              className="flex flex-wrap items-center justify-center gap-4 pt-2"
+            >
+              <Link to="/app" className="inline-flex items-center gap-2 rounded-lg gradient-primary px-8 py-4 text-sm font-semibold text-white shadow-lg shadow-primary/10 hover:shadow-primary/25 transition-all hover:-translate-y-0.5 active-scale-spring font-display">
+                Launch Platform <ArrowRight className="size-4" />
+              </Link>
+              <Link to="/portal" className="inline-flex items-center gap-2 rounded-lg border border-border bg-card/45 backdrop-blur-md px-8 py-4 text-sm font-semibold hover:bg-muted text-foreground transition-all hover:-translate-y-0.5 active-scale-spring font-display">
+                Request Demo
+              </Link>
+            </motion.div>
+
+            <motion.div 
+              variants={childRevealVariants}
+              className="grid grid-cols-3 gap-8 sm:gap-12 border-t border-border/40 pt-8 w-full max-w-2xl text-[10px] font-bold font-mono uppercase tracking-widest text-muted-foreground"
+            >
+              <div>
+                <span className="text-2xl sm:text-3xl font-black text-foreground block font-display">99.98%</span>
+                Uptime Guaranteed
+              </div>
+              <div>
+                <span className="text-2xl sm:text-3xl font-black text-foreground block font-display">&lt; 1.5s</span>
+                Intake Latency
+              </div>
+              <div>
+                <span className="text-2xl sm:text-3xl font-black text-foreground block font-display">Zero</span>
+                Manual Errors
               </div>
             </motion.div>
-
-          </div>
+          </motion.div>
         </div>
       </section>
 
