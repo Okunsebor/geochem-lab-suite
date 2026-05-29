@@ -6,6 +6,14 @@ import {
   ArrowRight, CheckCircle2, Beaker, Building2, LineChart, Cpu, Sparkles
 } from "lucide-react";
 
+// Real Mineral image assets
+import chromiumImg from "../../assets/minerals/chromium.png";
+import copperImg from "../../assets/minerals/copper.png";
+import diamondImg from "../../assets/minerals/diamond.png";
+import goldOreImg from "../../assets/minerals/gold ore.png";
+import lithiumOreImg from "../../assets/minerals/lithium ore.png";
+import rockImg from "../../assets/textures/rock.png";
+
 export const Route = createFileRoute("/")({
   component: Landing,
   head: () => ({
@@ -46,16 +54,16 @@ interface Point3D {
   z: number;
 }
 
-interface FloatingMineral {
+interface Particle {
   x: number;
   y: number;
   z: number;
   size: number;
   speedY: number;
-  rot: number;
-  rotSpeed: number;
+  rotation: number;
+  rotationSpeed: number;
+  imageIndex: number;
   color: string;
-  points: { x: number; y: number }[];
 }
 
 function CinematicGeologicalHeroVisualizer() {
@@ -124,50 +132,27 @@ function CinematicGeologicalHeroVisualizer() {
     const fragmentRadius = [135, 165, 195];
     const fragmentInclination = [0.2, -0.4, 0.5];
 
-    // 3. Floating Faceted Minerals (Gold, Silver, Chromium, Lithium, Amethyst Quartz)
-    const minerals: FloatingMineral[] = Array.from({ length: 55 }).map(() => {
-      const typeRand = Math.random();
-      let color = "#334155"; // obsidian default
-      let size = Math.random() * 8 + 4; // larger rock sizes
-
-      if (typeRand > 0.85) {
-        color = "#F4C430"; // Gold
-      } else if (typeRand > 0.7) {
-        color = "#e2e8f0"; // Silver
-      } else if (typeRand > 0.55) {
-        color = "#94a3b8"; // Chromium
-      } else if (typeRand > 0.4) {
-        color = "#1DA1E8"; // Lithium
-      } else if (typeRand > 0.25) {
-        color = "#c084fc"; // Amethyst Quartz
-      } else if (typeRand > 0.12) {
-        color = "#f97316"; // Copper ore
-      }
-
-      // Generate random jagged faceted stone coordinates
-      const pointsCount = 5 + Math.floor(Math.random() * 3);
-      const points = [];
-      for (let i = 0; i < pointsCount; i++) {
-        const angle = (i / pointsCount) * Math.PI * 2;
-        const r = size * (0.6 + Math.random() * 0.5);
-        points.push({
-          x: Math.cos(angle) * r,
-          y: Math.sin(angle) * r
-        });
-      }
-
-      return {
-        x: (Math.random() - 0.5) * 600,
-        y: Math.random() * 500 - 250,
-        z: (Math.random() - 0.5) * 400,
-        size,
-        speedY: -(Math.random() * 0.35 + 0.15), // float upwards
-        rot: Math.random() * Math.PI * 2,
-        rotSpeed: (Math.random() - 0.5) * 0.005,
-        color,
-        points
-      };
+    // Load real rock/mineral images inside Canvas preloader
+    const imgUrls = [chromiumImg, copperImg, diamondImg, goldOreImg, lithiumOreImg, rockImg];
+    const preloadedImages: HTMLImageElement[] = [];
+    imgUrls.forEach((url) => {
+      const img = new Image();
+      img.src = url;
+      preloadedImages.push(img);
     });
+
+    // 3. Atmospheric drifting particles (real mineral stones and rocks)
+    const particles: Particle[] = Array.from({ length: 45 }).map(() => ({
+      x: (Math.random() - 0.5) * 550,
+      y: (Math.random() - 0.5) * 550,
+      z: (Math.random() - 0.5) * 550,
+      size: Math.random() * 1.5 + 0.8,
+      speedY: -(Math.random() * 0.35 + 0.15),
+      rotation: Math.random() * Math.PI * 2,
+      rotationSpeed: (Math.random() - 0.5) * 0.015,
+      imageIndex: Math.floor(Math.random() * imgUrls.length),
+      color: Math.random() > 0.6 ? "#1DA1E8" : (Math.random() > 0.5 ? "#F4C430" : "rgba(255,255,255,0.4)")
+    }));
 
     const handleResize = () => {
       const rect = canvas.getBoundingClientRect();
@@ -234,13 +219,11 @@ function CinematicGeologicalHeroVisualizer() {
       const centerY = canvasHeight / 2;
       const cameraDistance = 420;
 
-      // 1. Draw floating faceted minerals (Gold, Silver, Chromium, Lithium, Quartz, copper, obsidian stones)
-      minerals.forEach(p => {
+      // 1. Draw atmospheric particles (real stone and rock texture images)
+      particles.forEach(p => {
         p.y += p.speedY;
-        if (p.y < -300) {
-          p.y = 300; // Reset below screen to keep continuous upward float!
-          p.x = (Math.random() - 0.5) * canvasWidth;
-        }
+        p.rotation += p.rotationSpeed;
+        if (p.y < -280) p.y = 280; // wrap around
         
         let x1 = p.x * cosY - p.z * sinY;
         let z1 = p.x * sinY + p.z * cosY;
@@ -252,30 +235,27 @@ function CinematicGeologicalHeroVisualizer() {
         const sy = centerY + y2 * scale;
 
         if (sx >= -50 && sx <= canvasWidth + 50 && sy >= -50 && sy <= canvasHeight + 50) {
-          ctx.save();
-          ctx.translate(sx, sy);
-          ctx.rotate(p.rot + scannerPhase * p.rotSpeed);
-
-          // Faceted rock body
-          ctx.beginPath();
-          p.points.forEach((pt, idx) => {
-            if (idx === 0) ctx.moveTo(pt.x * scale, pt.y * scale);
-            else ctx.lineTo(pt.x * scale, pt.y * scale);
-          });
-          ctx.closePath();
-
-          ctx.fillStyle = p.color;
-          ctx.globalAlpha = isDark ? 0.15 : 0.22; // subtle backdrop opacity to keep text highly legible!
-          ctx.fill();
-
-          // Highlighted faceted border
-          ctx.strokeStyle = p.color;
-          ctx.lineWidth = 0.9;
-          ctx.globalAlpha = isDark ? 0.35 : 0.45;
-          ctx.stroke();
-
-          ctx.restore();
-          ctx.globalAlpha = 1.0; // Reset
+          const img = preloadedImages[p.imageIndex];
+          if (img && img.complete && img.naturalWidth !== 0) {
+            ctx.save();
+            ctx.translate(sx, sy);
+            ctx.rotate(p.rotation);
+            const size = p.size * scale * 26; // detailed stones (20px to 60px)
+            
+            // Soft atmospheric opacity blending based on Z distance camera scale
+            ctx.globalAlpha = Math.max(0.12, Math.min(0.68, scale * 0.9));
+            ctx.drawImage(img, -size / 2, -size / 2, size, size);
+            ctx.restore();
+            ctx.globalAlpha = 1.0;
+          } else {
+            // Fallback glow dot if image is loading
+            ctx.beginPath();
+            ctx.arc(sx, sy, p.size * scale * 2, 0, Math.PI * 2);
+            ctx.fillStyle = p.color;
+            ctx.globalAlpha = 0.35;
+            ctx.fill();
+            ctx.globalAlpha = 1.0;
+          }
         }
       });
 
@@ -468,7 +448,7 @@ function CinematicGeologicalHeroVisualizer() {
   }, []);
 
   return (
-    <div className="relative w-full h-full min-h-[calc(100vh-64px)] flex items-center justify-center overflow-hidden">
+    <div className="relative w-full h-[360px] md:h-[450px] flex items-center justify-center overflow-hidden">
       <canvas 
         ref={canvasRef} 
         className="w-full h-full cursor-grab active:cursor-grabbing select-none"
@@ -476,7 +456,7 @@ function CinematicGeologicalHeroVisualizer() {
       />
       
       {/* Holographic Digital Overlay HUD */}
-      <div className="absolute top-6 left-6 text-left font-mono text-[9px] text-primary/70 bg-card/20 backdrop-blur-md border border-primary/20 py-2 px-3 rounded space-y-1 select-none pointer-events-none tracking-wider z-10">
+      <div className="absolute top-6 left-6 text-left font-mono text-[9px] text-primary/70 bg-card/20 backdrop-blur-md border border-primary/20 py-2 px-3 rounded space-y-1 select-none pointer-events-none tracking-wider">
         <div className="flex items-center gap-2">
           <span className="size-2 rounded-full bg-primary animate-pulse" />
           <span>ORE_METALLICITY: <span className="text-foreground">GOLD_LITHIUM_COPPER</span></span>
@@ -485,7 +465,7 @@ function CinematicGeologicalHeroVisualizer() {
         <div>SCANNER_GRID: <span className="text-accent font-bold">QR_BARCODE_READY</span></div>
       </div>
 
-      <div className="absolute bottom-6 right-6 font-mono text-[8px] text-muted-foreground bg-card/25 py-1.5 px-2.5 border border-border/40 rounded pointer-events-none select-none tracking-widest z-10">
+      <div className="absolute bottom-6 right-6 font-mono text-[8px] text-muted-foreground bg-card/25 py-1.5 px-2.5 border border-border/40 rounded pointer-events-none select-none tracking-widest">
         COORD_DEPTH: [Z_CAMERA: 420.00]
       </div>
     </div>
@@ -545,25 +525,25 @@ function Landing() {
 
       {/* Fullscreen Immersive Centered Hero Section */}
       <section className="relative overflow-hidden border-b border-border/20 bg-background min-h-[calc(100vh-64px)] flex items-center justify-center">
-        {/* Soft atmospheric gradient mesh */}
-        <div className="absolute inset-0 gradient-mesh opacity-60 z-0" />
-        <div className="absolute inset-0 grid-pattern opacity-10 [mask-image:radial-gradient(ellipse_at_center,black_40%,transparent_80%)] z-0" />
-        
-        {/* Fullscreen 3D Geological Visualizer Canvas Backdrop */}
-        <div className="absolute inset-0 w-full h-full z-0 opacity-80 pointer-events-none select-none">
+        {/* Immersive 3D Background Canvas Visualizer */}
+        <div className="absolute inset-0 z-0 pointer-events-none opacity-80">
           <CinematicGeologicalHeroVisualizer />
         </div>
 
-        {/* Center-Aligned Content Container */}
-        <div className="relative mx-auto max-w-4xl px-6 py-16 text-center z-10 flex flex-col items-center justify-center space-y-8 select-none">
-          <motion.div
+        {/* Soft atmospheric gradient mesh */}
+        <div className="absolute inset-0 gradient-mesh opacity-45 pointer-events-none" />
+        <div className="absolute inset-0 grid-pattern opacity-10 [mask-image:radial-gradient(ellipse_at_center,black_40%,transparent_80%)] pointer-events-none" />
+        
+        {/* Centered Content Container */}
+        <div className="relative mx-auto max-w-5xl px-6 py-20 w-full z-10 text-center flex flex-col items-center justify-center space-y-8 select-none">
+          <motion.div 
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="flex flex-col items-center text-center space-y-8"
+            className="flex flex-col items-center justify-center text-center space-y-8 max-w-4xl"
           >
             <motion.div variants={childRevealVariants}>
-              <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1.5 text-[10px] font-bold font-mono tracking-widest text-primary uppercase select-none">
+              <span className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/5 px-3 py-1.5 text-[10px] font-bold font-mono tracking-widest text-primary uppercase backdrop-blur-md">
                 <span className="size-2 rounded-full bg-primary animate-pulse" />
                 UNDP Integrated · ISO 17025 Ready
               </span>
@@ -587,17 +567,17 @@ function Landing() {
               variants={childRevealVariants}
               className="flex flex-wrap items-center justify-center gap-4 pt-2"
             >
-              <Link to="/app" className="inline-flex items-center gap-2 rounded-lg gradient-primary px-8 py-4 text-sm font-semibold text-white shadow-lg shadow-primary/10 hover:shadow-primary/25 transition-all hover:-translate-y-0.5 active-scale-spring font-display">
+              <Link to="/app" className="inline-flex items-center gap-2 rounded-lg gradient-primary px-7 py-4 text-sm font-semibold text-white shadow-lg shadow-primary/20 hover:shadow-primary/35 transition-all hover:-translate-y-0.5 active-scale-spring font-display">
                 Launch Platform <ArrowRight className="size-4" />
               </Link>
-              <Link to="/portal" className="inline-flex items-center gap-2 rounded-lg border border-border bg-card/45 backdrop-blur-md px-8 py-4 text-sm font-semibold hover:bg-muted text-foreground transition-all hover:-translate-y-0.5 active-scale-spring font-display">
+              <Link to="/portal" className="inline-flex items-center gap-2 rounded-lg border border-border bg-card/45 backdrop-blur-md px-7 py-4 text-sm font-semibold hover:bg-muted text-foreground transition-all hover:-translate-y-0.5 active-scale-spring font-display">
                 Request Demo
               </Link>
             </motion.div>
 
             <motion.div 
               variants={childRevealVariants}
-              className="grid grid-cols-3 gap-8 sm:gap-12 border-t border-border/40 pt-8 w-full max-w-2xl text-[10px] font-bold font-mono uppercase tracking-widest text-muted-foreground"
+              className="grid grid-cols-3 gap-8 border-t border-border/40 pt-8 max-w-2xl w-full text-[10px] font-bold font-mono uppercase tracking-widest text-muted-foreground justify-center mx-auto"
             >
               <div>
                 <span className="text-2xl sm:text-3xl font-black text-foreground block font-display">99.98%</span>
@@ -619,9 +599,9 @@ function Landing() {
       {/* Modules with springy card scroll reveal */}
       <section id="modules" className="border-t border-border bg-card/25">
         <div className="mx-auto max-w-7xl px-6 py-24">
-          <div className="max-w-2xl text-left">
+          <div className="max-w-3xl text-center mx-auto">
             <p className="text-xs font-bold uppercase tracking-widest text-primary">Core Modules</p>
-            <h2 className="mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl text-foreground">
+            <h2 className="mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl text-foreground font-display">
               A complete laboratory workflow, end-to-end
             </h2>
             <p className="mt-3 text-sm sm:text-base text-muted-foreground leading-relaxed">
