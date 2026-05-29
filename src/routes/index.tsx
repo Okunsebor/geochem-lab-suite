@@ -40,35 +40,24 @@ interface Star {
   size: number;
 }
 
-function Scientific3DVisualizer() {
+interface Point3D {
+  x: number;
+  y: number;
+  z: number;
+}
+
+interface Particle {
+  x: number;
+  y: number;
+  z: number;
+  size: number;
+  speedY: number;
+  color: string;
+}
+
+function CinematicGeologicalHeroVisualizer() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const [hoveredAtom, setHoveredAtom] = useState<Atom | null>(null);
-  const [selectedAtom, setSelectedAtom] = useState<Atom | null>(null);
   
-  // Custom 3D coordinates representing a hybrid geochemical SiO2 & Gold Pyrite lattice
-  const atoms: Atom[] = [
-    { x: 0, y: 0, z: 0, symbol: "Si", label: "Silicon (Center Node)", color: "#3b82f6", radius: 10, glow: "rgba(59, 130, 246, 0.4)" },
-    { x: 0, y: 80, z: 0, symbol: "O", label: "Oxygen Alpha", color: "#ef4444", radius: 7 },
-    { x: 0, y: -80, z: 0, symbol: "O", label: "Oxygen Beta", color: "#ef4444", radius: 7 },
-    { x: 60, y: 0, z: 60, symbol: "Si", label: "Silicon Apex", color: "#3b82f6", radius: 9 },
-    { x: -60, y: 0, z: 60, symbol: "Si", label: "Silicon Apex", color: "#3b82f6", radius: 9 },
-    { x: 60, y: 0, z: -60, symbol: "Si", label: "Silicon Apex", color: "#3b82f6", radius: 9 },
-    { x: -60, y: 0, z: -60, symbol: "Si", label: "Silicon Apex", color: "#3b82f6", radius: 9 },
-    // Auric mineral nodes (Gold ore)
-    { x: 110, y: 40, z: 20, symbol: "Au", label: "Gold Ore Inclusion", color: "#eab308", radius: 12, glow: "rgba(234, 179, 8, 0.5)" },
-    { x: -110, y: -40, z: -20, symbol: "Au", label: "Gold Ore Inclusion", color: "#eab308", radius: 12, glow: "rgba(234, 179, 8, 0.5)" },
-    { x: 20, y: -95, z: 70, symbol: "Au", label: "Auric Pyrite Node", color: "#eab308", radius: 11 },
-    { x: -20, y: 95, z: -70, symbol: "Au", label: "Auric Pyrite Node", color: "#eab308", radius: 11 }
-  ];
-
-  const bonds: Bond[] = [
-    { a: 0, b: 1 }, { a: 0, b: 2 },
-    { a: 0, b: 3 }, { a: 0, b: 4 }, { a: 0, b: 5 }, { a: 0, b: 6 },
-    { a: 3, b: 1 }, { a: 4, b: 1 }, { a: 5, b: 2 }, { a: 6, b: 2 },
-    { a: 3, b: 7 }, { a: 5, b: 7 }, { a: 4, b: 8 }, { a: 6, b: 8 },
-    { a: 1, b: 9 }, { a: 2, b: 10 }, { a: 7, b: 9 }, { a: 8, b: 10 }
-  ];
-
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -77,23 +66,71 @@ function Scientific3DVisualizer() {
     if (!ctx) return;
 
     let animationFrameId: number;
-    let rotationX = 0.3;
-    let rotationY = 0.5;
-    let rotationSpeedX = 0.002;
-    let rotationSpeedY = 0.003;
+    let rotationX = 0.2;
+    let rotationY = 0.4;
+    let targetRotationX = 0.2;
+    let targetRotationY = 0.4;
+    const damping = 0.05;
     
-    // Mouse interaction states
+    let mouseX = -9999;
+    let mouseY = -9999;
     let isDragging = false;
-    let previousMouseX = 0;
-    let previousMouseY = 0;
-    let targetRotationX = 0.3;
-    let targetRotationY = 0.5;
-    const damping = 0.08;
+    let prevMouseX = 0;
+    let prevMouseY = 0;
     
     let canvasWidth = 0;
     let canvasHeight = 0;
 
-    // Handle high DPI retina screens
+    // QR scanner sweeping variables
+    let scannerPhase = 0;
+
+    // 1. Faceted geological crystal core definition (Icosahedron-like core)
+    const vertices: Point3D[] = [
+      { x: 0, y: -100, z: 0 },  // V0: Top Apex
+      { x: 0, y: 100, z: 0 },   // V1: Bottom Apex
+      // Mid-upper ring
+      { x: 65, y: -30, z: 45 },  // V2
+      { x: -65, y: -30, z: 45 }, // V3
+      { x: -65, y: -30, z: -45 },// V4
+      { x: 65, y: -30, z: -45 }, // V5
+      // Mid-lower ring
+      { x: 45, y: 35, z: 65 },   // V6
+      { x: -45, y: 35, z: 65 },  // V7
+      { x: -45, y: 35, z: -65 }, // V8
+      { x: 45, y: 35, z: -65 },  // V9
+    ];
+
+    const faces = [
+      [0, 2, 3], [0, 3, 4], [0, 4, 5], [0, 5, 2], // Top cap
+      [1, 6, 7], [1, 7, 8], [1, 8, 9], [1, 9, 6], // Bottom cap
+      [2, 6, 3], [3, 7, 4], [4, 8, 5], [5, 9, 2], // Upper connectors
+      [3, 6, 7], [4, 7, 8], [5, 8, 9], [2, 9, 6]  // Lower connectors
+    ];
+
+    // Facet mineral coloring (shading is computed dynamically)
+    const faceColors = [
+      "#1DA1E8", "#F4C430", "#f97316", "#1DA1E8",
+      "#f97316", "#F4C430", "#1DA1E8", "#f97316",
+      "#F4C430", "#1DA1E8", "#f97316", "#F4C430",
+      "#1DA1E8", "#f97316", "#F4C430", "#1DA1E8"
+    ];
+
+    // 2. Fragment shards definition (Gold, Lithium, Copper)
+    const fragmentColors = ["#F4C430", "#a5f3fc", "#f97316"];
+    const fragmentSpeeds = [0.005, -0.008, 0.006];
+    const fragmentRadius = [135, 165, 195];
+    const fragmentInclination = [0.2, -0.4, 0.5];
+
+    // 3. Atmospheric drifting particles
+    const particles: Particle[] = Array.from({ length: 65 }).map(() => ({
+      x: (Math.random() - 0.5) * 500,
+      y: (Math.random() - 0.5) * 500,
+      z: (Math.random() - 0.5) * 500,
+      size: Math.random() * 2 + 0.8,
+      speedY: -(Math.random() * 0.4 + 0.1),
+      color: Math.random() > 0.6 ? "#1DA1E8" : (Math.random() > 0.5 ? "#F4C430" : "rgba(255,255,255,0.4)")
+    }));
+
     const handleResize = () => {
       const rect = canvas.getBoundingClientRect();
       canvasWidth = rect.width;
@@ -107,68 +144,46 @@ function Scientific3DVisualizer() {
     handleResize();
     window.addEventListener("resize", handleResize);
 
-    // Initialize floating chemical background elements (stars/atoms)
-    const stars: Star[] = Array.from({ length: 40 }).map(() => ({
-      x: (Math.random() - 0.5) * 400,
-      y: (Math.random() - 0.5) * 400,
-      z: (Math.random() - 0.5) * 400,
-      size: Math.random() * 2 + 1
-    }));
-
-    let mouseX = -9999;
-    let mouseY = -9999;
-
     const handleMouseMove = (e: MouseEvent) => {
       const rect = canvas.getBoundingClientRect();
       mouseX = e.clientX - rect.left;
       mouseY = e.clientY - rect.top;
 
       if (isDragging) {
-        const deltaX = e.clientX - previousMouseX;
-        const deltaY = e.clientY - previousMouseY;
-        targetRotationY += deltaX * 0.005;
-        targetRotationX += deltaY * 0.005;
-        previousMouseX = e.clientX;
-        previousMouseY = e.clientY;
+        const deltaX = e.clientX - prevMouseX;
+        const deltaY = e.clientY - prevMouseY;
+        targetRotationY += deltaX * 0.004;
+        targetRotationX += deltaY * 0.004;
+        prevMouseX = e.clientX;
+        prevMouseY = e.clientY;
+      } else {
+        // Subtle hover parallax target coordinates
+        targetRotationY = 0.4 + (mouseX - canvasWidth / 2) * 0.0005;
+        targetRotationX = 0.2 + (mouseY - canvasHeight / 2) * 0.0005;
       }
     };
 
     const handleMouseDown = (e: MouseEvent) => {
       isDragging = true;
-      previousMouseX = e.clientX;
-      previousMouseY = e.clientY;
+      prevMouseX = e.clientX;
+      prevMouseY = e.clientY;
     };
 
     const handleMouseUp = () => {
       isDragging = false;
     };
 
-    const handleMouseLeave = () => {
-      isDragging = false;
-      mouseX = -9999;
-      mouseY = -9999;
-    };
-
     canvas.addEventListener("mousemove", handleMouseMove);
     canvas.addEventListener("mousedown", handleMouseDown);
     window.addEventListener("mouseup", handleMouseUp);
-    canvas.addEventListener("mouseleave", handleMouseLeave);
 
     // Render loop
     const render = () => {
       ctx.clearRect(0, 0, canvasWidth, canvasHeight);
       
       const isDark = document.documentElement.classList.contains("dark");
-      const primaryColor = isDark ? "#3b82f6" : "#2563eb";
-      const bondColor = isDark ? "rgba(255, 255, 255, 0.09)" : "rgba(0, 0, 0, 0.09)";
-      const bondHighlightColor = isDark ? "rgba(59, 130, 246, 0.3)" : "rgba(37, 99, 235, 0.3)";
-      const gridPatternColor = isDark ? "rgba(255, 255, 255, 0.03)" : "rgba(0, 0, 0, 0.02)";
       
-      // Interpolate current rotation with mouse target inputs (damped inertia orbit)
-      if (!isDragging) {
-        targetRotationX += rotationSpeedX;
-        targetRotationY += rotationSpeedY;
-      }
+      // Update rotational angle with damp easing
       rotationX += (targetRotationX - rotationX) * damping;
       rotationY += (targetRotationY - rotationY) * damping;
 
@@ -179,25 +194,18 @@ function Scientific3DVisualizer() {
 
       const centerX = canvasWidth / 2;
       const centerY = canvasHeight / 2;
-      const cameraDistance = 380;
+      const cameraDistance = 420;
 
-      // Draw subtle grid dashboard crosshairs behind
-      ctx.strokeStyle = gridPatternColor;
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(centerX - 100, centerY); ctx.lineTo(centerX + 100, centerY);
-      ctx.moveTo(centerX, centerY - 100); ctx.lineTo(centerX, centerY + 100);
-      ctx.stroke();
-
-      // Transform background stars
-      ctx.fillStyle = isDark ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.15)";
-      stars.forEach(s => {
-        // Y-axis rotation
-        let x1 = s.x * cosY - s.z * sinY;
-        let z1 = s.x * sinY + s.z * cosY;
-        // X-axis rotation
-        let y2 = s.y * cosX - z1 * sinX;
-        let z2 = s.y * sinX + z1 * cosX;
+      // 1. Draw atmospheric particles
+      ctx.fillStyle = "rgba(255, 255, 255, 0.2)";
+      particles.forEach(p => {
+        p.y += p.speedY;
+        if (p.y < -250) p.y = 250; // wrap around
+        
+        let x1 = p.x * cosY - p.z * sinY;
+        let z1 = p.x * sinY + p.z * cosY;
+        let y2 = p.y * cosX - z1 * sinX;
+        let z2 = p.y * sinX + z1 * cosX;
 
         const scale = cameraDistance / (cameraDistance + z2);
         const sx = centerX + x1 * scale;
@@ -205,140 +213,185 @@ function Scientific3DVisualizer() {
 
         if (sx >= 0 && sx <= canvasWidth && sy >= 0 && sy <= canvasHeight) {
           ctx.beginPath();
-          ctx.arc(sx, sy, s.size * scale, 0, Math.PI * 2);
+          ctx.arc(sx, sy, p.size * scale, 0, Math.PI * 2);
+          ctx.fillStyle = p.color;
           ctx.fill();
         }
       });
 
-      // Project Atoms
-      const projectedAtoms = atoms.map((atom, idx) => {
-        // Y-axis rotation
-        let x1 = atom.x * cosY - atom.z * sinY;
-        let z1 = atom.x * sinY + atom.z * cosY;
-        // X-axis rotation
-        let y2 = atom.y * cosX - z1 * sinX;
-        let z2 = atom.y * sinX + z1 * cosX;
+      // 2. Project vertices of geological crystal core
+      const projectedVertices = vertices.map(v => {
+        let x1 = v.x * cosY - v.z * sinY;
+        let z1 = v.x * sinY + v.z * cosY;
+        let y2 = v.y * cosX - z1 * sinX;
+        let z2 = v.y * sinX + z1 * cosX;
+
+        const scale = cameraDistance / (cameraDistance + z2);
+        return {
+          x: centerX + x1 * scale,
+          y: centerY + y2 * scale,
+          z: z2
+        };
+      });
+
+      // 3. Facet math flat shading and sorting
+      const sortedFaces = faces.map((face, index) => {
+        const v0 = projectedVertices[face[0]];
+        const v1 = projectedVertices[face[1]];
+        const v2 = projectedVertices[face[2]];
+        
+        // Average depth of face
+        const depth = (v0.z + v1.z + v2.z) / 3;
+
+        // Vector normal math
+        const ux = v1.x - v0.x;
+        const uy = v1.y - v0.y;
+        const vx = v2.x - v0.x;
+        const vy = v2.y - v0.y;
+        const normalZ = ux * vy - uy * vx;
+
+        return { face, index, depth, normalZ };
+      }).sort((a, b) => b.depth - a.depth);
+
+      // 4. Draw crystalline facets
+      sortedFaces.forEach(f => {
+        // Back-face culling logic
+        if (f.normalZ < 0) return;
+
+        const face = f.face;
+        const color = faceColors[f.index];
+        
+        // Simple directional lighting dot product
+        const shadow = Math.max(0.15, Math.min(0.85, (f.depth + 100) / 250));
+        
+        ctx.beginPath();
+        ctx.moveTo(projectedVertices[face[0]].x, projectedVertices[face[0]].y);
+        ctx.lineTo(projectedVertices[face[1]].x, projectedVertices[face[1]].y);
+        ctx.lineTo(projectedVertices[face[2]].x, projectedVertices[face[2]].y);
+        ctx.closePath();
+
+        // Shading composite fill
+        ctx.fillStyle = color;
+        ctx.globalAlpha = isDark ? 0.35 : 0.45;
+        ctx.fill();
+
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1.2;
+        ctx.globalAlpha = 0.8;
+        ctx.stroke();
+        ctx.globalAlpha = 1.0; // Reset
+      });
+
+      // 5. Draw rotating metallic shards (satellite mineral orbits)
+      scannerPhase += 0.015;
+      fragmentColors.forEach((color, idx) => {
+        const speed = fragmentSpeeds[idx];
+        const rad = fragmentRadius[idx];
+        const inc = fragmentInclination[idx];
+        const angle = scannerPhase * speed * 80;
+
+        // Position coordinates along inclined orbits
+        const fx = Math.cos(angle) * rad;
+        const fz = Math.sin(angle) * rad;
+        const fy = Math.sin(angle) * Math.sin(inc) * rad * 0.4;
+
+        // Transform relative to general viewport rotation
+        let x1 = fx * cosY - fz * sinY;
+        let z1 = fx * sinY + fz * cosY;
+        let y2 = (fy * cosX - z1 * sinX);
+        let z2 = (fy * sinX + z1 * cosX);
 
         const scale = cameraDistance / (cameraDistance + z2);
         const sx = centerX + x1 * scale;
         const sy = centerY + y2 * scale;
 
-        // Check cursor collision for hover interaction states
-        const dx = mouseX - sx;
-        const dy = mouseY - sy;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        const isHovered = dist < (atom.radius + 6);
+        // Draw satellite crystal shard
+        ctx.save();
+        ctx.translate(sx, sy);
+        ctx.rotate(angle * 1.5);
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = color;
 
-        return {
-          ...atom,
-          sx,
-          sy,
-          sz: z2,
-          scale,
-          isHovered,
-          index: idx
-        };
-      });
-
-      // Find closest atom to cursor for single focus highlight
-      const activeAtom = projectedAtoms
-        .filter(pa => pa.isHovered)
-        .sort((a, b) => a.sz - b.sz)[0] || null;
-
-      // Update external hover state
-      if (activeAtom) {
-        setHoveredAtom(activeAtom);
-      } else {
-        setHoveredAtom(null);
-      }
-
-      // Draw Bonds (behind atoms in Z-index)
-      ctx.lineWidth = 1.5;
-      bonds.forEach(bond => {
-        const aProj = projectedAtoms[bond.a];
-        const bProj = projectedAtoms[bond.b];
-        
+        // Draw diamond shard face
         ctx.beginPath();
-        ctx.moveTo(aProj.sx, aProj.sy);
-        ctx.lineTo(bProj.sx, bProj.sy);
-        
-        const isBondHighlighted = (activeAtom && (activeAtom.index === bond.a || activeAtom.index === bond.b));
-        ctx.strokeStyle = isBondHighlighted ? bondHighlightColor : bondColor;
-        ctx.lineWidth = isBondHighlighted ? 2.5 : 1.2;
-        ctx.stroke();
-      });
-
-      // Sort atoms back-to-front (Painter's algorithm)
-      const sortedPa = [...projectedAtoms].sort((a, b) => b.sz - a.sz);
-
-      // Draw Atoms
-      sortedPa.forEach(pa => {
-        const radius = pa.radius * pa.scale;
-        
-        // Dynamic node gradient
-        const grad = ctx.createRadialGradient(
-          pa.sx - radius * 0.3,
-          pa.sy - radius * 0.3,
-          radius * 0.05,
-          pa.sx,
-          pa.sy,
-          radius
-        );
-
-        const isActive = activeAtom && activeAtom.index === pa.index;
-        
-        if (isActive) {
-          // Vibrating glowing shadow
-          ctx.shadowBlur = 18;
-          ctx.shadowColor = pa.color;
-          
-          grad.addColorStop(0, "#ffffff");
-          grad.addColorStop(0.3, pa.color);
-          grad.addColorStop(1, "#000000");
-        } else {
-          ctx.shadowBlur = 0;
-          grad.addColorStop(0, "#ffffff");
-          grad.addColorStop(0.4, pa.color);
-          grad.addColorStop(1, "rgba(0,0,0,0.85)");
-        }
-
-        ctx.fillStyle = grad;
-        ctx.beginPath();
-        ctx.arc(pa.sx, pa.sy, radius, 0, Math.PI * 2);
+        ctx.moveTo(0, -6 * scale);
+        ctx.lineTo(4 * scale, 0);
+        ctx.lineTo(0, 6 * scale);
+        ctx.lineTo(-4 * scale, 0);
+        ctx.closePath();
+        ctx.fillStyle = color;
         ctx.fill();
 
-        // Subtle outer border ring
-        ctx.strokeStyle = isActive ? pa.color : (isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.1)");
-        ctx.lineWidth = isActive ? 2 : 1;
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 0.8;
         ctx.stroke();
-        
-        ctx.shadowBlur = 0; // Reset
-
-        // Render symbol letters inside the active/hovered atoms
-        if (pa.scale > 0.6) {
-          ctx.fillStyle = "#ffffff";
-          ctx.font = `bold ${Math.max(7, Math.floor(7 * pa.scale))}px monospace`;
-          ctx.textAlign = "center";
-          ctx.textBaseline = "middle";
-          ctx.fillText(pa.symbol, pa.sx, pa.sy);
-        }
+        ctx.restore();
       });
 
-      // Draw pointer tag connector line to the active hovered atom
-      if (activeAtom) {
-        ctx.strokeStyle = activeAtom.color;
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(activeAtom.sx, activeAtom.sy);
-        ctx.lineTo(activeAtom.sx + 40, activeAtom.sy - 30);
-        ctx.lineTo(activeAtom.sx + 100, activeAtom.sy - 30);
-        ctx.stroke();
+      // 6. Immersive QR Holographic Scan Lines (Sweeping horizontal plane)
+      const sweepYOffset = Math.sin(scannerPhase) * 110;
+      const laserY = centerY + sweepYOffset * cosX;
 
-        ctx.fillStyle = isDark ? "#ffffff" : "#000000";
-        ctx.font = "bold 9px monospace";
-        ctx.textAlign = "left";
-        ctx.fillText(activeAtom.label, activeAtom.sx + 45, activeAtom.sy - 35);
-      }
+      // Draw horizontal holographic line across LIMS viewport
+      ctx.save();
+      const grad = ctx.createLinearGradient(centerX - 160, laserY, centerX + 160, laserY);
+      grad.addColorStop(0, "rgba(29, 161, 232, 0)");
+      grad.addColorStop(0.5, "rgba(29, 161, 232, 0.85)");
+      grad.addColorStop(1, "rgba(29, 161, 232, 0)");
+
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = 2.5;
+      ctx.shadowBlur = 15;
+      ctx.shadowColor = "#1DA1E8";
+      ctx.beginPath();
+      ctx.moveTo(centerX - 160, laserY);
+      ctx.lineTo(centerX + 160, laserY);
+      ctx.stroke();
+      ctx.restore();
+
+      // Draw telemetry scanning HUD
+      ctx.strokeStyle = "rgba(29, 161, 232, 0.15)";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, 130, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.setLineDash([4, 8]);
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, 150, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]); // Reset
+
+      // 7. Geological Terrain Depth Layers (Curved layered silhouettes at the bottom)
+      const terrainShift = (mouseX !== -9999 ? (mouseX - centerX) * 0.08 : 0);
+      
+      // Bottom Layer 1
+      ctx.fillStyle = isDark ? "rgba(13, 23, 35, 0.65)" : "rgba(226, 232, 240, 0.85)";
+      ctx.beginPath();
+      ctx.moveTo(0, canvasHeight);
+      ctx.quadraticCurveTo(
+        canvasWidth * 0.4 + terrainShift,
+        canvasHeight - 65,
+        canvasWidth,
+        canvasHeight - 20
+      );
+      ctx.lineTo(canvasWidth, canvasHeight);
+      ctx.closePath();
+      ctx.fill();
+
+      // Bottom Layer 2
+      ctx.fillStyle = isDark ? "rgba(7, 17, 28, 0.8)" : "rgba(203, 213, 225, 0.95)";
+      ctx.beginPath();
+      ctx.moveTo(0, canvasHeight);
+      ctx.quadraticCurveTo(
+        canvasWidth * 0.65 - terrainShift,
+        canvasHeight - 45,
+        canvasWidth,
+        canvasHeight - 35
+      );
+      ctx.lineTo(canvasWidth, canvasHeight);
+      ctx.closePath();
+      ctx.fill();
 
       animationFrameId = requestAnimationFrame(render);
     };
@@ -351,47 +404,29 @@ function Scientific3DVisualizer() {
       canvas.removeEventListener("mousemove", handleMouseMove);
       canvas.removeEventListener("mousedown", handleMouseDown);
       window.removeEventListener("mouseup", handleMouseUp);
-      canvas.removeEventListener("mouseleave", handleMouseLeave);
     };
   }, []);
 
   return (
-    <div className="relative w-full h-[320px] md:h-[400px] flex items-center justify-center">
+    <div className="relative w-full h-[360px] md:h-[450px] flex items-center justify-center overflow-hidden">
       <canvas 
         ref={canvasRef} 
         className="w-full h-full cursor-grab active:cursor-grabbing select-none"
-        title="Left-click and drag to rotate Quartz chemical model"
+        title="Interact with geological mineral core visualizer"
       />
       
-      {/* Absolute top dashboard indicators */}
-      <div className="absolute top-4 left-4 text-left font-mono text-[9px] text-muted-foreground bg-muted/40 backdrop-blur-sm border border-border/50 py-1.5 px-2.5 rounded space-y-1 select-none pointer-events-none">
-        <div className="flex items-center gap-1.5">
-          <span className="size-1.5 rounded-full bg-primary animate-pulse" />
-          <span>SYS_MODEL: <span className="text-foreground">QUARTZ.SiO2</span></span>
+      {/* Holographic Digital Overlay HUD */}
+      <div className="absolute top-6 left-6 text-left font-mono text-[9px] text-primary/70 bg-card/20 backdrop-blur-md border border-primary/20 py-2 px-3 rounded space-y-1 select-none pointer-events-none tracking-wider">
+        <div className="flex items-center gap-2">
+          <span className="size-2 rounded-full bg-primary animate-pulse" />
+          <span>ORE_METALLICITY: <span className="text-foreground">GOLD_LITHIUM_COPPER</span></span>
         </div>
-        <div>AXES_ROTATION: [X: {hoveredAtom ? "LOCK" : "AUTO"} · Y: AUTO]</div>
-        <div>FPS_VAL: <span className="text-success font-semibold">60.00 Hz (GPU)</span></div>
+        <div>SYS_LOCK: <span className="text-success font-bold font-mono">TRACKING_ACTIVE</span></div>
+        <div>SCANNER_GRID: <span className="text-accent font-bold">QR_BARCODE_READY</span></div>
       </div>
 
-      <div className="absolute bottom-4 right-4 pointer-events-none">
-        <AnimatePresence>
-          {hoveredAtom && (
-            <motion.div 
-              initial={{ opacity: 0, y: 6, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 4, scale: 0.95 }}
-              className="rounded-lg border border-border bg-card/90 backdrop-blur-md px-3.5 py-2 text-left shadow-lg"
-            >
-              <div className="flex items-center gap-2">
-                <span className="grid size-5 place-items-center rounded-full text-[9px] font-bold text-white font-mono" style={{ backgroundColor: hoveredAtom.color }}>
-                  {hoveredAtom.symbol}
-                </span>
-                <span className="text-xs font-semibold text-foreground">{hoveredAtom.label}</span>
-              </div>
-              <p className="text-[9px] text-muted-foreground mt-1 font-mono">3D_COORD: [X: {hoveredAtom.x} · Y: {hoveredAtom.y} · Z: {hoveredAtom.z}]</p>
-            </motion.div>
-          )}
-        </AnimatePresence>
+      <div className="absolute bottom-6 right-6 font-mono text-[8px] text-muted-foreground bg-card/25 py-1.5 px-2.5 border border-border/40 rounded pointer-events-none select-none tracking-widest">
+        COORD_DEPTH: [Z_CAMERA: 420.00]
       </div>
     </div>
   );
@@ -448,11 +483,13 @@ function Landing() {
         </div>
       </header>
 
-      {/* Hero with split columns incorporating molecular visualizer */}
-      <section className="relative overflow-hidden border-b border-border/40">
-        <div className="absolute inset-0 gradient-mesh opacity-90" />
-        <div className="absolute inset-0 grid-pattern opacity-30 [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_70%)]" />
-        <div className="relative mx-auto max-w-7xl px-6 py-16 lg:py-24">
+      {/* Fullscreen Immersive Hero Section */}
+      <section className="relative overflow-hidden border-b border-border/20 bg-background min-h-[calc(100vh-64px)] flex items-center">
+        {/* Soft atmospheric gradient mesh */}
+        <div className="absolute inset-0 gradient-mesh opacity-70" />
+        <div className="absolute inset-0 grid-pattern opacity-15 [mask-image:radial-gradient(ellipse_at_center,black_40%,transparent_80%)]" />
+        
+        <div className="relative mx-auto max-w-7xl px-6 py-12 lg:py-20 w-full z-10">
           <div className="grid gap-12 lg:grid-cols-12 lg:items-center">
             
             {/* Left Column: Heading and CTAs */}
@@ -460,81 +497,83 @@ function Landing() {
               variants={containerVariants}
               initial="hidden"
               animate="visible"
-              className="lg:col-span-7 text-left space-y-6"
+              className="lg:col-span-7 text-left space-y-8"
             >
               <motion.div variants={childRevealVariants}>
-                <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card/75 px-3 py-1.5 text-xs font-semibold text-muted-foreground backdrop-blur-sm select-none">
-                  <span className="size-2 rounded-full bg-success animate-pulse" />
-                  Trusted by 240+ labs · ISO 17025 ready
+                <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1.5 text-[10px] font-bold font-mono tracking-widest text-primary uppercase select-none">
+                  <span className="size-2 rounded-full bg-primary animate-pulse" />
+                  UNDP Integrated · ISO 17025 Ready
                 </span>
               </motion.div>
               
               <motion.h1 
                 variants={childRevealVariants}
-                className="text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl text-foreground leading-[1.08]"
+                className="text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl text-foreground leading-[1.05] font-display"
               >
-                The modern <span className="text-gradient font-black">geochemical LIMS</span> built for production labs
+                Track Every <span className="text-gradient font-black">Geological Sample</span> With Scientific Precision.
               </motion.h1>
               
               <motion.p 
                 variants={childRevealVariants}
-                className="text-base sm:text-lg text-muted-foreground max-w-2xl leading-relaxed"
+                className="text-base sm:text-lg text-muted-foreground max-w-xl leading-relaxed font-sans"
               >
-                From sample intake to certified report — one unified, real-time platform for chain-of-custody, 
-                automated preparation steps, QA/QC anomaly flagging, and customer delivery.
+                GeoChem Suite digitizes laboratory workflows from intake to analytical reporting. Secure custodial tracking, automatic preparation tracking, and instant QA/QC flagging.
               </motion.p>
               
               <motion.div 
                 variants={childRevealVariants}
-                className="flex flex-wrap items-center gap-3 pt-2"
+                className="flex flex-wrap items-center gap-4 pt-2"
               >
-                <Link to="/app" className="inline-flex items-center gap-2 rounded-lg gradient-primary px-5.5 py-3 text-sm font-semibold text-white shadow-md hover:shadow-lg hover:shadow-primary/10 transition-all hover:-translate-y-0.5">
-                  Open live demo <ArrowRight className="size-4" />
+                <Link to="/app" className="inline-flex items-center gap-2 rounded-lg gradient-primary px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-primary/10 hover:shadow-primary/25 transition-all hover:-translate-y-0.5 active-scale-spring font-display">
+                  Launch Platform <ArrowRight className="size-4" />
                 </Link>
-                <Link to="/portal" className="inline-flex items-center gap-2 rounded-lg border border-border bg-card/60 backdrop-blur-sm px-5.5 py-3 text-sm font-semibold hover:bg-muted text-foreground transition-all hover:-translate-y-0.5">
-                  Customer portal preview
+                <Link to="/portal" className="inline-flex items-center gap-2 rounded-lg border border-border bg-card/45 backdrop-blur-md px-6 py-3.5 text-sm font-semibold hover:bg-muted text-foreground transition-all hover:-translate-y-0.5 active-scale-spring font-display">
+                  Request Demo
                 </Link>
               </motion.div>
 
               <motion.div 
                 variants={childRevealVariants}
-                className="grid grid-cols-3 gap-4 border-t border-border/60 pt-6 max-w-md text-xs font-semibold text-muted-foreground"
+                className="grid grid-cols-3 gap-6 border-t border-border/40 pt-8 max-w-lg text-[10px] font-bold font-mono uppercase tracking-widest text-muted-foreground"
               >
                 <div>
-                  <span className="text-xl font-bold text-foreground block">99.8%</span>
-                  Uptime guaranteed
+                  <span className="text-2xl font-black text-foreground block font-display">99.98%</span>
+                  Uptime Guaranteed
                 </div>
                 <div>
-                  <span className="text-xl font-bold text-foreground block">&lt; 3s</span>
-                  Intake response
+                  <span className="text-2xl font-black text-foreground block font-display">&lt; 1.5s</span>
+                  Intake Latency
                 </div>
                 <div>
-                  <span className="text-xl font-bold text-foreground block">Zero</span>
-                  Manual sheet errors
+                  <span className="text-2xl font-black text-foreground block font-display">Zero</span>
+                  Manual Errors
                 </div>
               </motion.div>
             </motion.div>
             
-            {/* Right Column: 3D Crystal LIMS Viewport */}
+            {/* Right Column: 3D Geological Core Viewport */}
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ delay: 0.25, duration: 0.7, type: "spring" }}
+              transition={{ delay: 0.25, duration: 0.8, type: "spring", stiffness: 70 }}
               className="lg:col-span-5 relative"
             >
-              <div className="rounded-2xl border border-border/80 bg-card/75 backdrop-blur-md shadow-2xl overflow-hidden relative group">
-                <div className="flex items-center justify-between border-b border-border/60 px-4 py-2.5 bg-muted/20">
-                  <div className="flex items-center gap-1.5">
+              <div className="rounded-2xl border border-primary/25 bg-card/65 backdrop-blur-md shadow-2xl overflow-hidden relative group hover-glow">
+                {/* Visual Glare Layer */}
+                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent pointer-events-none z-10" />
+                
+                <div className="flex items-center justify-between border-b border-border/40 px-4 py-3 bg-muted/15">
+                  <div className="flex items-center gap-1.5 select-none">
                     <span className="size-2 rounded-full bg-destructive/60" />
                     <span className="size-2 rounded-full bg-warning/60" />
                     <span className="size-2 rounded-full bg-success/60" />
-                    <span className="ml-2 text-[10px] text-muted-foreground font-mono font-bold tracking-wide">VIEWPORT-3D: CRYSTAL_LATTICE</span>
+                    <span className="ml-2.5 text-[9px] text-muted-foreground font-mono font-bold tracking-widest">3D_ORE_SPECTROSCOPY</span>
                   </div>
-                  <div className="flex items-center gap-1 text-primary text-[9px] font-mono font-bold">
-                    <Sparkles className="size-3 animate-pulse" /> LIVE_RENDER
+                  <div className="flex items-center gap-1.5 text-primary text-[9px] font-mono font-bold tracking-wider">
+                    <Sparkles className="size-3 animate-pulse text-accent" /> CINEMATIC_RENDER
                   </div>
                 </div>
-                <Scientific3DVisualizer />
+                <CinematicGeologicalHeroVisualizer />
               </div>
             </motion.div>
 
