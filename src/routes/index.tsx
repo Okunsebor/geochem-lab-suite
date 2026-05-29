@@ -7,13 +7,6 @@ import {
   TrendingUp, AlertTriangle, Clock, Layers
 } from "lucide-react";
 
-// Real Mineral image assets
-import chromiumImg from "../../assets/minerals/chromium.png";
-import copperImg from "../../assets/minerals/copper.png";
-import diamondImg from "../../assets/minerals/diamond.png";
-import goldOreImg from "../../assets/minerals/gold ore.png";
-import lithiumOreImg from "../../assets/minerals/lithium ore.png";
-
 export const Route = createFileRoute("/")(({
   component: Landing,
   head: () => ({
@@ -23,148 +16,6 @@ export const Route = createFileRoute("/")(({
     ],
   }),
 }) as any);
-
-interface Particle {
-  x: number;
-  y: number;
-  z: number;
-  size: number;
-  speedY: number;
-  rotation: number;
-  rotationSpeed: number;
-  imageIndex: number;
-  color: string;
-}
-
-// ─── BFS background eraser ─────────────────────────────────────────────────
-function cleanImageBackground(img: HTMLImageElement): HTMLCanvasElement {
-  const canvas = document.createElement("canvas");
-  canvas.width = img.naturalWidth;
-  canvas.height = img.naturalHeight;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return canvas;
-  ctx.drawImage(img, 0, 0);
-  const w = canvas.width, h = canvas.height;
-  const imgData = ctx.getImageData(0, 0, w, h);
-  const data = imgData.data;
-  const isBg = (r: number, g: number, b: number, a: number) => {
-    if (a === 0) return true;
-    const mono = Math.abs(r - g) < 12 && Math.abs(g - b) < 12 && Math.abs(b - r) < 12;
-    return mono && r > 185;
-  };
-  const queue: [number, number][] = [];
-  const visited = new Uint8Array(w * h);
-  for (let x = 0; x < w; x++) {
-    const t = x; if (!visited[t] && isBg(data[t * 4], data[t * 4 + 1], data[t * 4 + 2], data[t * 4 + 3])) { queue.push([x, 0]); visited[t] = 1; }
-    const b2 = (h - 1) * w + x; if (!visited[b2] && isBg(data[b2 * 4], data[b2 * 4 + 1], data[b2 * 4 + 2], data[b2 * 4 + 3])) { queue.push([x, h - 1]); visited[b2] = 1; }
-  }
-  for (let y = 0; y < h; y++) {
-    const l = y * w; if (!visited[l] && isBg(data[l * 4], data[l * 4 + 1], data[l * 4 + 2], data[l * 4 + 3])) { queue.push([0, y]); visited[l] = 1; }
-    const r2 = y * w + (w - 1); if (!visited[r2] && isBg(data[r2 * 4], data[r2 * 4 + 1], data[r2 * 4 + 2], data[r2 * 4 + 3])) { queue.push([w - 1, y]); visited[r2] = 1; }
-  }
-  let head = 0;
-  while (head < queue.length) {
-    const [cx, cy] = queue[head++];
-    data[(cy * w + cx) * 4 + 3] = 0;
-    for (const [nx, ny] of [[cx + 1, cy], [cx - 1, cy], [cx, cy + 1], [cx, cy - 1]]) {
-      if (nx >= 0 && nx < w && ny >= 0 && ny < h) {
-        const ni = ny * w + nx;
-        if (!visited[ni] && isBg(data[ni * 4], data[ni * 4 + 1], data[ni * 4 + 2], data[ni * 4 + 3])) { queue.push([nx, ny]); visited[ni] = 1; }
-      }
-    }
-  }
-  ctx.putImageData(imgData, 0, 0);
-  return canvas;
-}
-
-// ─── Background Canvas Visualizer ─────────────────────────────────────────
-function CinematicGeologicalHeroVisualizer() {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-    let animId: number;
-    let rotX = 0.15, rotY = 0.3, tRotX = 0.15, tRotY = 0.3;
-    let mouseX = -9999, cW = 0, cH = 0, scanPhase = 0;
-    const imgUrls = [chromiumImg, copperImg, diamondImg, goldOreImg, lithiumOreImg];
-    const preloaded: (HTMLImageElement | HTMLCanvasElement)[] = [];
-    imgUrls.forEach((url, i) => {
-      const img = new Image();
-      img.src = url;
-      img.onload = () => { preloaded[i] = cleanImageBackground(img); };
-      preloaded.push(img);
-    });
-    const particles: Particle[] = Array.from({ length: 5 }).map(() => ({
-      x: (Math.random() - 0.5) * 550, y: (Math.random() - 0.5) * 550, z: (Math.random() - 0.5) * 450,
-      size: Math.random() * 0.4 + 0.5, speedY: -(Math.random() * 0.22 + 0.10),
-      rotation: Math.random() * Math.PI * 2, rotationSpeed: (Math.random() - 0.5) * 0.006,
-      imageIndex: Math.floor(Math.random() * imgUrls.length),
-      color: Math.random() > 0.5 ? "#1DA1E8" : "#F4C430"
-    }));
-    const resize = () => {
-      const r = canvas.getBoundingClientRect(); cW = r.width; cH = r.height;
-      canvas.width = cW * devicePixelRatio; canvas.height = cH * devicePixelRatio;
-      ctx.resetTransform(); ctx.scale(devicePixelRatio, devicePixelRatio);
-    };
-    resize(); window.addEventListener("resize", resize);
-    const onMove = (e: MouseEvent) => {
-      const r = canvas.getBoundingClientRect(); mouseX = e.clientX - r.left;
-      const my = e.clientY - r.top;
-      tRotY = 0.3 + (mouseX - cW / 2) * 0.0002; tRotX = 0.15 + (my - cH / 2) * 0.0002;
-    };
-    canvas.addEventListener("mousemove", onMove);
-    const render = () => {
-      ctx.clearRect(0, 0, cW, cH);
-      rotX += (tRotX - rotX) * 0.05; rotY += (tRotY - rotY) * 0.05;
-      const cosX = Math.cos(rotX), sinX = Math.sin(rotX), cosY = Math.cos(rotY), sinY = Math.sin(rotY);
-      const cx = cW / 2, cy = cH / 2, dist = 420;
-      particles.forEach(p => {
-        p.y += p.speedY; p.rotation += p.rotationSpeed;
-        if (p.y < -280) p.y = 280;
-        const x1 = p.x * cosY - p.z * sinY, z1 = p.x * sinY + p.z * cosY;
-        const y2 = p.y * cosX - z1 * sinX, z2 = p.y * sinX + z1 * cosX;
-        const sc = dist / (dist + z2), sx = cx + x1 * sc, sy = cy + y2 * sc;
-        if (sx >= -50 && sx <= cW + 50 && sy >= -50 && sy <= cH + 50) {
-          const img = preloaded[p.imageIndex];
-          const ok = img instanceof HTMLCanvasElement || (img && img.complete && img.naturalWidth !== 0);
-          if (ok) {
-            ctx.save(); ctx.translate(sx, sy); ctx.rotate(p.rotation);
-            const sz = p.size * sc * 11;
-            ctx.globalAlpha = Math.max(0.18, Math.min(0.80, sc * 0.9));
-            ctx.drawImage(img, -sz / 2, -sz / 2, sz, sz);
-            ctx.restore(); ctx.globalAlpha = 1;
-          }
-        }
-      });
-      scanPhase += 0.010;
-      const laserY = cy + Math.sin(scanPhase) * 90 * Math.cos(rotX);
-      ctx.save();
-      const g = ctx.createLinearGradient(cx - 140, laserY, cx + 140, laserY);
-      g.addColorStop(0, "rgba(29,161,232,0)"); g.addColorStop(0.5, "rgba(29,161,232,0.25)"); g.addColorStop(1, "rgba(29,161,232,0)");
-      ctx.strokeStyle = g; ctx.lineWidth = 1.5; ctx.shadowBlur = 6; ctx.shadowColor = "#1DA1E8";
-      ctx.beginPath(); ctx.moveTo(cx - 140, laserY); ctx.lineTo(cx + 140, laserY); ctx.stroke();
-      ctx.restore();
-      ctx.strokeStyle = "rgba(29,161,232,0.05)"; ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.arc(cx, cy, 110, 0, Math.PI * 2); ctx.stroke();
-      ctx.setLineDash([3, 7]); ctx.beginPath(); ctx.arc(cx, cy, 130, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
-      const shift = mouseX !== -9999 ? (mouseX - cx) * 0.04 : 0;
-      ctx.fillStyle = "rgba(13,23,35,0.55)";
-      ctx.beginPath(); ctx.moveTo(0, cH); ctx.quadraticCurveTo(cW * 0.4 + shift, cH - 55, cW, cH - 18); ctx.lineTo(cW, cH); ctx.closePath(); ctx.fill();
-      ctx.fillStyle = "rgba(7,17,28,0.7)";
-      ctx.beginPath(); ctx.moveTo(0, cH); ctx.quadraticCurveTo(cW * 0.65 - shift, cH - 38, cW, cH - 30); ctx.lineTo(cW, cH); ctx.closePath(); ctx.fill();
-      animId = requestAnimationFrame(render);
-    };
-    render();
-    return () => { cancelAnimationFrame(animId); window.removeEventListener("resize", resize); canvas.removeEventListener("mousemove", onMove); };
-  }, []);
-  return (
-    <div className="absolute inset-0">
-      <canvas ref={canvasRef} className="w-full h-full" />
-    </div>
-  );
-}
 
 // ─── Typewriter Subheading ─────────────────────────────────────────────────
 const TYPEWRITER_PHRASES = [
@@ -814,10 +665,7 @@ function Landing() {
 
       {/* ── HERO ─────────────────────────────────────────────── */}
       <section className="relative overflow-hidden border-b border-border/20 bg-background min-h-[calc(100vh-64px)] flex items-center">
-        {/* Canvas bg */}
-        <div className="absolute inset-0 z-0 pointer-events-none opacity-70">
-          <CinematicGeologicalHeroVisualizer />
-        </div>
+
         {/* Gradient mesh */}
         <div className="absolute inset-0 gradient-mesh opacity-40 pointer-events-none" />
         <div className="absolute inset-0 grid-pattern opacity-[0.07] [mask-image:radial-gradient(ellipse_at_center,black_40%,transparent_80%)] pointer-events-none" />
