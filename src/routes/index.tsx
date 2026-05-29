@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   FlaskConical, ShieldCheck, Workflow, BarChart3, ScanBarcode,
   ArrowRight, CheckCircle2, Beaker, Building2, Cpu, Activity,
-  TrendingUp, AlertTriangle, Clock, ChevronRight, Layers
+  TrendingUp, AlertTriangle, Clock, Layers
 } from "lucide-react";
 
 // Real Mineral image assets
@@ -671,6 +671,7 @@ function Workspace3DShowcase() {
                 lims.geochem-suite.io{WORKSPACE_TABS[activeTab].path}
               </motion.span>
             </AnimatePresence>
+          </div>
           <div className="flex gap-0.5 shrink-0">
             {WORKSPACE_TABS.map((t, i) => (
               <button key={t.id} onClick={() => handleTab(i)}
@@ -702,7 +703,7 @@ function Workspace3DShowcase() {
               </div>
             </div>
             <div className="px-2 space-y-0.5">
-              <div className="text-[7px] text-slate-300 font-mono font-bold uppercase tracking-widest px-2 pt-2 pb-1">Workspace</div>
+              <div className="text-[7px] text-slate-400 font-mono font-bold uppercase tracking-widest px-2 pt-2 pb-1">Workspace</div>
               {[
                 { label: "Dashboard", icon: <BarChart3 className="size-3" />, key: "dashboard" },
                 { label: "Samples", icon: <Beaker className="size-3" />, key: "samples" },
@@ -720,9 +721,9 @@ function Workspace3DShowcase() {
                   </div>
                 );
               })}
-              <div className="text-[7px] text-slate-300 font-mono font-bold uppercase tracking-widest px-2 pt-3 pb-1">Operations</div>
+              <div className="text-[7px] text-slate-400 font-mono font-bold uppercase tracking-widest px-2 pt-3 pb-1">Operations</div>
               {[["Instruments", ""], ["Storage", ""], ["Activity Logs", ""], ["Analytics", ""]].map(([l]) => (
-                <div key={l} className="flex items-center gap-1.5 px-2 py-1.5 rounded-md text-[9px] text-slate-300 cursor-default">{l}</div>
+                <div key={l} className="flex items-center gap-1.5 px-2 py-1.5 rounded-md text-[9px] text-slate-400 hover:text-slate-600 cursor-default">{l}</div>
               ))}
             </div>
           </div>
@@ -833,7 +834,7 @@ function Landing() {
             </motion.div>
 
             <motion.h1 variants={item}
-              className="text-4xl font-extrabold tracking-tight sm:text-5xl xl:text-6xl text-foreground leading-[1.05] font-display">
+              className="text-3xl font-extrabold tracking-tight sm:text-5xl xl:text-6xl text-foreground leading-[1.05] font-display">
               Track Every{" "}
               <span className="text-gradient font-black">Geological Sample</span>{" "}
 
