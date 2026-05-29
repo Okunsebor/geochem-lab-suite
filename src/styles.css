@@ -257,10 +257,10 @@
     animation: dna-helix-wave 1.4s ease-in-out infinite;
   }
   .dna-helix-node:nth-child(even) {
-    background-color: oklch(0.62 0.18 195);
+    background-color: rgba(0, 110, 181, 0.55);
   }
   .dna-helix-node:nth-child(3n) {
-    background-color: oklch(0.75 0.16 75);
+    background-color: #D4A017;
   }
   .dna-helix-node:nth-child(1) { animation-delay: -1.2s; }
   .dna-helix-node:nth-child(2) { animation-delay: -1.05s; }
