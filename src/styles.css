@@ -302,4 +302,29 @@
   .active-scale-spring:hover {
     transform: scale(1.015);
   }
+
+  /* Video player simulated sweeps */
+  .animate-swipe {
+    animation: swipe 4s linear infinite;
+  }
+  @keyframes swipe {
+    0% { transform: translateY(-100%); }
+    100% { transform: translateY(400%); }
+  }
+
+  .animate-swipe-h {
+    animation: swipe-h 5s ease-in-out infinite alternate;
+  }
+  @keyframes swipe-h {
+    0% { left: 0%; }
+    100% { left: 100%; }
+  }
+
+  .animate-slide-up {
+    animation: slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  @keyframes slide-up {
+    0% { transform: translateY(8px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+  }
 }
