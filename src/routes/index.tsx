@@ -6,6 +6,7 @@ import {
   ArrowRight, CheckCircle2, Beaker, Building2, Cpu, Activity,
   TrendingUp, AlertTriangle, Clock, Layers
 } from "lucide-react";
+import GeologicalWorkflowStorytelling from "../components/lims/GeologicalWorkflowStorytelling";
 
 export const Route = createFileRoute("/")(({
   component: Landing,
@@ -728,11 +729,12 @@ function Landing() {
         </div>
       </section>
 
+      <GeologicalWorkflowStorytelling />
+
       {/* ── MODULES ──────────────────────────────────────────── */}
       <section id="modules" className="border-t border-border bg-card/25">
         <div className="mx-auto max-w-7xl px-6 py-24">
           <div className="max-w-3xl text-center mx-auto">
-            <p className="text-xs font-bold uppercase tracking-widest text-primary">Core Modules</p>
             <h2 className="mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl text-foreground font-display">
               A complete laboratory workflow, end-to-end
             </h2>
@@ -769,7 +771,7 @@ function Landing() {
       <section id="platform" className="mx-auto max-w-7xl px-6 py-24">
         <div className="grid gap-12 lg:grid-cols-2 items-center">
           <div className="space-y-6 text-left">
-            <p className="text-xs font-bold uppercase tracking-widest text-primary">Precision Platform</p>
+
             <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl text-foreground">
               Built for the realities of an assay lab
             </h2>
