@@ -66,6 +66,103 @@ interface Particle {
   color: string;
 }
 
+// Helper function to clean checkered backgrounds from mineral specimen images using BFS flood-fill
+function cleanImageBackground(img: HTMLImageElement): HTMLCanvasElement {
+  const canvas = document.createElement("canvas");
+  canvas.width = img.naturalWidth;
+  canvas.height = img.naturalHeight;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return canvas;
+
+  ctx.drawImage(img, 0, 0);
+
+  const w = canvas.width;
+  const h = canvas.height;
+  const imgData = ctx.getImageData(0, 0, w, h);
+  const data = imgData.data;
+
+  // Helper to identify gray/white checkerboard pixel
+  const isBg = (r: number, g: number, b: number, a: number) => {
+    if (a === 0) return true; // already transparent
+    const isMonochrome = Math.abs(r - g) < 12 && Math.abs(g - b) < 12 && Math.abs(b - r) < 12;
+    if (!isMonochrome) return false;
+    // Cover anything from light gray to white: e.g. RGB > 185
+    return r > 185;
+  };
+
+  const queue: [number, number][] = [];
+  const visited = new Uint8Array(w * h);
+
+  // Border pixel initializer
+  for (let x = 0; x < w; x++) {
+    // Top border
+    const idxTop = x;
+    if (isBg(data[idxTop * 4], data[idxTop * 4 + 1], data[idxTop * 4 + 2], data[idxTop * 4 + 3])) {
+      queue.push([x, 0]);
+      visited[idxTop] = 1;
+    }
+    // Bottom border
+    const idxBot = (h - 1) * w + x;
+    if (isBg(data[idxBot * 4], data[idxBot * 4 + 1], data[idxBot * 4 + 2], data[idxBot * 4 + 3])) {
+      queue.push([x, h - 1]);
+      visited[idxBot] = 1;
+    }
+  }
+
+  for (let y = 0; y < h; y++) {
+    // Left border
+    const idxLeft = y * w;
+    if (isBg(data[idxLeft * 4], data[idxLeft * 4 + 1], data[idxLeft * 4 + 2], data[idxLeft * 4 + 3])) {
+      if (!visited[idxLeft]) {
+        queue.push([0, y]);
+        visited[idxLeft] = 1;
+      }
+    }
+    // Right border
+    const idxRight = y * w + (w - 1);
+    if (isBg(data[idxRight * 4], data[idxRight * 4 + 1], data[idxRight * 4 + 2], data[idxRight * 4 + 3])) {
+      if (!visited[idxRight]) {
+        queue.push([w - 1, y]);
+        visited[idxRight] = 1;
+      }
+    }
+  }
+
+  // BFS Queue loop
+  let head = 0;
+  while (head < queue.length) {
+    const [cx, cy] = queue[head++];
+    const idx = (cy * w + cx) * 4;
+    data[idx + 3] = 0; // set alpha to transparent
+
+    const neighbors = [
+      [cx + 1, cy],
+      [cx - 1, cy],
+      [cx, cy + 1],
+      [cx, cy - 1]
+    ];
+
+    for (const [nx, ny] of neighbors) {
+      if (nx >= 0 && nx < w && ny >= 0 && ny < h) {
+        const nIdx = ny * w + nx;
+        if (!visited[nIdx]) {
+          const nr = data[nIdx * 4];
+          const ng = data[nIdx * 4 + 1];
+          const nb = data[nIdx * 4 + 2];
+          const na = data[nIdx * 4 + 3];
+          if (isBg(nr, ng, nb, na)) {
+            queue.push([nx, ny]);
+            visited[nIdx] = 1;
+          }
+        }
+      }
+    }
+  }
+
+  ctx.putImageData(imgData, 0, 0);
+  return canvas;
+}
+
 function CinematicGeologicalHeroVisualizer() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   
@@ -77,10 +174,10 @@ function CinematicGeologicalHeroVisualizer() {
     if (!ctx) return;
 
     let animationFrameId: number;
-    let rotationX = 0.2;
-    let rotationY = 0.4;
-    let targetRotationX = 0.2;
-    let targetRotationY = 0.4;
+    let rotationX = 0.15;
+    let rotationY = 0.3;
+    let targetRotationX = 0.15;
+    let targetRotationY = 0.3;
     const damping = 0.05;
     
     let mouseX = -9999;
@@ -95,63 +192,30 @@ function CinematicGeologicalHeroVisualizer() {
     // QR scanner sweeping variables
     let scannerPhase = 0;
 
-    // 1. Faceted geological crystal core definition (Icosahedron-like core)
-    const vertices: Point3D[] = [
-      { x: 0, y: -100, z: 0 },  // V0: Top Apex
-      { x: 0, y: 100, z: 0 },   // V1: Bottom Apex
-      // Mid-upper ring
-      { x: 65, y: -30, z: 45 },  // V2
-      { x: -65, y: -30, z: 45 }, // V3
-      { x: -65, y: -30, z: -45 },// V4
-      { x: 65, y: -30, z: -45 }, // V5
-      // Mid-lower ring
-      { x: 45, y: 35, z: 65 },   // V6
-      { x: -45, y: 35, z: 65 },  // V7
-      { x: -45, y: 35, z: -65 }, // V8
-      { x: 45, y: 35, z: -65 },  // V9
-    ];
-
-    const faces = [
-      [0, 2, 3], [0, 3, 4], [0, 4, 5], [0, 5, 2], // Top cap
-      [1, 6, 7], [1, 7, 8], [1, 8, 9], [1, 9, 6], // Bottom cap
-      [2, 6, 3], [3, 7, 4], [4, 8, 5], [5, 9, 2], // Upper connectors
-      [3, 6, 7], [4, 7, 8], [5, 8, 9], [2, 9, 6]  // Lower connectors
-    ];
-
-    // Facet mineral coloring (shading is computed dynamically)
-    const faceColors = [
-      "#1DA1E8", "#F4C430", "#f97316", "#1DA1E8",
-      "#f97316", "#F4C430", "#1DA1E8", "#f97316",
-      "#F4C430", "#1DA1E8", "#f97316", "#F4C430",
-      "#1DA1E8", "#f97316", "#F4C430", "#1DA1E8"
-    ];
-
-    // 2. Fragment shards definition (Gold, Lithium, Copper)
-    const fragmentColors = ["#F4C430", "#a5f3fc", "#f97316"];
-    const fragmentSpeeds = [0.005, -0.008, 0.006];
-    const fragmentRadius = [135, 165, 195];
-    const fragmentInclination = [0.2, -0.4, 0.5];
-
     // Load real rock/mineral images inside Canvas preloader
     const imgUrls = [chromiumImg, copperImg, diamondImg, goldOreImg, lithiumOreImg, rockImg];
-    const preloadedImages: HTMLImageElement[] = [];
-    imgUrls.forEach((url) => {
+    const preloadedImages: (HTMLImageElement | HTMLCanvasElement)[] = [];
+    imgUrls.forEach((url, index) => {
       const img = new Image();
       img.src = url;
+      img.onload = () => {
+        const cleanedCanvas = cleanImageBackground(img);
+        preloadedImages[index] = cleanedCanvas;
+      };
       preloadedImages.push(img);
     });
 
-    // 3. Atmospheric drifting particles (real mineral stones and rocks)
-    const particles: Particle[] = Array.from({ length: 45 }).map(() => ({
+    // 3. Atmospheric drifting particles - strictly limited to at most 5 floating specimen pods
+    const particles: Particle[] = Array.from({ length: 5 }).map(() => ({
       x: (Math.random() - 0.5) * 550,
       y: (Math.random() - 0.5) * 550,
-      z: (Math.random() - 0.5) * 550,
-      size: Math.random() * 1.5 + 0.8,
-      speedY: -(Math.random() * 0.35 + 0.15),
+      z: (Math.random() - 0.5) * 450,
+      size: Math.random() * 0.4 + 0.5, // further reduced and optimized size for professional layout
+      speedY: -(Math.random() * 0.22 + 0.10), // slow, premium continuous floating drift
       rotation: Math.random() * Math.PI * 2,
-      rotationSpeed: (Math.random() - 0.5) * 0.015,
+      rotationSpeed: (Math.random() - 0.5) * 0.006,
       imageIndex: Math.floor(Math.random() * imgUrls.length),
-      color: Math.random() > 0.6 ? "#1DA1E8" : (Math.random() > 0.5 ? "#F4C430" : "rgba(255,255,255,0.4)")
+      color: Math.random() > 0.5 ? "#1DA1E8" : "#F4C430"
     }));
 
     const handleResize = () => {
@@ -181,8 +245,8 @@ function CinematicGeologicalHeroVisualizer() {
         prevMouseY = e.clientY;
       } else {
         // Subtle hover parallax target coordinates
-        targetRotationY = 0.4 + (mouseX - canvasWidth / 2) * 0.0005;
-        targetRotationX = 0.2 + (mouseY - canvasHeight / 2) * 0.0005;
+        targetRotationY = 0.3 + (mouseX - canvasWidth / 2) * 0.0003;
+        targetRotationX = 0.15 + (mouseY - canvasHeight / 2) * 0.0003;
       }
     };
 
@@ -219,7 +283,7 @@ function CinematicGeologicalHeroVisualizer() {
       const centerY = canvasHeight / 2;
       const cameraDistance = 420;
 
-      // 1. Draw atmospheric particles (real stone and rock texture images)
+      // 1. Draw atmospheric particles (real mineral specimen pods)
       particles.forEach(p => {
         p.y += p.speedY;
         p.rotation += p.rotationSpeed;
@@ -236,15 +300,19 @@ function CinematicGeologicalHeroVisualizer() {
 
         if (sx >= -50 && sx <= canvasWidth + 50 && sy >= -50 && sy <= canvasHeight + 50) {
           const img = preloadedImages[p.imageIndex];
-          if (img && img.complete && img.naturalWidth !== 0) {
+          const isLoaded = img instanceof HTMLCanvasElement || (img && img.complete && img.naturalWidth !== 0);
+          if (isLoaded) {
             ctx.save();
             ctx.translate(sx, sy);
             ctx.rotate(p.rotation);
-            const size = p.size * scale * 26; // detailed stones (20px to 60px)
             
-            // Soft atmospheric opacity blending based on Z distance camera scale
-            ctx.globalAlpha = Math.max(0.12, Math.min(0.68, scale * 0.9));
+            // Reduced and optimized size for a professional, elegant spacing
+            const size = p.size * scale * 11; 
+            
+            // Draw preloaded mineral directly (no circular pod, no checkered background)
+            ctx.globalAlpha = Math.max(0.20, Math.min(0.85, scale * 0.95));
             ctx.drawImage(img, -size / 2, -size / 2, size, size);
+            
             ctx.restore();
             ctx.globalAlpha = 1.0;
           } else {
@@ -259,129 +327,23 @@ function CinematicGeologicalHeroVisualizer() {
         }
       });
 
-      // 2. Project vertices of geological crystal core
-      const projectedVertices = vertices.map(v => {
-        let x1 = v.x * cosY - v.z * sinY;
-        let z1 = v.x * sinY + v.z * cosY;
-        let y2 = v.y * cosX - z1 * sinX;
-        let z2 = v.y * sinX + z1 * cosX;
+      // [REMOVED] Giant abstract crystalline core projection completely removed to declutter hero page
 
-        const scale = cameraDistance / (cameraDistance + z2);
-        return {
-          x: centerX + x1 * scale,
-          y: centerY + y2 * scale,
-          z: z2
-        };
-      });
-
-      // 3. Facet math flat shading and sorting
-      const sortedFaces = faces.map((face, index) => {
-        const v0 = projectedVertices[face[0]];
-        const v1 = projectedVertices[face[1]];
-        const v2 = projectedVertices[face[2]];
-        
-        // Average depth of face
-        const depth = (v0.z + v1.z + v2.z) / 3;
-
-        // Vector normal math
-        const ux = v1.x - v0.x;
-        const uy = v1.y - v0.y;
-        const vx = v2.x - v0.x;
-        const vy = v2.y - v0.y;
-        const normalZ = ux * vy - uy * vx;
-
-        return { face, index, depth, normalZ };
-      }).sort((a, b) => b.depth - a.depth);
-
-      // 4. Draw crystalline facets
-      sortedFaces.forEach(f => {
-        // Back-face culling logic
-        if (f.normalZ < 0) return;
-
-        const face = f.face;
-        const color = faceColors[f.index];
-        
-        // Simple directional lighting dot product
-        const shadow = Math.max(0.15, Math.min(0.85, (f.depth + 100) / 250));
-        
-        ctx.beginPath();
-        ctx.moveTo(projectedVertices[face[0]].x, projectedVertices[face[0]].y);
-        ctx.lineTo(projectedVertices[face[1]].x, projectedVertices[face[1]].y);
-        ctx.lineTo(projectedVertices[face[2]].x, projectedVertices[face[2]].y);
-        ctx.closePath();
-
-        // Shading composite fill
-        ctx.fillStyle = color;
-        ctx.globalAlpha = isDark ? 0.35 : 0.45;
-        ctx.fill();
-
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 1.2;
-        ctx.globalAlpha = 0.8;
-        ctx.stroke();
-        ctx.globalAlpha = 1.0; // Reset
-      });
-
-      // 5. Draw rotating metallic shards (satellite mineral orbits)
-      scannerPhase += 0.015;
-      fragmentColors.forEach((color, idx) => {
-        const speed = fragmentSpeeds[idx];
-        const rad = fragmentRadius[idx];
-        const inc = fragmentInclination[idx];
-        const angle = scannerPhase * speed * 80;
-
-        // Position coordinates along inclined orbits
-        const fx = Math.cos(angle) * rad;
-        const fz = Math.sin(angle) * rad;
-        const fy = Math.sin(angle) * Math.sin(inc) * rad * 0.4;
-
-        // Transform relative to general viewport rotation
-        let x1 = fx * cosY - fz * sinY;
-        let z1 = fx * sinY + fz * cosY;
-        let y2 = (fy * cosX - z1 * sinX);
-        let z2 = (fy * sinX + z1 * cosX);
-
-        const scale = cameraDistance / (cameraDistance + z2);
-        const sx = centerX + x1 * scale;
-        const sy = centerY + y2 * scale;
-
-        // Draw satellite crystal shard
-        ctx.save();
-        ctx.translate(sx, sy);
-        ctx.rotate(angle * 1.5);
-        ctx.shadowBlur = 10;
-        ctx.shadowColor = color;
-
-        // Draw diamond shard face
-        ctx.beginPath();
-        ctx.moveTo(0, -6 * scale);
-        ctx.lineTo(4 * scale, 0);
-        ctx.lineTo(0, 6 * scale);
-        ctx.lineTo(-4 * scale, 0);
-        ctx.closePath();
-        ctx.fillStyle = color;
-        ctx.fill();
-
-        ctx.strokeStyle = "#ffffff";
-        ctx.lineWidth = 0.8;
-        ctx.stroke();
-        ctx.restore();
-      });
-
-      // 6. Immersive QR Holographic Scan Lines (Sweeping horizontal plane)
+      // 6. Holographic Barcode Laser Sweep (Subtle vertical scan sweep line)
+      scannerPhase += 0.012;
       const sweepYOffset = Math.sin(scannerPhase) * 110;
       const laserY = centerY + sweepYOffset * cosX;
 
-      // Draw horizontal holographic line across LIMS viewport
+      // Draw horizontal holographic laser scan
       ctx.save();
       const grad = ctx.createLinearGradient(centerX - 160, laserY, centerX + 160, laserY);
       grad.addColorStop(0, "rgba(29, 161, 232, 0)");
-      grad.addColorStop(0.5, "rgba(29, 161, 232, 0.85)");
+      grad.addColorStop(0.5, "rgba(29, 161, 232, 0.35)"); // reduced opacity for subtle, clean visual
       grad.addColorStop(1, "rgba(29, 161, 232, 0)");
 
       ctx.strokeStyle = grad;
-      ctx.lineWidth = 2.5;
-      ctx.shadowBlur = 15;
+      ctx.lineWidth = 1.8;
+      ctx.shadowBlur = 8;
       ctx.shadowColor = "#1DA1E8";
       ctx.beginPath();
       ctx.moveTo(centerX - 160, laserY);
@@ -389,8 +351,8 @@ function CinematicGeologicalHeroVisualizer() {
       ctx.stroke();
       ctx.restore();
 
-      // Draw telemetry scanning HUD
-      ctx.strokeStyle = "rgba(29, 161, 232, 0.15)";
+      // Draw subtle telemetry circular scanning HUD
+      ctx.strokeStyle = "rgba(29, 161, 232, 0.06)"; // extremely subtle
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.arc(centerX, centerY, 130, 0, Math.PI * 2);
@@ -403,7 +365,7 @@ function CinematicGeologicalHeroVisualizer() {
       ctx.setLineDash([]); // Reset
 
       // 7. Geological Terrain Depth Layers (Curved layered silhouettes at the bottom)
-      const terrainShift = (mouseX !== -9999 ? (mouseX - centerX) * 0.08 : 0);
+      const terrainShift = (mouseX !== -9999 ? (mouseX - centerX) * 0.05 : 0);
       
       // Bottom Layer 1
       ctx.fillStyle = isDark ? "rgba(13, 23, 35, 0.65)" : "rgba(226, 232, 240, 0.85)";
@@ -452,22 +414,8 @@ function CinematicGeologicalHeroVisualizer() {
       <canvas 
         ref={canvasRef} 
         className="w-full h-full cursor-grab active:cursor-grabbing select-none"
-        title="Interact with geological mineral core visualizer"
+        title="Geological LIMS scanning viewport"
       />
-      
-      {/* Holographic Digital Overlay HUD */}
-      <div className="absolute top-6 left-6 text-left font-mono text-[9px] text-primary/70 bg-card/20 backdrop-blur-md border border-primary/20 py-2 px-3 rounded space-y-1 select-none pointer-events-none tracking-wider">
-        <div className="flex items-center gap-2">
-          <span className="size-2 rounded-full bg-primary animate-pulse" />
-          <span>ORE_METALLICITY: <span className="text-foreground">GOLD_LITHIUM_COPPER</span></span>
-        </div>
-        <div>SYS_LOCK: <span className="text-success font-bold font-mono">TRACKING_ACTIVE</span></div>
-        <div>SCANNER_GRID: <span className="text-accent font-bold">QR_BARCODE_READY</span></div>
-      </div>
-
-      <div className="absolute bottom-6 right-6 font-mono text-[8px] text-muted-foreground bg-card/25 py-1.5 px-2.5 border border-border/40 rounded pointer-events-none select-none tracking-widest">
-        COORD_DEPTH: [Z_CAMERA: 420.00]
-      </div>
     </div>
   );
 }
@@ -542,13 +490,6 @@ function Landing() {
             animate="visible"
             className="flex flex-col items-center justify-center text-center space-y-8 max-w-4xl"
           >
-            <motion.div variants={childRevealVariants}>
-              <span className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/5 px-3 py-1.5 text-[10px] font-bold font-mono tracking-widest text-primary uppercase backdrop-blur-md">
-                <span className="size-2 rounded-full bg-primary animate-pulse" />
-                UNDP Integrated · ISO 17025 Ready
-              </span>
-            </motion.div>
-            
             <motion.h1 
               variants={childRevealVariants}
               className="text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-7xl text-foreground leading-[1.05] font-display max-w-3xl"
