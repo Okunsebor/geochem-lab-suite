@@ -315,16 +315,5 @@ export function generateSamplesPdf(samples: Sample[]): Blob {
   return doc.output("blob");
 }
 
-/**
- * Downloads any given file Blob locally. High performance and streaming compatible.
- */
-export function downloadBlob(blob: Blob, filename: string): void {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-}
+// Re-export downloadBlob from its canonical location for backward compatibility
+export { downloadBlob } from "./report-service";

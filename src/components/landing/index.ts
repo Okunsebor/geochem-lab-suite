@@ -1,0 +1,9 @@
+export { default as TypewriterSubheading } from "./TypewriterSubheading";
+export { default as Workspace3DShowcase } from "./Workspace3DShowcase";
+export { default as WorkflowStorytelling } from "./WorkflowStorytelling";
+export { default as HeaderNav } from "./HeaderNav";
+export { default as HeroSection } from "./HeroSection";
+export { default as ModulesSection } from "./ModulesSection";
+export { default as PlatformSection } from "./PlatformSection";
+export { default as CtaSection } from "./CtaSection";
+export { default as FooterSection } from "./FooterSection";
