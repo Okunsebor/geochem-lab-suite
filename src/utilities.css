@@ -74,14 +74,14 @@
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .hover-glow:hover {
-  border-color: rgba(29, 161, 232, 0.4);
-  box-shadow: 0 0 15px rgba(29, 161, 232, 0.15);
+  border-color: rgba(0, 110, 181, 0.4);
+  box-shadow: 0 0 18px rgba(0, 110, 181, 0.18);
 }
 
 .hover-glow-accent {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .hover-glow-accent:hover {
-  border-color: rgba(244, 196, 48, 0.4);
-  box-shadow: 0 0 15px rgba(244, 196, 48, 0.15);
+  border-color: rgba(212, 160, 23, 0.4);
+  box-shadow: 0 0 18px rgba(212, 160, 23, 0.15);
 }
