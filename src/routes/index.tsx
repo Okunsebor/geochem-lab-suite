@@ -1,9 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FlaskConical, ShieldCheck, Workflow, BarChart3, ScanBarcode,
-  ArrowRight, CheckCircle2, Beaker, Building2, LineChart, Cpu, Sparkles
+  ArrowRight, CheckCircle2, Beaker, Building2, Cpu, Activity,
+  TrendingUp, AlertTriangle, Clock, ChevronRight, Layers
 } from "lucide-react";
 
 // Real Mineral image assets
@@ -14,7 +15,7 @@ import goldOreImg from "../../assets/minerals/gold ore.png";
 import lithiumOreImg from "../../assets/minerals/lithium ore.png";
 import rockImg from "../../assets/textures/rock.png";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/")(({
   component: Landing,
   head: () => ({
     meta: [
@@ -22,37 +23,7 @@ export const Route = createFileRoute("/")({
       { name: "description", content: "GeoChem Suite is a modern Laboratory Information Management System for geochemical analysis — sample intake to report delivery in one workflow." },
     ],
   }),
-});
-
-// Interactive 3D molecular structures rendering Quartz SiO2 and gold pyrite coordinates
-interface Atom {
-  x: number;
-  y: number;
-  z: number;
-  symbol: string;
-  label: string;
-  color: string;
-  radius: number;
-  glow?: string;
-}
-
-interface Bond {
-  a: number;
-  b: number;
-}
-
-interface Star {
-  x: number;
-  y: number;
-  z: number;
-  size: number;
-}
-
-interface Point3D {
-  x: number;
-  y: number;
-  z: number;
-}
+}) as any);
 
 interface Particle {
   x: number;
@@ -66,388 +37,760 @@ interface Particle {
   color: string;
 }
 
-// Helper function to clean checkered backgrounds from mineral specimen images using BFS flood-fill
+// ─── BFS background eraser ─────────────────────────────────────────────────
 function cleanImageBackground(img: HTMLImageElement): HTMLCanvasElement {
   const canvas = document.createElement("canvas");
   canvas.width = img.naturalWidth;
   canvas.height = img.naturalHeight;
   const ctx = canvas.getContext("2d");
   if (!ctx) return canvas;
-
   ctx.drawImage(img, 0, 0);
-
-  const w = canvas.width;
-  const h = canvas.height;
+  const w = canvas.width, h = canvas.height;
   const imgData = ctx.getImageData(0, 0, w, h);
   const data = imgData.data;
-
-  // Helper to identify gray/white checkerboard pixel
   const isBg = (r: number, g: number, b: number, a: number) => {
-    if (a === 0) return true; // already transparent
-    const isMonochrome = Math.abs(r - g) < 12 && Math.abs(g - b) < 12 && Math.abs(b - r) < 12;
-    if (!isMonochrome) return false;
-    // Cover anything from light gray to white: e.g. RGB > 185
-    return r > 185;
+    if (a === 0) return true;
+    const mono = Math.abs(r - g) < 12 && Math.abs(g - b) < 12 && Math.abs(b - r) < 12;
+    return mono && r > 185;
   };
-
   const queue: [number, number][] = [];
   const visited = new Uint8Array(w * h);
-
-  // Border pixel initializer
   for (let x = 0; x < w; x++) {
-    // Top border
-    const idxTop = x;
-    if (isBg(data[idxTop * 4], data[idxTop * 4 + 1], data[idxTop * 4 + 2], data[idxTop * 4 + 3])) {
-      queue.push([x, 0]);
-      visited[idxTop] = 1;
-    }
-    // Bottom border
-    const idxBot = (h - 1) * w + x;
-    if (isBg(data[idxBot * 4], data[idxBot * 4 + 1], data[idxBot * 4 + 2], data[idxBot * 4 + 3])) {
-      queue.push([x, h - 1]);
-      visited[idxBot] = 1;
-    }
+    const t = x; if (!visited[t] && isBg(data[t*4],data[t*4+1],data[t*4+2],data[t*4+3])) { queue.push([x,0]); visited[t]=1; }
+    const b2 = (h-1)*w+x; if (!visited[b2] && isBg(data[b2*4],data[b2*4+1],data[b2*4+2],data[b2*4+3])) { queue.push([x,h-1]); visited[b2]=1; }
   }
-
   for (let y = 0; y < h; y++) {
-    // Left border
-    const idxLeft = y * w;
-    if (isBg(data[idxLeft * 4], data[idxLeft * 4 + 1], data[idxLeft * 4 + 2], data[idxLeft * 4 + 3])) {
-      if (!visited[idxLeft]) {
-        queue.push([0, y]);
-        visited[idxLeft] = 1;
-      }
-    }
-    // Right border
-    const idxRight = y * w + (w - 1);
-    if (isBg(data[idxRight * 4], data[idxRight * 4 + 1], data[idxRight * 4 + 2], data[idxRight * 4 + 3])) {
-      if (!visited[idxRight]) {
-        queue.push([w - 1, y]);
-        visited[idxRight] = 1;
-      }
-    }
+    const l = y*w; if (!visited[l] && isBg(data[l*4],data[l*4+1],data[l*4+2],data[l*4+3])) { queue.push([0,y]); visited[l]=1; }
+    const r2 = y*w+(w-1); if (!visited[r2] && isBg(data[r2*4],data[r2*4+1],data[r2*4+2],data[r2*4+3])) { queue.push([w-1,y]); visited[r2]=1; }
   }
-
-  // BFS Queue loop
   let head = 0;
   while (head < queue.length) {
     const [cx, cy] = queue[head++];
-    const idx = (cy * w + cx) * 4;
-    data[idx + 3] = 0; // set alpha to transparent
-
-    const neighbors = [
-      [cx + 1, cy],
-      [cx - 1, cy],
-      [cx, cy + 1],
-      [cx, cy - 1]
-    ];
-
-    for (const [nx, ny] of neighbors) {
-      if (nx >= 0 && nx < w && ny >= 0 && ny < h) {
-        const nIdx = ny * w + nx;
-        if (!visited[nIdx]) {
-          const nr = data[nIdx * 4];
-          const ng = data[nIdx * 4 + 1];
-          const nb = data[nIdx * 4 + 2];
-          const na = data[nIdx * 4 + 3];
-          if (isBg(nr, ng, nb, na)) {
-            queue.push([nx, ny]);
-            visited[nIdx] = 1;
-          }
-        }
+    data[(cy*w+cx)*4+3] = 0;
+    for (const [nx, ny] of [[cx+1,cy],[cx-1,cy],[cx,cy+1],[cx,cy-1]]) {
+      if (nx>=0&&nx<w&&ny>=0&&ny<h) {
+        const ni = ny*w+nx;
+        if (!visited[ni] && isBg(data[ni*4],data[ni*4+1],data[ni*4+2],data[ni*4+3])) { queue.push([nx,ny]); visited[ni]=1; }
       }
     }
   }
-
   ctx.putImageData(imgData, 0, 0);
   return canvas;
 }
 
+// ─── Background Canvas Visualizer ─────────────────────────────────────────
 function CinematicGeologicalHeroVisualizer() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-
-    let animationFrameId: number;
-    let rotationX = 0.15;
-    let rotationY = 0.3;
-    let targetRotationX = 0.15;
-    let targetRotationY = 0.3;
-    const damping = 0.05;
-    
-    let mouseX = -9999;
-    let mouseY = -9999;
-    let isDragging = false;
-    let prevMouseX = 0;
-    let prevMouseY = 0;
-    
-    let canvasWidth = 0;
-    let canvasHeight = 0;
-
-    // QR scanner sweeping variables
-    let scannerPhase = 0;
-
-    // Load real rock/mineral images inside Canvas preloader
+    let animId: number;
+    let rotX = 0.15, rotY = 0.3, tRotX = 0.15, tRotY = 0.3;
+    let mouseX = -9999, cW = 0, cH = 0, scanPhase = 0;
     const imgUrls = [chromiumImg, copperImg, diamondImg, goldOreImg, lithiumOreImg, rockImg];
-    const preloadedImages: (HTMLImageElement | HTMLCanvasElement)[] = [];
-    imgUrls.forEach((url, index) => {
+    const preloaded: (HTMLImageElement | HTMLCanvasElement)[] = [];
+    imgUrls.forEach((url, i) => {
       const img = new Image();
       img.src = url;
-      img.onload = () => {
-        const cleanedCanvas = cleanImageBackground(img);
-        preloadedImages[index] = cleanedCanvas;
-      };
-      preloadedImages.push(img);
+      img.onload = () => { preloaded[i] = cleanImageBackground(img); };
+      preloaded.push(img);
     });
-
-    // 3. Atmospheric drifting particles - strictly limited to at most 5 floating specimen pods
     const particles: Particle[] = Array.from({ length: 5 }).map(() => ({
-      x: (Math.random() - 0.5) * 550,
-      y: (Math.random() - 0.5) * 550,
-      z: (Math.random() - 0.5) * 450,
-      size: Math.random() * 0.4 + 0.5, // further reduced and optimized size for professional layout
-      speedY: -(Math.random() * 0.22 + 0.10), // slow, premium continuous floating drift
-      rotation: Math.random() * Math.PI * 2,
-      rotationSpeed: (Math.random() - 0.5) * 0.006,
+      x: (Math.random() - 0.5) * 550, y: (Math.random() - 0.5) * 550, z: (Math.random() - 0.5) * 450,
+      size: Math.random() * 0.4 + 0.5, speedY: -(Math.random() * 0.22 + 0.10),
+      rotation: Math.random() * Math.PI * 2, rotationSpeed: (Math.random() - 0.5) * 0.006,
       imageIndex: Math.floor(Math.random() * imgUrls.length),
       color: Math.random() > 0.5 ? "#1DA1E8" : "#F4C430"
     }));
-
-    const handleResize = () => {
-      const rect = canvas.getBoundingClientRect();
-      canvasWidth = rect.width;
-      canvasHeight = rect.height;
-      canvas.width = canvasWidth * window.devicePixelRatio;
-      canvas.height = canvasHeight * window.devicePixelRatio;
-      ctx.resetTransform();
-      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    const resize = () => {
+      const r = canvas.getBoundingClientRect(); cW = r.width; cH = r.height;
+      canvas.width = cW * devicePixelRatio; canvas.height = cH * devicePixelRatio;
+      ctx.resetTransform(); ctx.scale(devicePixelRatio, devicePixelRatio);
     };
-
-    handleResize();
-    window.addEventListener("resize", handleResize);
-
-    const handleMouseMove = (e: MouseEvent) => {
-      const rect = canvas.getBoundingClientRect();
-      mouseX = e.clientX - rect.left;
-      mouseY = e.clientY - rect.top;
-
-      if (isDragging) {
-        const deltaX = e.clientX - prevMouseX;
-        const deltaY = e.clientY - prevMouseY;
-        targetRotationY += deltaX * 0.004;
-        targetRotationX += deltaY * 0.004;
-        prevMouseX = e.clientX;
-        prevMouseY = e.clientY;
-      } else {
-        // Subtle hover parallax target coordinates
-        targetRotationY = 0.3 + (mouseX - canvasWidth / 2) * 0.0003;
-        targetRotationX = 0.15 + (mouseY - canvasHeight / 2) * 0.0003;
-      }
+    resize(); window.addEventListener("resize", resize);
+    const onMove = (e: MouseEvent) => {
+      const r = canvas.getBoundingClientRect(); mouseX = e.clientX - r.left;
+      const my = e.clientY - r.top;
+      tRotY = 0.3 + (mouseX - cW/2) * 0.0002; tRotX = 0.15 + (my - cH/2) * 0.0002;
     };
-
-    const handleMouseDown = (e: MouseEvent) => {
-      isDragging = true;
-      prevMouseX = e.clientX;
-      prevMouseY = e.clientY;
-    };
-
-    const handleMouseUp = () => {
-      isDragging = false;
-    };
-
-    canvas.addEventListener("mousemove", handleMouseMove);
-    canvas.addEventListener("mousedown", handleMouseDown);
-    window.addEventListener("mouseup", handleMouseUp);
-
-    // Render loop
+    canvas.addEventListener("mousemove", onMove);
     const render = () => {
-      ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-      
-      const isDark = document.documentElement.classList.contains("dark");
-      
-      // Update rotational angle with damp easing
-      rotationX += (targetRotationX - rotationX) * damping;
-      rotationY += (targetRotationY - rotationY) * damping;
-
-      const cosX = Math.cos(rotationX);
-      const sinX = Math.sin(rotationX);
-      const cosY = Math.cos(rotationY);
-      const sinY = Math.sin(rotationY);
-
-      const centerX = canvasWidth / 2;
-      const centerY = canvasHeight / 2;
-      const cameraDistance = 420;
-
-      // 1. Draw atmospheric particles (real mineral specimen pods)
+      ctx.clearRect(0, 0, cW, cH);
+      rotX += (tRotX - rotX) * 0.05; rotY += (tRotY - rotY) * 0.05;
+      const cosX = Math.cos(rotX), sinX = Math.sin(rotX), cosY = Math.cos(rotY), sinY = Math.sin(rotY);
+      const cx = cW/2, cy = cH/2, dist = 420;
       particles.forEach(p => {
-        p.y += p.speedY;
-        p.rotation += p.rotationSpeed;
-        if (p.y < -280) p.y = 280; // wrap around
-        
-        let x1 = p.x * cosY - p.z * sinY;
-        let z1 = p.x * sinY + p.z * cosY;
-        let y2 = p.y * cosX - z1 * sinX;
-        let z2 = p.y * sinX + z1 * cosX;
-
-        const scale = cameraDistance / (cameraDistance + z2);
-        const sx = centerX + x1 * scale;
-        const sy = centerY + y2 * scale;
-
-        if (sx >= -50 && sx <= canvasWidth + 50 && sy >= -50 && sy <= canvasHeight + 50) {
-          const img = preloadedImages[p.imageIndex];
-          const isLoaded = img instanceof HTMLCanvasElement || (img && img.complete && img.naturalWidth !== 0);
-          if (isLoaded) {
-            ctx.save();
-            ctx.translate(sx, sy);
-            ctx.rotate(p.rotation);
-            
-            // Reduced and optimized size for a professional, elegant spacing
-            const size = p.size * scale * 11; 
-            
-            // Draw preloaded mineral directly (no circular pod, no checkered background)
-            ctx.globalAlpha = Math.max(0.20, Math.min(0.85, scale * 0.95));
-            ctx.drawImage(img, -size / 2, -size / 2, size, size);
-            
-            ctx.restore();
-            ctx.globalAlpha = 1.0;
-          } else {
-            // Fallback glow dot if image is loading
-            ctx.beginPath();
-            ctx.arc(sx, sy, p.size * scale * 2, 0, Math.PI * 2);
-            ctx.fillStyle = p.color;
-            ctx.globalAlpha = 0.35;
-            ctx.fill();
-            ctx.globalAlpha = 1.0;
+        p.y += p.speedY; p.rotation += p.rotationSpeed;
+        if (p.y < -280) p.y = 280;
+        const x1 = p.x*cosY - p.z*sinY, z1 = p.x*sinY + p.z*cosY;
+        const y2 = p.y*cosX - z1*sinX, z2 = p.y*sinX + z1*cosX;
+        const sc = dist/(dist+z2), sx = cx + x1*sc, sy = cy + y2*sc;
+        if (sx >= -50 && sx <= cW+50 && sy >= -50 && sy <= cH+50) {
+          const img = preloaded[p.imageIndex];
+          const ok = img instanceof HTMLCanvasElement || (img && img.complete && img.naturalWidth !== 0);
+          if (ok) {
+            ctx.save(); ctx.translate(sx, sy); ctx.rotate(p.rotation);
+            const sz = p.size * sc * 11;
+            ctx.globalAlpha = Math.max(0.18, Math.min(0.80, sc * 0.9));
+            ctx.drawImage(img, -sz/2, -sz/2, sz, sz);
+            ctx.restore(); ctx.globalAlpha = 1;
           }
         }
       });
-
-      // [REMOVED] Giant abstract crystalline core projection completely removed to declutter hero page
-
-      // 6. Holographic Barcode Laser Sweep (Subtle vertical scan sweep line)
-      scannerPhase += 0.012;
-      const sweepYOffset = Math.sin(scannerPhase) * 110;
-      const laserY = centerY + sweepYOffset * cosX;
-
-      // Draw horizontal holographic laser scan
+      scanPhase += 0.010;
+      const laserY = cy + Math.sin(scanPhase) * 90 * Math.cos(rotX);
       ctx.save();
-      const grad = ctx.createLinearGradient(centerX - 160, laserY, centerX + 160, laserY);
-      grad.addColorStop(0, "rgba(29, 161, 232, 0)");
-      grad.addColorStop(0.5, "rgba(29, 161, 232, 0.35)"); // reduced opacity for subtle, clean visual
-      grad.addColorStop(1, "rgba(29, 161, 232, 0)");
-
-      ctx.strokeStyle = grad;
-      ctx.lineWidth = 1.8;
-      ctx.shadowBlur = 8;
-      ctx.shadowColor = "#1DA1E8";
-      ctx.beginPath();
-      ctx.moveTo(centerX - 160, laserY);
-      ctx.lineTo(centerX + 160, laserY);
-      ctx.stroke();
+      const g = ctx.createLinearGradient(cx-140,laserY,cx+140,laserY);
+      g.addColorStop(0,"rgba(29,161,232,0)"); g.addColorStop(0.5,"rgba(29,161,232,0.25)"); g.addColorStop(1,"rgba(29,161,232,0)");
+      ctx.strokeStyle = g; ctx.lineWidth = 1.5; ctx.shadowBlur = 6; ctx.shadowColor = "#1DA1E8";
+      ctx.beginPath(); ctx.moveTo(cx-140,laserY); ctx.lineTo(cx+140,laserY); ctx.stroke();
       ctx.restore();
-
-      // Draw subtle telemetry circular scanning HUD
-      ctx.strokeStyle = "rgba(29, 161, 232, 0.06)"; // extremely subtle
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.arc(centerX, centerY, 130, 0, Math.PI * 2);
-      ctx.stroke();
-
-      ctx.setLineDash([4, 8]);
-      ctx.beginPath();
-      ctx.arc(centerX, centerY, 150, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.setLineDash([]); // Reset
-
-      // 7. Geological Terrain Depth Layers (Curved layered silhouettes at the bottom)
-      const terrainShift = (mouseX !== -9999 ? (mouseX - centerX) * 0.05 : 0);
-      
-      // Bottom Layer 1
-      ctx.fillStyle = isDark ? "rgba(13, 23, 35, 0.65)" : "rgba(226, 232, 240, 0.85)";
-      ctx.beginPath();
-      ctx.moveTo(0, canvasHeight);
-      ctx.quadraticCurveTo(
-        canvasWidth * 0.4 + terrainShift,
-        canvasHeight - 65,
-        canvasWidth,
-        canvasHeight - 20
-      );
-      ctx.lineTo(canvasWidth, canvasHeight);
-      ctx.closePath();
-      ctx.fill();
-
-      // Bottom Layer 2
-      ctx.fillStyle = isDark ? "rgba(7, 17, 28, 0.8)" : "rgba(203, 213, 225, 0.95)";
-      ctx.beginPath();
-      ctx.moveTo(0, canvasHeight);
-      ctx.quadraticCurveTo(
-        canvasWidth * 0.65 - terrainShift,
-        canvasHeight - 45,
-        canvasWidth,
-        canvasHeight - 35
-      );
-      ctx.lineTo(canvasWidth, canvasHeight);
-      ctx.closePath();
-      ctx.fill();
-
-      animationFrameId = requestAnimationFrame(render);
+      ctx.strokeStyle = "rgba(29,161,232,0.05)"; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.arc(cx, cy, 110, 0, Math.PI*2); ctx.stroke();
+      ctx.setLineDash([3,7]); ctx.beginPath(); ctx.arc(cx, cy, 130, 0, Math.PI*2); ctx.stroke(); ctx.setLineDash([]);
+      const shift = mouseX !== -9999 ? (mouseX-cx)*0.04 : 0;
+      ctx.fillStyle = "rgba(13,23,35,0.55)";
+      ctx.beginPath(); ctx.moveTo(0,cH); ctx.quadraticCurveTo(cW*0.4+shift,cH-55,cW,cH-18); ctx.lineTo(cW,cH); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = "rgba(7,17,28,0.7)";
+      ctx.beginPath(); ctx.moveTo(0,cH); ctx.quadraticCurveTo(cW*0.65-shift,cH-38,cW,cH-30); ctx.lineTo(cW,cH); ctx.closePath(); ctx.fill();
+      animId = requestAnimationFrame(render);
     };
-
     render();
-
-    return () => {
-      cancelAnimationFrame(animationFrameId);
-      window.removeEventListener("resize", handleResize);
-      canvas.removeEventListener("mousemove", handleMouseMove);
-      canvas.removeEventListener("mousedown", handleMouseDown);
-      window.removeEventListener("mouseup", handleMouseUp);
-    };
+    return () => { cancelAnimationFrame(animId); window.removeEventListener("resize", resize); canvas.removeEventListener("mousemove", onMove); };
   }, []);
-
   return (
-    <div className="relative w-full h-[360px] md:h-[450px] flex items-center justify-center overflow-hidden">
-      <canvas 
-        ref={canvasRef} 
-        className="w-full h-full cursor-grab active:cursor-grabbing select-none"
-        title="Geological LIMS scanning viewport"
-      />
+    <div className="absolute inset-0">
+      <canvas ref={canvasRef} className="w-full h-full" />
     </div>
   );
 }
 
-// Stagger child animations configurations
-const containerVariants = {
+// ─── Typewriter Subheading ─────────────────────────────────────────────────
+const TYPEWRITER_PHRASES = [
+  "digitizes laboratory workflows from intake to analytical reporting.",
+  "eliminates manual custody errors and duplicate assay miscalculations.",
+  "ensures ISO 17025 compliance with real-time QA/QC anomaly detection.",
+  "automates instrument queues, preparation tracking, and report dispatch.",
+];
+
+function TypewriterSubheading() {
+  const [phraseIdx, setPhraseIdx] = useState(0);
+  const [displayed, setDisplayed] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [cursorVisible, setCursorVisible] = useState(true);
+
+  useEffect(() => {
+    const cursorTimer = setInterval(() => setCursorVisible(v => !v), 530);
+    return () => clearInterval(cursorTimer);
+  }, []);
+
+  useEffect(() => {
+    const phrase = TYPEWRITER_PHRASES[phraseIdx];
+    let timeout: ReturnType<typeof setTimeout>;
+    if (!isDeleting && displayed.length < phrase.length) {
+      timeout = setTimeout(() => setDisplayed(phrase.slice(0, displayed.length + 1)), 38);
+    } else if (!isDeleting && displayed.length === phrase.length) {
+      timeout = setTimeout(() => setIsDeleting(true), 2800);
+    } else if (isDeleting && displayed.length > 0) {
+      timeout = setTimeout(() => setDisplayed(displayed.slice(0, -1)), 18);
+    } else if (isDeleting && displayed.length === 0) {
+      setIsDeleting(false);
+      setPhraseIdx(i => (i + 1) % TYPEWRITER_PHRASES.length);
+    }
+    return () => clearTimeout(timeout);
+  }, [displayed, isDeleting, phraseIdx]);
+
+  return (
+    <span className="text-muted-foreground">
+      GeoChem Suite{" "}
+      <span className="text-foreground/90">{displayed}</span>
+      <span
+        className="inline-block w-[2px] h-[1.1em] bg-accent ml-[1px] align-middle"
+        style={{ opacity: cursorVisible ? 1 : 0, transition: "opacity 0.1s" }}
+      />
+    </span>
+  );
+}
+
+// ─── Workspace 3D Showcase ─────────────────────────────────────────────────
+const WORKSPACE_TABS = [
+  { id: "dashboard",  label: "Dashboard",      path: "/workspace/dashboard"  },
+  { id: "samples",    label: "Samples",         path: "/workspace/samples"    },
+  { id: "intake",     label: "Sample Intake",   path: "/workspace/intake"     },
+  { id: "analysis",   label: "Analysis",        path: "/workspace/analysis"   },
+  { id: "qaqc",       label: "QA / QC",         path: "/workspace/qa-qc"      },
+];
+
+// Mini SVG line chart
+function MiniLineChart({ color = "#1DA1E8", data }: { color?: string; data: number[] }) {
+  const W = 320, H = 80;
+  const min = Math.min(...data), max = Math.max(...data);
+  const pts = data.map((v, i) => {
+    const x = (i / (data.length - 1)) * W;
+    const y = H - ((v - min) / (max - min || 1)) * (H - 8) - 4;
+    return `${x},${y}`;
+  }).join(" ");
+  const areaBottom = `${W},${H} 0,${H}`;
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id={`fill-${color.replace("#","")}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity="0.25" />
+          <stop offset="100%" stopColor={color} stopOpacity="0.02" />
+        </linearGradient>
+      </defs>
+      <polyline points={`${pts} ${areaBottom}`} fill={`url(#fill-${color.replace("#","")})`} stroke="none" />
+      <polyline points={pts} fill="none" stroke={color} strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+// Mini donut chart
+function MiniDonut({ segments }: { segments: { value: number; color: string }[] }) {
+  const total = segments.reduce((s, seg) => s + seg.value, 0);
+  let angle = -Math.PI / 2;
+  const R = 40, cx = 50, cy = 50, stroke = 14;
+  const arcs = segments.map(seg => {
+    const sweep = (seg.value / total) * 2 * Math.PI;
+    const x1 = cx + R * Math.cos(angle), y1 = cy + R * Math.sin(angle);
+    angle += sweep;
+    const x2 = cx + R * Math.cos(angle), y2 = cy + R * Math.sin(angle);
+    const large = sweep > Math.PI ? 1 : 0;
+    return { d: `M ${x1} ${y1} A ${R} ${R} 0 ${large} 1 ${x2} ${y2}`, color: seg.color };
+  });
+  return (
+    <svg viewBox="0 0 100 100" className="w-24 h-24">
+      {arcs.map((a, i) => (
+        <path key={i} d={a.d} fill="none" stroke={a.color} strokeWidth={stroke} strokeLinecap="butt" />
+      ))}
+      <circle cx={cx} cy={cy} r={R - stroke / 2 - 1} fill="#0D1723" />
+    </svg>
+  );
+}
+
+// Dashboard view
+function DashboardView() {
+  const throughputData = [14,13,15,16,14,12,15,17,13,14,16,15,12,10,14,13,15,16,14];
+  const completedData =  [12,11,13,14,12,10,13,14,12,12,14,13,10, 8,12,11,13,15,13];
+  return (
+    <div className="flex flex-col gap-3 text-[11px]">
+      {/* KPI row */}
+      <div className="grid grid-cols-4 gap-2">
+        {[
+          { label: "ACTIVE SAMPLES", val: "12", delta: "+3", pos: true, icon: <Activity className="size-3 text-primary" /> },
+          { label: "AVG. TURNAROUND", val: "3.2d", delta: "-0.4d", pos: true, icon: <Clock className="size-3 text-primary" /> },
+          { label: "QA/QC PASS RATE", val: "98.6%", delta: "+0.8%", pos: true, icon: <ShieldCheck className="size-3 text-primary" /> },
+          { label: "OVERDUE", val: "2", delta: "-1", pos: true, icon: <AlertTriangle className="size-3 text-amber-400" /> },
+        ].map(k => (
+          <div key={k.label} className="rounded-lg border border-white/[0.07] bg-white/[0.03] p-2.5">
+            <div className="flex items-center justify-between mb-1.5">{k.icon}<span className="text-[8px] font-mono text-white/30 tracking-wider">{k.label}</span></div>
+            <div className="text-lg font-black text-white font-display leading-none">{k.val}</div>
+            <div className={`text-[8px] font-bold mt-1 font-mono ${k.pos ? "text-emerald-400" : "text-red-400"}`}>{k.delta} vs last 14d</div>
+          </div>
+        ))}
+      </div>
+      {/* Charts row */}
+      <div className="grid grid-cols-5 gap-2">
+        <div className="col-span-3 rounded-lg border border-white/[0.07] bg-white/[0.03] p-3">
+          <div className="flex items-center justify-between mb-2">
+            <div>
+              <div className="font-bold text-white text-[10px]">Throughput</div>
+              <div className="text-[8px] text-white/40 font-mono">Samples received vs completed · 14 days</div>
+            </div>
+            <div className="flex gap-1">
+              {["14d","30d","90d"].map(t => (
+                <span key={t} className={`text-[8px] font-mono px-1.5 py-0.5 rounded ${t === "14d" ? "bg-primary text-white" : "text-white/30"}`}>{t}</span>
+              ))}
+            </div>
+          </div>
+          <div className="relative">
+            <MiniLineChart color="#1DA1E8" data={throughputData} />
+            <div className="absolute top-0 left-0 w-full">
+              <MiniLineChart color="#10b981" data={completedData} />
+            </div>
+          </div>
+        </div>
+        <div className="col-span-2 rounded-lg border border-white/[0.07] bg-white/[0.03] p-3 flex flex-col items-center">
+          <div className="font-bold text-white text-[10px] self-start mb-1">Workflow Split</div>
+          <div className="text-[8px] text-white/40 font-mono self-start mb-2">Samples by stage</div>
+          <MiniDonut segments={[
+            { value: 35, color: "#1DA1E8" },
+            { value: 28, color: "#10b981" },
+            { value: 22, color: "#F4C430" },
+            { value: 15, color: "#ef4444" },
+          ]} />
+          <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 mt-1.5">
+            {[["#1DA1E8","Preparation"],["#10b981","Analysis"],["#F4C430","QA/QC"],["#ef4444","Reporting"]].map(([c,l]) => (
+              <div key={l} className="flex items-center gap-1">
+                <span className="size-1.5 rounded-full flex-shrink-0" style={{ background: c }} />
+                <span className="text-[8px] text-white/50 font-mono">{l}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Samples view
+function SamplesView() {
+  const rows = [
+    { id: "GCS-24012", client: "Auric Mining Ltd", project: "Drillhole AX-204", type: "Drill Core", pri: "High", tech: "J. Nakamura", storage: "Rack A-1", status: "In Analysis", sc: "text-primary", bc: "bg-primary/10 text-primary border-primary/30" },
+    { id: "GCS-24011", client: "Atlas Minerals", project: "Pit Sample BX-11", type: "Soil", pri: "Normal", tech: "M. Rivera", storage: "Rack B-3", status: "Preparation", sc: "text-amber-400", bc: "bg-amber-400/10 text-amber-400 border-amber-400/30" },
+    { id: "GCS-24010", client: "Terra Core Ltd", project: "Core Log CX-07", type: "Rock Chip", pri: "Rush", tech: "S. Patel", storage: "Rack C-2", status: "QA Flagged", sc: "text-red-400", bc: "bg-red-400/10 text-red-400 border-red-400/30" },
+    { id: "GCS-24009", client: "Ore Track Inc", project: "Survey DX-03", type: "Stream Sed.", pri: "Low", tech: "E. Okafor", storage: "Rack A-5", status: "Report Ready", sc: "text-emerald-400", bc: "bg-emerald-400/10 text-emerald-400 border-emerald-400/30" },
+  ];
+  return (
+    <div className="flex flex-col gap-3 text-[10px]">
+      <div className="flex items-center gap-2 mb-1">
+        <div className="flex-1 rounded border border-white/10 bg-white/[0.04] px-2.5 py-1.5 text-white/40 font-mono text-[9px] flex items-center gap-1.5">
+          <span>🔍</span> Search by ID, client or project...
+        </div>
+        <span className="text-[9px] text-white/40 border border-white/10 rounded px-2 py-1.5 font-mono">All Statuses ▾</span>
+        <span className="text-[9px] text-white/40 border border-white/10 rounded px-2 py-1.5 font-mono">⚡ Scan</span>
+      </div>
+      <div className="rounded-lg border border-white/[0.07] overflow-hidden">
+        <div className="grid grid-cols-8 gap-1 bg-white/[0.04] px-3 py-2 text-[8px] text-white/40 font-mono font-bold tracking-wider">
+          <span className="col-span-1">SAMPLE ID</span>
+          <span className="col-span-1">CLIENT</span>
+          <span className="col-span-1">PROJECT</span>
+          <span className="col-span-1">TYPE</span>
+          <span className="col-span-1">PRIORITY</span>
+          <span className="col-span-1">TECHNICIAN</span>
+          <span className="col-span-1">STORAGE</span>
+          <span className="col-span-1">STATUS</span>
+        </div>
+        {rows.map((r, i) => (
+          <div key={r.id} className={`grid grid-cols-8 gap-1 px-3 py-2 items-center border-t border-white/[0.05] ${i % 2 === 0 ? "bg-white/[0.02]" : ""} hover:bg-white/[0.04] transition-colors`}>
+            <span className="col-span-1 text-primary font-bold font-mono">{r.id}</span>
+            <span className="col-span-1 text-white/80 truncate">{r.client}</span>
+            <span className="col-span-1 text-white/60 truncate font-mono">{r.project}</span>
+            <span className="col-span-1 text-white/60">{r.type}</span>
+            <span className="col-span-1"><span className={`px-1.5 py-0.5 rounded text-[8px] font-bold border ${r.bc}`}>{r.pri}</span></span>
+            <span className="col-span-1 text-white/60">{r.tech}</span>
+            <span className="col-span-1 text-white/50 font-mono">{r.storage}</span>
+            <span className={`col-span-1 text-[8px] font-bold ${r.sc}`}>{r.status}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Intake view
+function IntakeView() {
+  return (
+    <div className="grid grid-cols-5 gap-3 text-[10px]">
+      <div className="col-span-3 rounded-lg border border-white/[0.07] bg-white/[0.02] p-3 space-y-3">
+        <div className="grid grid-cols-2 gap-2">
+          {[
+            ["Client", "Auric Mining Ltd"],
+            ["Project", "Drillhole AX-204"],
+            ["Sample Type", "Drill Core"],
+            ["Matrix", "Sulphide"],
+            ["Sample Weight (kg)", "1.42"],
+            ["Container", "Calico Bag"],
+            ["Received From", "Field Tech A. Vargas"],
+            ["Date Received", "05/29/2026"],
+          ].map(([label, val]) => (
+            <div key={label} className="flex flex-col gap-1">
+              <label className="text-[8px] text-white/40 font-mono">{label}</label>
+              <div className="border border-white/10 bg-white/[0.04] rounded px-2 py-1.5 text-white/80 font-mono text-[9px]">{val}</div>
+            </div>
+          ))}
+        </div>
+        <div className="flex flex-col gap-1">
+          <label className="text-[8px] text-white/40 font-mono">Priority Level</label>
+          <div className="flex gap-1.5">
+            {["Low","Normal","High","Rush"].map(p => (
+              <span key={p} className={`px-3 py-1 rounded text-[9px] font-bold border ${p === "Normal" ? "bg-primary text-white border-primary" : "border-white/10 text-white/40"}`}>{p}</span>
+            ))}
+          </div>
+        </div>
+        <div className="flex flex-col gap-1">
+          <label className="text-[8px] text-white/40 font-mono">Requested Tests</label>
+          <div className="flex flex-wrap gap-1.5">
+            {[["FA-AAS Au", true],["Multi-element 4-acid", true],["Multi-element Aqua Regia", false],["ICP-MS 51E", false]].map(([t, checked]) => (
+              <label key={t as string} className="flex items-center gap-1 cursor-pointer">
+                <span className={`size-3 rounded border flex items-center justify-center ${checked ? "bg-primary border-primary" : "border-white/20 bg-white/[0.03]"}`}>
+                  {checked && <span className="text-white text-[7px]">✓</span>}
+                </span>
+                <span className="text-[8px] text-white/60">{t as string}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className="col-span-2 flex flex-col gap-2">
+        <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
+          <div className="flex items-center gap-1.5 mb-2">
+            <ScanBarcode className="size-3 text-primary" />
+            <span className="text-[9px] font-bold text-white">Quick Scan</span>
+          </div>
+          <p className="text-[8px] text-white/40 mb-2">Scan an inbound shipment QR code to auto-fill the form.</p>
+          <div className="border border-dashed border-primary/30 rounded p-2 text-center text-[8px] text-primary/60 font-mono">
+            <div className="flex justify-center mb-1">
+              <div className="size-6 border-2 border-primary/40 rounded relative">
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-full h-[1px] bg-primary/60 animate-pulse" />
+                </div>
+              </div>
+            </div>
+            Awaiting scanner input...
+          </div>
+        </div>
+        <div className="rounded-lg border border-white/[0.07] bg-white/[0.02] p-3">
+          <div className="flex items-center gap-1.5 mb-2">
+            <Layers className="size-3 text-primary" />
+            <span className="text-[9px] font-bold text-white">Bulk Import</span>
+          </div>
+          <p className="text-[8px] text-white/40 mb-2">CSV with up to 500 samples per batch.</p>
+          <div className="border border-dashed border-white/10 rounded p-2 text-center text-[8px] text-white/30 font-mono">
+            Drop CSV here or <span className="text-primary">browse</span>
+          </div>
+        </div>
+        <button className="w-full rounded-lg bg-primary text-white font-bold text-[9px] py-2 hover:bg-primary/90 transition-colors">
+          Register Sample →
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// Analysis view
+function AnalysisView() {
+  const runs = [
+    { id: "RUN-10001", sample: "GCS-24020", method: "FA-AAS", inst: "ICP-MS-01", analyst: "E. Okafor", status: "Queued", sc: "text-white/50 border-white/10" },
+    { id: "RUN-10002", sample: "GCS-24021", method: "ICP-MS-51E", inst: "XRF-02", analyst: "K. Nakamura", status: "Running", sc: "text-amber-400 border-amber-400/30 bg-amber-400/5" },
+    { id: "RUN-10003", sample: "GCS-24022", method: "ICP-OES-4A", inst: "AAS-04", analyst: "S. Patel", status: "Complete", sc: "text-emerald-400 border-emerald-400/30 bg-emerald-400/5" },
+    { id: "RUN-10004", sample: "GCS-24023", method: "LECO-CS", inst: "LECO-05", analyst: "M. Rivera", status: "Queued", sc: "text-white/50 border-white/10" },
+    { id: "RUN-10005", sample: "GCS-24024", method: "AR-ICP-MS", inst: "ICP-MS-01", analyst: "E. Okafor", status: "Running", sc: "text-amber-400 border-amber-400/30 bg-amber-400/5" },
+  ];
+  return (
+    <div className="grid grid-cols-5 gap-3 text-[10px]">
+      <div className="col-span-3">
+        <div className="flex items-center justify-between mb-2">
+          <span className="font-bold text-white text-[11px]">Active Analysis Queue</span>
+          <span className="text-[8px] text-white/40 font-mono bg-white/[0.04] px-2 py-0.5 rounded border border-white/[0.07]">8 runs</span>
+        </div>
+        <div className="rounded-lg border border-white/[0.07] overflow-hidden">
+          <div className="grid grid-cols-8 gap-1 bg-white/[0.04] px-2.5 py-2 text-[8px] text-white/40 font-mono font-bold">
+            <span className="col-span-1">RUN ID</span><span className="col-span-1">SAMPLE</span>
+            <span className="col-span-1">METHOD</span><span className="col-span-2">INSTRUMENT</span>
+            <span className="col-span-1">ANALYST</span><span className="col-span-2">STATUS</span>
+          </div>
+          {runs.map((r, i) => (
+            <div key={r.id} className={`grid grid-cols-8 gap-1 px-2.5 py-2 border-t border-white/[0.05] items-center ${i%2===0?"bg-white/[0.015]":""}`}>
+              <span className="col-span-1 font-mono text-white/60 text-[8px]">{r.id}</span>
+              <span className="col-span-1 font-bold text-primary font-mono text-[8px]">{r.sample}</span>
+              <span className="col-span-1 text-white/60 text-[8px]">{r.method}</span>
+              <span className="col-span-2 text-white/60 text-[8px]">{r.inst}</span>
+              <span className="col-span-1 text-white/50 text-[8px]">{r.analyst}</span>
+              <span className={`col-span-2 text-[8px] font-bold px-1.5 py-0.5 rounded border ${r.sc}`}>{r.status}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="col-span-2">
+        <div className="flex items-center justify-between mb-2">
+          <span className="font-bold text-white text-[11px]">Method Library</span>
+          <span className="text-[8px] text-white/40 font-mono">5 methods</span>
+        </div>
+        <div className="space-y-1.5">
+          {[
+            { code: "FA-AAS", name: "Fire Assay AAS", desc: "Fire assay with AAS finish for gold determination", elements: "Au", dup: "10%", crm: "±5%" },
+            { code: "ICP-MS-51E", name: "51-Element Package", desc: "ICP-MS 51-element trace package", elements: "Ag As Ba Co", dup: "15%", crm: "±5%" },
+            { code: "ICP-OES-4A", name: "ICP-OES 4-Acid Digestion", desc: "Major and minor elements via 4-acid digestion", elements: "Ca Fe Al Mg", dup: "10%", crm: "±5%" },
+          ].map(m => (
+            <div key={m.code} className="rounded-lg border border-white/[0.07] bg-white/[0.02] p-2.5">
+              <div className="flex items-center gap-1.5 mb-0.5">
+                <Beaker className="size-3 text-primary" />
+                <span className="text-[9px] font-bold text-white">{m.code}</span>
+              </div>
+              <p className="text-[8px] text-white/40 mb-1">{m.desc}</p>
+              <div className="flex gap-1 flex-wrap">
+                {m.elements.split(" ").map(el => <span key={el} className="text-[7px] font-bold px-1 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">{el}</span>)}
+              </div>
+              <div className="flex gap-2 mt-1">
+                <span className="text-[7px] text-white/30 font-mono">Dup RPD: {m.dup}</span>
+                <span className="text-[7px] text-white/30 font-mono">CRM Tot: {m.crm}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// QA/QC view
+function QAQCView() {
+  const crmData = [2.38,2.42,2.55,2.52,2.48,2.40,2.43,2.50,2.46,2.38,2.42,2.44,2.47,2.41,2.43,2.45,2.39,2.43,2.42];
+  const cert = 2.400, upper = 2.520, lower = 2.280;
+  const W = 280, H = 70;
+  const minV = lower - 0.05, maxV = upper + 0.05;
+  const toY = (v: number) => H - ((v - minV) / (maxV - minV)) * (H - 4) - 2;
+  const toX = (i: number) => (i / (crmData.length - 1)) * W;
+  const rpdData = [12.1, 8.4, 11.8, 9.2, 13.4, 7.8, 12.5, 11.0, 4.2, 12.8, 8.1, 13.2, 9.5, 7.0, 12.9, 11.4, 5.8, 13.0, 8.7];
+  return (
+    <div className="flex flex-col gap-3 text-[10px]">
+      <div className="grid grid-cols-4 gap-2">
+        {[
+          { label: "PASS RATE", val: "96.4%", sc: "text-emerald-400" },
+          { label: "OPEN FLAGS", val: "2", sc: "text-amber-400" },
+          { label: "CRMS OUT-OF-SPEC", val: "0", sc: "text-emerald-400" },
+          { label: "AVG DUPLICATE SPREAD", val: "10.3%", sc: "text-primary" },
+        ].map(k => (
+          <div key={k.label} className="rounded-lg border border-white/[0.07] bg-white/[0.03] p-2.5">
+            <div className="text-[7px] font-mono text-white/30 mb-1 tracking-wider">{k.label}</div>
+            <div className={`text-xl font-black font-display ${k.sc}`}>{k.val}</div>
+          </div>
+        ))}
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <div className="rounded-lg border border-white/[0.07] bg-white/[0.02] p-3">
+          <div className="font-bold text-white text-[10px] mb-0.5">CRM Trend — OREAS 234 (Au g/t)</div>
+          <div className="text-[8px] text-white/40 mb-2 font-mono">Certified: 2.400 g/t · Tolerance ±5%</div>
+          <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
+            <line x1="0" y1={toY(upper)} x2={W} y2={toY(upper)} stroke="#ef4444" strokeWidth="0.8" strokeDasharray="3,3" />
+            <line x1="0" y1={toY(lower)} x2={W} y2={toY(lower)} stroke="#ef4444" strokeWidth="0.8" strokeDasharray="3,3" />
+            <line x1="0" y1={toY(cert)} x2={W} y2={toY(cert)} stroke="#10b981" strokeWidth="1" />
+            <polyline points={crmData.map((v,i) => `${toX(i)},${toY(v)}`).join(" ")} fill="none" stroke="#1DA1E8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </div>
+        <div className="rounded-lg border border-white/[0.07] bg-white/[0.02] p-3">
+          <div className="font-bold text-white text-[10px] mb-0.5">Duplicate RPD Distribution</div>
+          <div className="text-[8px] text-white/40 mb-2 font-mono">Threshold: 10% · 4 over limit</div>
+          <svg viewBox="0 0 280 70" className="w-full">
+            <line x1="0" y1="28" x2="280" y2="28" stroke="#ef4444" strokeWidth="0.8" strokeDasharray="3,3" />
+            {rpdData.map((v, i) => {
+              const x = (i / (rpdData.length - 1)) * 272 + 4;
+              const y = 66 - (v / 16) * 62;
+              return <circle key={i} cx={x} cy={y} r="3" fill={v > 10 ? "#ef4444" : "#1DA1E8"} fillOpacity="0.8" />;
+            })}
+          </svg>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const VIEW_COMPONENTS: Record<string, React.FC> = {
+  dashboard: DashboardView,
+  samples: SamplesView,
+  intake: IntakeView,
+  analysis: AnalysisView,
+  qaqc: QAQCView,
+};
+
+function Workspace3DShowcase() {
+  const [activeTab, setActiveTab] = useState(0);
+  const [progress, setProgress] = useState(0);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [tilt, setTilt] = useState({ x: 0, y: 0 });
+  const progressRef = useRef(0);
+  const DURATION = 5000;
+
+  // Auto-carousel with progress bar
+  useEffect(() => {
+    let start = performance.now();
+    let raf: number;
+    const tick = (now: number) => {
+      const elapsed = now - start;
+      const p = Math.min(elapsed / DURATION, 1);
+      progressRef.current = p;
+      setProgress(p);
+      if (p >= 1) {
+        setActiveTab(t => (t + 1) % WORKSPACE_TABS.length);
+        start = performance.now();
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, []);
+
+  // Reset progress on manual tab click
+  const handleTab = useCallback((i: number) => {
+    setActiveTab(i);
+    setProgress(0);
+  }, []);
+
+  // 3D tilt
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const rx = ((e.clientY - cy) / rect.height) * -8;
+    const ry = ((e.clientX - cx) / rect.width) * 8;
+    setTilt({ x: rx, y: ry });
+  }, []);
+  const handleMouseLeave = useCallback(() => setTilt({ x: 0, y: 0 }), []);
+
+  const ActiveView = VIEW_COMPONENTS[WORKSPACE_TABS[activeTab].id];
+
+  return (
+    <div
+      ref={containerRef}
+      className="relative w-full select-none"
+      style={{ perspective: "1200px" }}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+    >
+      {/* Outer glow */}
+      <div className="absolute -inset-8 rounded-3xl pointer-events-none"
+        style={{ background: "radial-gradient(ellipse at center, rgba(29,161,232,0.08) 0%, transparent 70%)" }} />
+
+      <div
+        className="relative rounded-2xl overflow-hidden"
+        style={{
+          transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
+          transition: "transform 0.15s ease-out",
+          transformStyle: "preserve-3d",
+          boxShadow: "0 32px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(29,161,232,0.12), inset 0 1px 0 rgba(255,255,255,0.05)",
+          WebkitMaskImage: "radial-gradient(ellipse 95% 95% at center, black 60%, transparent 100%)",
+          maskImage: "radial-gradient(ellipse 95% 95% at center, black 60%, transparent 100%)",
+        }}
+      >
+        {/* Browser chrome bar */}
+        <div className="flex items-center gap-2 px-3 py-2.5 border-b"
+          style={{ background: "#07111C", borderColor: "rgba(29,161,232,0.12)" }}>
+          <div className="flex gap-1.5 shrink-0">
+            <span className="size-2.5 rounded-full bg-red-500/70" />
+            <span className="size-2.5 rounded-full bg-amber-400/70" />
+            <span className="size-2.5 rounded-full bg-emerald-500/70" />
+          </div>
+          {/* URL bar */}
+          <div className="flex-1 mx-2 rounded-md border border-white/[0.07] bg-white/[0.04] px-2.5 py-0.5 text-[9px] font-mono text-white/40 flex items-center gap-1.5">
+            <span className="text-emerald-400 text-[8px]">🔒</span>
+            <AnimatePresence mode="wait">
+              <motion.span key={activeTab} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
+                lims.geochem-suite.io{WORKSPACE_TABS[activeTab].path}
+              </motion.span>
+            </AnimatePresence>
+          </div>
+          {/* Tab strip */}
+          <div className="flex gap-0.5 shrink-0">
+            {WORKSPACE_TABS.map((t, i) => (
+              <button key={t.id} onClick={() => handleTab(i)}
+                className={`px-2 py-0.5 text-[8px] font-bold rounded font-mono transition-all ${i === activeTab ? "bg-primary/20 text-primary border border-primary/30" : "text-white/30 hover:text-white/60"}`}>
+                {t.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Progress bar */}
+        <div className="h-[1.5px] bg-white/[0.05] relative overflow-hidden">
+          <motion.div className="absolute left-0 top-0 h-full bg-primary"
+            style={{ width: `${progress * 100}%` }}
+            transition={{ ease: "linear" }} />
+        </div>
+
+        {/* Sidebar + content area */}
+        <div className="flex" style={{ background: "#050B12", minHeight: 340 }}>
+          {/* Sidebar */}
+          <div className="w-32 shrink-0 border-r border-white/[0.05] pt-3" style={{ background: "#07111C" }}>
+            <div className="flex items-center gap-1.5 px-3 mb-3">
+              <div className="size-5 rounded grid place-items-center bg-primary shrink-0">
+                <FlaskConical className="size-3 text-white" />
+              </div>
+              <div>
+                <div className="text-[9px] font-black text-white leading-none">GeoChem Suite</div>
+                <div className="text-[7px] text-white/30 font-mono">LIMS · v0.9</div>
+              </div>
+            </div>
+            <div className="px-2 space-y-0.5">
+              <div className="text-[7px] text-white/20 font-mono font-bold uppercase tracking-widest px-2 pt-2 pb-1">Workspace</div>
+              {[
+                { label: "Dashboard", icon: <BarChart3 className="size-3" />, key: "dashboard" },
+                { label: "Samples", icon: <Beaker className="size-3" />, key: "samples" },
+                { label: "Sample Intake", icon: <ScanBarcode className="size-3" />, key: "intake" },
+                { label: "Preparation", icon: <Workflow className="size-3" />, key: null },
+                { label: "Analysis", icon: <Activity className="size-3" />, key: "analysis" },
+                { label: "QA / QC", icon: <ShieldCheck className="size-3" />, key: "qaqc" },
+                { label: "Reports", icon: <TrendingUp className="size-3" />, key: null },
+              ].map(item => {
+                const isActive = item.key === WORKSPACE_TABS[activeTab].id;
+                return (
+                  <div key={item.label}
+                    className={`flex items-center gap-1.5 px-2 py-1.5 rounded-md text-[9px] font-medium transition-all cursor-default ${isActive ? "bg-primary/15 text-primary" : "text-white/35 hover:text-white/60"}`}>
+                    {item.icon}<span>{item.label}</span>
+                  </div>
+                );
+              })}
+              <div className="text-[7px] text-white/20 font-mono font-bold uppercase tracking-widest px-2 pt-3 pb-1">Operations</div>
+              {[["Instruments",""],["Storage",""],["Activity Logs",""],["Analytics",""]].map(([l]) => (
+                <div key={l} className="flex items-center gap-1.5 px-2 py-1.5 rounded-md text-[9px] text-white/25 cursor-default">{l}</div>
+              ))}
+            </div>
+          </div>
+
+          {/* Main content */}
+          <div className="flex-1 p-4 overflow-hidden">
+            {/* Page header */}
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <div className="text-[8px] text-white/30 font-mono mb-0.5">
+                  Workspace / <span className="text-primary">{WORKSPACE_TABS[activeTab].label}</span>
+                </div>
+                <AnimatePresence mode="wait">
+                  <motion.h2 key={activeTab} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}
+                    transition={{ duration: 0.25 }} className="text-sm font-black text-white font-display leading-none">
+                    {WORKSPACE_TABS[activeTab].label === "Dashboard" ? "Operational Dashboard"
+                      : WORKSPACE_TABS[activeTab].label === "Samples" ? "Sample Registry"
+                      : WORKSPACE_TABS[activeTab].label === "Sample Intake" ? "Sample Intake"
+                      : WORKSPACE_TABS[activeTab].label === "Analysis" ? "Analysis"
+                      : "QA / QC Monitoring"}
+                  </motion.h2>
+                </AnimatePresence>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[8px] font-bold text-white/30 border border-white/[0.07] rounded px-2 py-1 font-mono">+ New intake</span>
+                <span className="text-[8px] font-bold text-white bg-primary rounded px-2 py-1">Approve reports</span>
+              </div>
+            </div>
+
+            {/* Dynamic view */}
+            <AnimatePresence mode="wait">
+              <motion.div key={activeTab}
+                initial={{ opacity: 0, y: 10, filter: "blur(4px)" }}
+                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                exit={{ opacity: 0, y: -8, filter: "blur(4px)" }}
+                transition={{ duration: 0.35, ease: "easeInOut" }}>
+                <ActiveView />
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        </div>
+
+        {/* Reflection sheen overlay */}
+        <div className="absolute inset-0 pointer-events-none"
+          style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.025) 0%, transparent 50%)" }} />
+      </div>
+    </div>
+  );
+}
+
+// ─── Animation variants ─────────────────────────────────────────────────────
+const container = {
   hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.08,
-      delayChildren: 0.05
-    }
-  }
+  show: { opacity: 1, transition: { staggerChildren: 0.09, delayChildren: 0.06 } }
+} as any;
+const item = {
+  hidden: { opacity: 0, y: 18 },
+  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 88, damping: 14 } }
 } as any;
 
-const childRevealVariants = {
-  hidden: { opacity: 0, y: 16 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      type: "spring",
-      stiffness: 90,
-      damping: 14
-    }
-  }
-} as any;
-
+// ─── Landing Page ───────────────────────────────────────────────────────────
 function Landing() {
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
+      {/* Sticky header */}
       <header className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
           <Link to="/" className="flex items-center gap-2 group">
@@ -457,10 +800,10 @@ function Landing() {
             <span className="font-semibold tracking-tight transition-colors group-hover:text-primary">GeoChem Suite</span>
           </Link>
           <nav className="hidden md:flex items-center gap-7 text-sm text-muted-foreground">
-            <a href="#platform" className="hover:text-foreground transition-colors relative after:absolute after:-bottom-1 after:left-0 after:h-[1.5px] after:w-0 after:bg-primary after:transition-all hover:after:w-full">Platform</a>
-            <a href="#modules" className="hover:text-foreground transition-colors relative after:absolute after:-bottom-1 after:left-0 after:h-[1.5px] after:w-0 after:bg-primary after:transition-all hover:after:w-full">Modules</a>
-            <a href="#analytics" className="hover:text-foreground transition-colors relative after:absolute after:-bottom-1 after:left-0 after:h-[1.5px] after:w-0 after:bg-primary after:transition-all hover:after:w-full">Analytics</a>
-            <a href="#security" className="hover:text-foreground transition-colors relative after:absolute after:-bottom-1 after:left-0 after:h-[1.5px] after:w-0 after:bg-primary after:transition-all hover:after:w-full">Security</a>
+            {["Platform","Modules","Analytics","Security"].map(n => (
+              <a key={n} href={`#${n.toLowerCase()}`}
+                className="hover:text-foreground transition-colors relative after:absolute after:-bottom-1 after:left-0 after:h-[1.5px] after:w-0 after:bg-primary after:transition-all hover:after:w-full">{n}</a>
+            ))}
           </nav>
           <div className="flex items-center gap-2">
             <Link to="/login" className="hidden sm:inline-flex items-center rounded-md px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted transition-colors">Sign in</Link>
@@ -471,73 +814,75 @@ function Landing() {
         </div>
       </header>
 
-      {/* Fullscreen Immersive Centered Hero Section */}
-      <section className="relative overflow-hidden border-b border-border/20 bg-background min-h-[calc(100vh-64px)] flex items-center justify-center">
-        {/* Immersive 3D Background Canvas Visualizer */}
-        <div className="absolute inset-0 z-0 pointer-events-none opacity-80">
+      {/* ── HERO ─────────────────────────────────────────────── */}
+      <section className="relative overflow-hidden border-b border-border/20 bg-background min-h-[calc(100vh-64px)] flex items-center">
+        {/* Canvas bg */}
+        <div className="absolute inset-0 z-0 pointer-events-none opacity-70">
           <CinematicGeologicalHeroVisualizer />
         </div>
+        {/* Gradient mesh */}
+        <div className="absolute inset-0 gradient-mesh opacity-40 pointer-events-none" />
+        <div className="absolute inset-0 grid-pattern opacity-[0.07] [mask-image:radial-gradient(ellipse_at_center,black_40%,transparent_80%)] pointer-events-none" />
 
-        {/* Soft atmospheric gradient mesh */}
-        <div className="absolute inset-0 gradient-mesh opacity-45 pointer-events-none" />
-        <div className="absolute inset-0 grid-pattern opacity-10 [mask-image:radial-gradient(ellipse_at_center,black_40%,transparent_80%)] pointer-events-none" />
-        
-        {/* Centered Content Container */}
-        <div className="relative mx-auto max-w-5xl px-6 py-20 w-full z-10 text-center flex flex-col items-center justify-center space-y-8 select-none">
-          <motion.div 
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            className="flex flex-col items-center justify-center text-center space-y-8 max-w-4xl"
-          >
-            <motion.h1 
-              variants={childRevealVariants}
-              className="text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-7xl text-foreground leading-[1.05] font-display max-w-3xl"
-            >
-              Track Every <span className="text-gradient font-black">Geological Sample</span> With Scientific Precision.
+        <div className="relative z-10 mx-auto max-w-7xl px-6 py-16 w-full grid lg:grid-cols-12 gap-10 items-center">
+
+          {/* LEFT column */}
+          <motion.div className="lg:col-span-5 flex flex-col space-y-7" variants={container} initial="hidden" animate="show">
+            <motion.div variants={item}>
+              <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1.5 text-[10px] font-bold font-mono tracking-widest text-primary uppercase backdrop-blur-md">
+                <span className="size-1.5 rounded-full bg-primary animate-pulse" />
+                Enterprise LIMS · ISO 17025
+              </span>
+            </motion.div>
+
+            <motion.h1 variants={item}
+              className="text-4xl font-extrabold tracking-tight sm:text-5xl xl:text-6xl text-foreground leading-[1.05] font-display">
+              Track Every{" "}
+              <span className="text-gradient font-black">Geological Sample</span>{" "}
+              With Scientific Precision.
             </motion.h1>
-            
-            <motion.p 
-              variants={childRevealVariants}
-              className="text-base sm:text-xl text-muted-foreground max-w-2xl leading-relaxed font-sans"
-            >
-              GeoChem Suite digitizes laboratory workflows from intake to analytical reporting. Secure custodial tracking, automatic preparation tracking, and instant QA/QC flagging.
+
+            <motion.p variants={item} className="text-base sm:text-lg leading-relaxed font-sans min-h-[3.5rem]">
+              <TypewriterSubheading />
             </motion.p>
-            
-            <motion.div 
-              variants={childRevealVariants}
-              className="flex flex-wrap items-center justify-center gap-4 pt-2"
-            >
-              <Link to="/app" className="inline-flex items-center gap-2 rounded-lg gradient-primary px-7 py-4 text-sm font-semibold text-white shadow-lg shadow-primary/20 hover:shadow-primary/35 transition-all hover:-translate-y-0.5 active-scale-spring font-display">
+
+            <motion.div variants={item} className="flex flex-wrap gap-3">
+              <Link to="/app"
+                className="inline-flex items-center gap-2 rounded-lg gradient-primary px-7 py-4 text-sm font-semibold text-white shadow-lg shadow-primary/20 hover:shadow-primary/35 transition-all hover:-translate-y-0.5 font-display">
                 Launch Platform <ArrowRight className="size-4" />
               </Link>
-              <Link to="/portal" className="inline-flex items-center gap-2 rounded-lg border border-border bg-card/45 backdrop-blur-md px-7 py-4 text-sm font-semibold hover:bg-muted text-foreground transition-all hover:-translate-y-0.5 active-scale-spring font-display">
+              <Link to="/portal"
+                className="inline-flex items-center gap-2 rounded-lg border border-border bg-card/40 backdrop-blur-md px-7 py-4 text-sm font-semibold hover:bg-muted text-foreground transition-all hover:-translate-y-0.5 font-display">
                 Request Demo
               </Link>
             </motion.div>
 
-            <motion.div 
-              variants={childRevealVariants}
-              className="grid grid-cols-3 gap-8 border-t border-border/40 pt-8 max-w-2xl w-full text-[10px] font-bold font-mono uppercase tracking-widest text-muted-foreground justify-center mx-auto"
-            >
-              <div>
-                <span className="text-2xl sm:text-3xl font-black text-foreground block font-display">99.98%</span>
-                Uptime Guaranteed
-              </div>
-              <div>
-                <span className="text-2xl sm:text-3xl font-black text-foreground block font-display">&lt; 1.5s</span>
-                Intake Latency
-              </div>
-              <div>
-                <span className="text-2xl sm:text-3xl font-black text-foreground block font-display">Zero</span>
-                Manual Errors
-              </div>
+            <motion.div variants={item}
+              className="grid grid-cols-3 gap-5 border-t border-border/40 pt-6 text-[10px] font-bold font-mono uppercase tracking-widest text-muted-foreground">
+              {[
+                { val: "99.98%", label: "Uptime SLA" },
+                { val: "< 1.5s", label: "Intake Latency" },
+                { val: "Zero", label: "Manual Errors" },
+              ].map(s => (
+                <div key={s.label}>
+                  <span className="text-2xl sm:text-3xl font-black text-foreground block font-display">{s.val}</span>
+                  {s.label}
+                </div>
+              ))}
             </motion.div>
+          </motion.div>
+
+          {/* RIGHT column — 3D showcase */}
+          <motion.div className="lg:col-span-7"
+            initial={{ opacity: 0, x: 40, scale: 0.96 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            transition={{ delay: 0.25, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}>
+            <Workspace3DShowcase />
           </motion.div>
         </div>
       </section>
 
-      {/* Modules with springy card scroll reveal */}
+      {/* ── MODULES ──────────────────────────────────────────── */}
       <section id="modules" className="border-t border-border bg-card/25">
         <div className="mx-auto max-w-7xl px-6 py-24">
           <div className="max-w-3xl text-center mx-auto">
@@ -549,7 +894,6 @@ function Landing() {
               Every stage of geochemical analysis instrumented — with physical barcodes, precise custody check-ins, automated duplicates spreads, and ISO calibration registries.
             </p>
           </div>
-          
           <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {[
               { i: ScanBarcode, t: "Sample Intake", d: "Thermal label generation, scannable QR/Code-39 custody records, physical shelf mapping." },
@@ -559,14 +903,11 @@ function Landing() {
               { i: BarChart3, t: "Reporting", d: "Branded PDF analytical certificates dispatch, double-verification protocols, email approvals." },
               { i: Building2, t: "Customer Portal", d: "Instant self-service custody trackers, secure download vault, and technical support desk." },
             ].map((m, idx) => (
-              <motion.div 
-                key={m.t} 
-                initial={{ opacity: 0, y: 18 }}
-                whileInView={{ opacity: 1, y: 0 }}
+              <motion.div key={m.t}
+                initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-40px" }}
                 transition={{ delay: idx * 0.05, type: "spring", stiffness: 90, damping: 13 }}
-                className="group rounded-xl border border-border bg-card p-6 hover:border-primary/50 hover:bg-muted/10 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1"
-              >
+                className="group rounded-xl border border-border bg-card p-6 hover:border-primary/50 hover:bg-muted/10 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1">
                 <div className="grid size-11 place-items-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-white">
                   <m.i className="size-5 transition-transform group-hover:scale-110" />
                 </div>
@@ -578,7 +919,7 @@ function Landing() {
         </div>
       </section>
 
-      {/* Feature Strip Section with Live Operations and Micro-animations */}
+      {/* ── PLATFORM ─────────────────────────────────────────── */}
       <section id="platform" className="mx-auto max-w-7xl px-6 py-24">
         <div className="grid gap-12 lg:grid-cols-2 items-center">
           <div className="space-y-6 text-left">
@@ -589,53 +930,41 @@ function Landing() {
             <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
               Ditch manual logs and legacy Excel formulas. GeoChem Suite equips modern assay facilities with high-performance grids and contextual tracking shortcuts that keep technicians focused.
             </p>
-            
             <div className="space-y-4">
               {[
                 { title: "Benchling-Style UX density", desc: "Scientific metadata grids and timeline status transitions." },
                 { title: "Physical scan workflows", desc: "Contextual scanner trigger dialogs pre-filled on hover." },
                 { title: "QA/QC anomaly monitors", desc: "Real-time CRM tolerance mapping and validation rules." }
-              ].map((item, idx) => (
-                <motion.div 
-                  initial={{ opacity: 0, x: -10 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: idx * 0.1 }}
-                  key={item.title} 
-                  className="flex gap-3"
-                >
+              ].map((item2, idx) => (
+                <motion.div key={item2.title}
+                  initial={{ opacity: 0, x: -10 }} whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }} transition={{ delay: idx * 0.1 }}
+                  className="flex gap-3">
                   <CheckCircle2 className="size-4.5 text-success shrink-0 mt-0.5" />
                   <div>
-                    <h4 className="text-sm font-bold text-foreground">{item.title}</h4>
-                    <p className="text-xs text-muted-foreground mt-0.5">{item.desc}</p>
+                    <h4 className="text-sm font-bold text-foreground">{item2.title}</h4>
+                    <p className="text-xs text-muted-foreground mt-0.5">{item2.desc}</p>
                   </div>
                 </motion.div>
               ))}
             </div>
           </div>
-
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.98 }}
-            whileInView={{ opacity: 1, scale: 1 }}
+          <motion.div initial={{ opacity: 0, scale: 0.98 }} whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
-            className="rounded-xl border border-border bg-card p-6 shadow-xl relative overflow-hidden group"
-          >
+            className="rounded-xl border border-border bg-card p-6 shadow-xl relative overflow-hidden group">
             <div className="flex items-center justify-between text-xs font-bold text-muted-foreground mb-4 border-b border-border/60 pb-3">
               <span className="inline-flex items-center gap-1.5 font-mono"><Cpu className="size-3.5 text-primary" /> SECURE_LIMS_PIPELINE</span>
               <span className="text-[10px] text-success animate-pulse font-mono font-bold">READY</span>
             </div>
-            
             <div className="space-y-2">
               {[
                 ["GCS-24012", "In Analysis", "ICP-MS-01", "82%", "border-primary/20 bg-primary/5"],
                 ["GCS-24008", "Preparation", "Pulverizer 2", "44%", "border-border hover:border-primary/20"],
                 ["GCS-24004", "QA Flagged", "Au duplicate spread", "—", "border-destructive/30 bg-destructive/5 text-destructive"],
                 ["GCS-24001", "Report Ready", "RPT-2041", "100%", "border-success/30 bg-success/5 text-success"],
-              ].map(([id, st, who, pct, styleClass]) => (
-                <div 
-                  key={id} 
-                  className={`grid grid-cols-12 items-center gap-2 rounded-lg border px-3 py-2.5 text-xs font-semibold font-mono transition-all duration-300 hover:pl-4 cursor-default ${styleClass}`}
-                >
+              ].map(([id, st, who, pct, sc]) => (
+                <div key={id}
+                  className={`grid grid-cols-12 items-center gap-2 rounded-lg border px-3 py-2.5 text-xs font-semibold font-mono transition-all duration-300 hover:pl-4 cursor-default ${sc}`}>
                   <span className="col-span-3 text-foreground">{id}</span>
                   <span className="col-span-3 opacity-90">{st}</span>
                   <span className="col-span-4 truncate opacity-75">{who}</span>
@@ -647,7 +976,7 @@ function Landing() {
         </div>
       </section>
 
-      {/* Security pricing transition area */}
+      {/* ── CTA ──────────────────────────────────────────────── */}
       <section id="security" className="border-t border-border bg-gradient-to-b from-background to-card/25">
         <div className="mx-auto max-w-7xl px-6 py-24 text-center space-y-6">
           <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl text-foreground">
@@ -667,6 +996,7 @@ function Landing() {
         </div>
       </section>
 
+      {/* ── FOOTER ───────────────────────────────────────────── */}
       <footer className="border-t border-border bg-muted/10">
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-6 py-10 text-xs sm:text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
