@@ -290,7 +290,7 @@
     background: linear-gradient(
       90deg,
       transparent,
-      rgba(59, 130, 246, 0.18),
+      rgba(0, 110, 181, 0.18),
       transparent
     );
     animation: laser-slide 3s infinite linear;
