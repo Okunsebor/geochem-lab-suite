@@ -175,20 +175,21 @@
 
 @layer utilities {
   .gradient-primary {
-    background: linear-gradient(135deg, oklch(0.52 0.16 240), oklch(0.62 0.18 195));
+    background: linear-gradient(135deg, #006EB5 0%, #0B2B4A 100%);
   }
   .gradient-mesh {
     background:
-      radial-gradient(at 20% 20%, oklch(0.52 0.16 240 / 0.15) 0, transparent 50%),
-      radial-gradient(at 80% 30%, oklch(0.62 0.18 195 / 0.12) 0, transparent 50%),
-      radial-gradient(at 50% 90%, oklch(0.55 0.2 320 / 0.08) 0, transparent 50%);
+      radial-gradient(at 18% 22%, rgba(0, 110, 181, 0.18) 0, transparent 55%),
+      radial-gradient(at 82% 28%, rgba(0, 110, 181, 0.10) 0, transparent 55%),
+      radial-gradient(at 50% 92%, rgba(212, 160, 23, 0.06) 0, transparent 55%);
   }
   .text-gradient {
-    background: linear-gradient(135deg, oklch(0.52 0.16 240), oklch(0.62 0.18 195));
+    background: linear-gradient(135deg, #006EB5, #4A9BD4);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
   }
+
   .grid-pattern {
     background-image:
       linear-gradient(var(--border) 1px, transparent 1px),
