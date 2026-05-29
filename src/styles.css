@@ -219,12 +219,12 @@
   }
   .lims-orbit-ring:nth-child(2) {
     right: 0; top: 0;
-    border-right: 2.5px solid oklch(0.62 0.18 195);
+    border-right: 2.5px solid rgba(0, 110, 181, 0.55);
     animation: lims-orbit-two 1.2s linear infinite;
   }
   .lims-orbit-ring:nth-child(3) {
     right: 0; bottom: 0;
-    border-bottom: 2.5px solid oklch(0.75 0.16 75);
+    border-bottom: 2.5px solid #D4A017;
     animation: lims-orbit-three 1.2s linear infinite;
   }
 
