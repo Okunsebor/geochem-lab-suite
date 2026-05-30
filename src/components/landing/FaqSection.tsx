@@ -28,7 +28,7 @@ const FAQ_ITEMS = [
 export default function FaqSection() {
   return (
     <section id="faq" className="border-t border-border bg-muted/10">
-      <div className="mx-auto max-w-3xl px-6 py-24 lg:py-28">
+      <div className="mx-auto max-w-3xl px-6 py-12 md:py-16 lg:py-20">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl text-foreground font-display">
             Frequently asked questions

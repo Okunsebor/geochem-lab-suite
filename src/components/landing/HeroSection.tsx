@@ -24,7 +24,7 @@ export default function HeroSection() {
   const reduceMotion = useReducedMotion();
 
   return (
-    <section className="relative overflow-hidden border-b border-border/20 bg-background min-h-[calc(100vh-64px)] flex items-center">
+    <section className="relative overflow-hidden border-b border-border/20 bg-background min-h-[calc(100vh-64px)] lg:min-h-[calc(85vh-64px)] flex items-center">
       <div className="absolute inset-0 gradient-mesh opacity-40 pointer-events-none" />
       <div
         className="absolute inset-0 pointer-events-none"
@@ -34,7 +34,7 @@ export default function HeroSection() {
         }}
       />
 
-      <div className="relative z-10 mx-auto max-w-7xl px-6 py-16 lg:py-24 w-full grid lg:grid-cols-12 gap-10 lg:gap-14 items-center">
+      <div className="relative z-10 mx-auto max-w-7xl px-6 py-12 md:py-16 lg:py-20 w-full grid lg:grid-cols-12 gap-10 lg:gap-14 items-center">
         <motion.div
           className="lg:col-span-5 flex flex-col space-y-7"
           variants={container}

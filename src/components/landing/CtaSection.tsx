@@ -4,7 +4,7 @@ import { ArrowRight, Lock } from "lucide-react";
 export default function CtaSection() {
   return (
     <section className="border-t border-border bg-gradient-to-b from-primary/5 via-background to-accent/5">
-      <div className="mx-auto max-w-7xl px-6 py-24 lg:py-32 text-center space-y-8">
+      <div className="mx-auto max-w-7xl px-6 py-12 md:py-16 lg:py-20 text-center space-y-8">
         <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-5xl text-foreground font-display max-w-3xl mx-auto">
           Register to access the GeoChem customer portal
         </h2>

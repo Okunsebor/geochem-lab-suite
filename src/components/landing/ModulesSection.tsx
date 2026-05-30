@@ -15,7 +15,7 @@ const MODULES = [
 export default function ModulesSection() {
   return (
     <section id="modules" className="border-t border-border bg-card/25" aria-labelledby="modules-heading">
-      <div className="mx-auto max-w-7xl px-6 py-24 lg:py-28">
+      <div className="mx-auto max-w-7xl px-6 py-12 md:py-16 lg:py-20">
         <div className="max-w-3xl text-center mx-auto">
           <h2
             id="modules-heading"

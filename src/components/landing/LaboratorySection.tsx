@@ -6,7 +6,7 @@ import { BRAND_ASSETS } from "@/lib/branding";
 export default function LaboratorySection() {
   return (
     <section id="laboratory" className="border-t border-border bg-card/20">
-      <div className="mx-auto max-w-7xl px-6 py-24 lg:py-28">
+      <div className="mx-auto max-w-7xl px-6 py-12 md:py-16 lg:py-20">
         <div className="grid gap-12 lg:grid-cols-2 items-center">
           <motion.div
             initial={{ opacity: 0, x: -20 }}
@@ -34,7 +34,7 @@ export default function LaboratorySection() {
               World-class geochemistry at UniPod Nsuk
             </h2>
             <p className="text-base text-muted-foreground leading-relaxed">
-              Our laboratory delivers precision assay workflows — from sample reception through
+              Our laboratory delivers precision assay workflows â€” from sample reception through
               preparation, instrumental analysis, QA/QC validation, and certificate release.
             </p>
             <ul className="space-y-4">

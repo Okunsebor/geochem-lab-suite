@@ -11,7 +11,7 @@ const PRODUCT_LINKS = [
 export default function FooterSection() {
   return (
     <footer className="border-t border-border bg-[#0B1F33] text-white/80">
-      <div className="mx-auto max-w-7xl px-6 py-14">
+      <div className="mx-auto max-w-7xl px-6 py-10 md:py-12">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
           <div>
             <UniPodLogo height={36} linkToHome showTagline />

@@ -24,7 +24,7 @@ const TESTIMONIALS = [
 export default function TestimonialsSection() {
   return (
     <section className="border-t border-border bg-background">
-      <div className="mx-auto max-w-7xl px-6 py-24 lg:py-28">
+      <div className="mx-auto max-w-7xl px-6 py-12 md:py-16 lg:py-20">
         <div className="max-w-3xl mx-auto text-center mb-14">
           <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl text-foreground font-display">
             Trusted by lab teams and their clients

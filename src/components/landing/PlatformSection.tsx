@@ -4,7 +4,7 @@ import { BarChart3, CheckCircle2, Cpu } from "lucide-react";
 export default function PlatformSection() {
   return (
     <section id="platform" className="border-t border-border" aria-labelledby="platform-heading">
-      <div className="mx-auto max-w-7xl px-6 py-24 lg:py-28">
+      <div className="mx-auto max-w-7xl px-6 py-12 md:py-16 lg:py-20">
         <div className="grid gap-12 lg:grid-cols-2 items-center">
           <div className="space-y-6 text-left">
             <h2

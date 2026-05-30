@@ -11,7 +11,7 @@ const COMPLIANCE_CHIPS = [
 export default function TrustBarSection() {
   return (
     <section className="border-t border-border/40 bg-muted/20">
-      <div className="mx-auto max-w-7xl px-6 py-12 lg:py-16">
+      <div className="mx-auto max-w-7xl px-6 py-10 md:py-12 lg:py-16">
         <div className="flex flex-wrap justify-center gap-3 mb-8">
           {COMPLIANCE_CHIPS.map((chip, idx) => (
             <motion.div

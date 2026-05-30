@@ -27,7 +27,7 @@ const FEATURES = [
 export default function SecurityComplianceSection() {
   return (
     <section id="security" className="border-t border-border bg-card/20" aria-labelledby="security-heading">
-      <div className="mx-auto max-w-7xl px-6 py-24 lg:py-28">
+      <div className="mx-auto max-w-7xl px-6 py-12 md:py-16 lg:py-20">
         <div className="max-w-3xl mx-auto text-center mb-14">
           <h2 id="security-heading" className="text-3xl font-extrabold tracking-tight sm:text-4xl text-foreground font-display">
             Security & compliance built in
