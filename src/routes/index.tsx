@@ -870,6 +870,10 @@ function Landing() {
         </div>
       </section>
 
+      <GeologicalWorkflowStorytelling />
+
+
+
 
       {/* ── MODULES ──────────────────────────────────────────── */}
       <section id="modules" className="border-t border-border bg-card/25">
