@@ -41,16 +41,6 @@ export default function HeroSection() {
           initial="hidden"
           animate="show"
         >
-          <motion.div variants={item}>
-            <UniPodLogo height={40} showTagline />
-          </motion.div>
-
-          <motion.div variants={item}>
-            <span className="inline-flex items-center gap-2 rounded-full border border-accent/40 bg-accent/10 px-3.5 py-1.5 text-[10px] font-bold font-mono tracking-widest text-accent-foreground uppercase">
-              <span className="size-1.5 rounded-full bg-accent" />
-              GeoChem Suite · Laboratory portal
-            </span>
-          </motion.div>
 
           <motion.h1
             variants={item}
