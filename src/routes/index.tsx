@@ -7,6 +7,9 @@ import {
   TrendingUp, AlertTriangle, Clock, Layers
 } from "lucide-react";
 import GeologicalWorkflowStorytelling from "../components/lims/GeologicalWorkflowStorytelling";
+import unipodLab from "../assets/unipod-lab.jpg";
+import unipodFacade from "../assets/unipod-facade.jpg";
+import unipodEvent from "../assets/unipod-event.png";
 
 export const Route = createFileRoute("/")(({
   component: Landing,
