@@ -7,6 +7,9 @@ import {
   TrendingUp, AlertTriangle, Clock, Layers
 } from "lucide-react";
 import GeologicalWorkflowStorytelling from "../components/lims/GeologicalWorkflowStorytelling";
+import unipodLab from "../assets/unipod-lab.jpg";
+import unipodFacade from "../assets/unipod-facade.jpg";
+import unipodEvent from "../assets/unipod-event.png";
 
 export const Route = createFileRoute("/")(({
   component: Landing,
@@ -667,26 +670,36 @@ function Landing() {
       {/* ── HERO ─────────────────────────────────────────────── */}
       <section className="relative overflow-hidden border-b border-border/20 bg-background min-h-[calc(100vh-64px)] flex items-center">
 
+        {/* UniPod facade image as architectural backdrop */}
+        <div className="absolute inset-0 pointer-events-none">
+          <img src={unipodFacade} alt="UniPod facility — Nasarawa State University, Keffi"
+            className="absolute inset-0 w-full h-full object-cover opacity-[0.13]" />
+          <div className="absolute inset-0 bg-gradient-to-r from-background via-background/85 to-background/40" />
+          <div className="absolute inset-0 bg-gradient-to-b from-background/30 via-transparent to-background" />
+        </div>
+
         {/* Gradient mesh */}
-        <div className="absolute inset-0 gradient-mesh opacity-40 pointer-events-none" />
-        <div className="absolute inset-0 grid-pattern opacity-[0.07] [mask-image:radial-gradient(ellipse_at_center,black_40%,transparent_80%)] pointer-events-none" />
+        <div className="absolute inset-0 gradient-mesh opacity-30 pointer-events-none" />
+        <div className="absolute inset-0 grid-pattern opacity-[0.05] [mask-image:radial-gradient(ellipse_at_center,black_40%,transparent_80%)] pointer-events-none" />
 
         <div className="relative z-10 mx-auto max-w-7xl px-6 py-16 w-full grid lg:grid-cols-12 gap-10 items-center">
 
           {/* LEFT column */}
           <motion.div className="lg:col-span-5 flex flex-col space-y-7" variants={container} initial="hidden" animate="show">
-            <motion.div variants={item}>
-              <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1.5 text-[10px] font-bold font-mono tracking-widest text-primary uppercase backdrop-blur-md">
+            <motion.div variants={item} className="flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-white px-3 py-1.5 text-[10px] font-bold font-mono tracking-widest text-primary uppercase shadow-sm">
                 <span className="size-1.5 rounded-full bg-primary animate-pulse" />
-                UniPod LIMS
+                UniPod · MineTech
+              </span>
+              <span className="inline-flex items-center gap-2 rounded-full border border-accent/40 bg-accent/10 px-3 py-1.5 text-[10px] font-bold font-mono tracking-widest text-[#8a6912] uppercase">
+                UNDP Supported
               </span>
             </motion.div>
 
             <motion.h1 variants={item}
               className="text-3xl font-extrabold tracking-tight sm:text-5xl xl:text-6xl text-foreground leading-[1.05] font-display">
-              Track Every{" "}
-              <span className="text-gradient font-black">Geological Sample</span>{" "}
-
+              Nigeria&apos;s Geochemistry{" "}
+              <span className="text-gradient font-black">Intelligence Platform</span>
             </motion.h1>
 
             <motion.p variants={item} className="text-base sm:text-lg leading-relaxed font-sans min-h-[3.5rem]">
@@ -699,17 +712,17 @@ function Landing() {
                 Launch Platform <ArrowRight className="size-4" />
               </Link>
               <Link to="/portal"
-                className="inline-flex items-center gap-2 rounded-lg border border-border bg-card/40 backdrop-blur-md px-7 py-4 text-sm font-semibold hover:bg-muted text-foreground transition-all hover:-translate-y-0.5 font-display">
-                Request Demo
+                className="inline-flex items-center gap-2 rounded-lg border border-border bg-white/80 backdrop-blur-md px-7 py-4 text-sm font-semibold hover:bg-muted text-foreground transition-all hover:-translate-y-0.5 font-display">
+                Customer Portal
               </Link>
             </motion.div>
 
             <motion.div variants={item}
               className="grid grid-cols-3 gap-5 border-t border-border/40 pt-6 text-[10px] font-bold font-mono uppercase tracking-widest text-muted-foreground">
               {[
-                { val: "99.98%", label: "Uptime SLA" },
+                { val: "ISO 17025", label: "Aligned" },
                 { val: "< 1.5s", label: "Intake Latency" },
-                { val: "Zero", label: "Manual Errors" },
+                { val: "MineTech", label: "Nasarawa · Keffi" },
               ].map(s => (
                 <div key={s.label}>
                   <span className="text-2xl sm:text-3xl font-black text-foreground block font-display">{s.val}</span>
@@ -719,17 +732,148 @@ function Landing() {
             </motion.div>
           </motion.div>
 
-          {/* RIGHT column — 3D showcase */}
-          <motion.div className="lg:col-span-7"
+          {/* RIGHT column — Lab photo + 3D showcase composition */}
+          <motion.div className="lg:col-span-7 relative"
             initial={{ opacity: 0, x: 40, scale: 0.96 }}
             animate={{ opacity: 1, x: 0, scale: 1 }}
             transition={{ delay: 0.25, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}>
-            <Workspace3DShowcase />
+            {/* Floating lab photo card behind showcase */}
+            <div className="absolute -top-6 -right-4 w-[58%] aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl ring-1 ring-primary/15 hidden lg:block">
+              <img src={unipodLab} alt="UniPod analytical laboratory — instrumentation hall"
+                className="w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-gradient-to-tr from-primary/30 via-transparent to-transparent" />
+              <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-white">
+                <div>
+                  <div className="text-[9px] font-mono tracking-widest opacity-80">UNIT 04</div>
+                  <div className="text-sm font-bold font-display">Analytical Instrumentation Hall</div>
+                </div>
+                <span className="size-2 rounded-full bg-emerald-400 animate-pulse" />
+              </div>
+            </div>
+            <div className="relative lg:mt-32">
+              <Workspace3DShowcase />
+            </div>
           </motion.div>
         </div>
       </section>
 
+      {/* ── INSTITUTIONAL PARTNER BAR ──────────────────────────── */}
+      <section className="border-y border-border bg-white">
+        <div className="mx-auto max-w-7xl px-6 py-6 flex flex-wrap items-center justify-between gap-x-10 gap-y-3">
+          <span className="text-[10px] font-bold font-mono uppercase tracking-[0.2em] text-muted-foreground">
+            An institutional collaboration
+          </span>
+          <div className="flex flex-wrap items-center gap-x-8 gap-y-2 text-sm font-display font-bold text-foreground/80">
+            <span>Government of Nasarawa State</span>
+            <span className="text-border">·</span>
+            <span>Ministry of Solid Minerals</span>
+            <span className="text-border">·</span>
+            <span>Nasarawa State University, Keffi</span>
+            <span className="text-border">·</span>
+            <span className="text-primary">UniPod</span>
+            <span className="text-border">·</span>
+            <span className="text-primary">UNDP</span>
+          </div>
+        </div>
+      </section>
+
+      {/* ── UNIPOD FACILITY SHOWCASE ───────────────────────────── */}
+      <section className="relative border-b border-border bg-gradient-to-b from-white to-secondary/40">
+        <div className="mx-auto max-w-7xl px-6 py-24">
+          <div className="grid lg:grid-cols-12 gap-10 items-center">
+            <div className="lg:col-span-5 space-y-6">
+              <span className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/5 px-3 py-1.5 text-[10px] font-bold font-mono tracking-widest text-primary uppercase">
+                Inside the Facility
+              </span>
+              <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground font-display leading-[1.1]">
+                A national-scale geochemistry lab, digitized end-to-end.
+              </h2>
+              <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+                GeoChem Suite is the operating system of the MineTech UniPod at
+                Nasarawa State University, Keffi — purpose-built to run the
+                analytical instrumentation, chain-of-custody, and reporting
+                pipelines of a UNDP-supported innovation center for Nigeria&apos;s
+                mining ecosystem.
+              </p>
+              <div className="grid grid-cols-2 gap-4 pt-2">
+                {[
+                  { k: "ICP-MS · ICP-OES", v: "Trace element assay" },
+                  { k: "XRF · AAS · LECO", v: "Multi-element & combustion" },
+                  { k: "Sample Prep Suite", v: "Drying · Crushing · Pulverizing" },
+                  { k: "QA / QC Engine", v: "CRM control & duplicate spread" },
+                ].map(c => (
+                  <div key={c.k} className="rounded-lg border border-border bg-white p-3">
+                    <div className="text-[10px] font-mono font-bold uppercase tracking-widest text-primary">{c.k}</div>
+                    <div className="text-sm font-semibold text-foreground mt-1">{c.v}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="lg:col-span-7 grid grid-cols-6 grid-rows-6 gap-4 h-[560px]">
+              {/* Facade — large left */}
+              <motion.div
+                initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }} transition={{ duration: 0.7 }}
+                className="col-span-4 row-span-4 relative rounded-2xl overflow-hidden shadow-xl ring-1 ring-primary/10 group">
+                <img src={unipodFacade} alt="UniPod facade — architectural entrance with UNDP signage"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                <div className="absolute inset-0 bg-gradient-to-tr from-[#041C32]/60 via-transparent to-transparent" />
+                <div className="absolute bottom-4 left-4 right-4 text-white">
+                  <div className="text-[10px] font-mono tracking-[0.2em] uppercase opacity-80">MineTech UniPod</div>
+                  <div className="text-xl font-bold font-display">Nasarawa State University · Keffi</div>
+                </div>
+                <div className="absolute top-4 right-4 rounded-md bg-white/95 px-2.5 py-1 text-[9px] font-mono font-bold text-primary tracking-widest">UNDP · NSU</div>
+              </motion.div>
+
+              {/* Lab — top right */}
+              <motion.div
+                initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }} transition={{ duration: 0.7, delay: 0.1 }}
+                className="col-span-2 row-span-3 relative rounded-2xl overflow-hidden shadow-xl ring-1 ring-primary/10 group">
+                <img src={unipodLab} alt="UniPod laboratory bench — ICP and XRF instrumentation"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#041C32]/55 to-transparent" />
+                <div className="absolute bottom-3 left-3 right-3 text-white">
+                  <div className="text-[9px] font-mono tracking-widest opacity-80">UNIT 04</div>
+                  <div className="text-sm font-bold font-display">Instrumentation Hall</div>
+                </div>
+              </motion.div>
+
+              {/* Event poster — bottom right */}
+              <motion.div
+                initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }} transition={{ duration: 0.7, delay: 0.2 }}
+                className="col-span-2 row-span-3 relative rounded-2xl overflow-hidden shadow-xl ring-1 ring-primary/10 group bg-white">
+                <img src={unipodEvent} alt="Ideation Workshop / Ecosystem Mixer 2026 — UniPod"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+              </motion.div>
+
+              {/* Stat strip — bottom left */}
+              <motion.div
+                initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }} transition={{ duration: 0.7, delay: 0.15 }}
+                className="col-span-4 row-span-2 rounded-2xl bg-gradient-to-br from-[#041C32] to-[#0B2B4A] text-white p-5 grid grid-cols-3 gap-4 shadow-xl ring-1 ring-primary/20">
+                {[
+                  { v: "12+", l: "Analytical Instruments" },
+                  { v: "4", l: "Prep Workflow Stages" },
+                  { v: "100%", l: "Digital Custody" },
+                ].map(s => (
+                  <div key={s.l} className="flex flex-col justify-center">
+                    <div className="text-2xl sm:text-3xl font-black font-display text-accent">{s.v}</div>
+                    <div className="text-[10px] font-mono uppercase tracking-widest text-white/70 mt-1">{s.l}</div>
+                  </div>
+                ))}
+              </motion.div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <GeologicalWorkflowStorytelling />
+
+
+
 
       {/* ── MODULES ──────────────────────────────────────────── */}
       <section id="modules" className="border-t border-border bg-card/25">
