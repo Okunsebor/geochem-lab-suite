@@ -23,10 +23,15 @@ function AppLayout() {
   useEffect(() => {
     if (!loading) {
       if (!currentUser) {
-        navigate({ to: "/login" });
+        navigate({ to: "/login", search: {} });
       } else if (currentUser.role === "Customer") {
-        toast.error("Access Denied: Customers are restricted to the Customer Portal.");
+        toast.error("Please use your registered customer portal.");
         navigate({ to: "/portal" });
+      } else if (currentUser.role === "Lab Coordinator" || currentUser.role === "Lab Staff") {
+        toast.info("Redirected to the Lab Coordinator portal.");
+        window.location.href = "/coordinator";
+      } else if (currentUser.role !== "Admin") {
+        navigate({ to: "/login", search: {} });
       }
     }
   }, [loading, currentUser, navigate]);

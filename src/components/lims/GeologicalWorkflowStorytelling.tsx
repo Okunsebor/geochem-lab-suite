@@ -4,13 +4,12 @@ import {
   ArrowRight, Play, Pause, RefreshCw, Layers, Database
 } from "lucide-react";
 
-// Import generated realistic UI mockup images
-import intakeQrImg from "../../../assets/showcase/intake_qr.png";
-import intakeTrackingImg from "../../../assets/showcase/intake_tracking.png";
-import intakeSyncImg from "../../../assets/showcase/intake_sync.png";
-import prepSopImg from "../../../assets/showcase/prep_sop.png";
-import analysisQueueImg from "../../../assets/showcase/analysis_queue.png";
-import reportingCertImg from "../../../assets/showcase/reporting_cert.png";
+import intakeQrImg from "../../../assets/showcase/intake_qr.svg";
+import intakeTrackingImg from "../../../assets/showcase/intake_tracking.svg";
+import intakeSyncImg from "../../../assets/showcase/intake_sync.svg";
+import prepSopImg from "../../../assets/showcase/prep_sop.svg";
+import analysisQueueImg from "../../../assets/showcase/analysis_queue.svg";
+import reportingCertImg from "../../../assets/showcase/reporting_cert.svg";
 
 export default function GeologicalWorkflowStorytelling() {
   // Card 1: Sub-flow video cycle states

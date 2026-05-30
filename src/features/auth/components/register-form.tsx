@@ -1,18 +1,19 @@
 import React, { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { FlaskConical, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useAuth } from "../../../hooks/use-auth";
 import { InputField } from "../../../components/shared/form-controls";
 import { toast } from "sonner";
+import { UniPodLogo } from "@/components/branding/UniPodLogo";
+import { getPortalPathForRole } from "@/lib/auth-routes";
 
 export function RegisterForm() {
   const { registerUser, switchUserRole } = useAuth();
   const [formData, setFormData] = useState({
-    name: "Adaeze Nwosu",
+    name: "",
     email: "",
-    password: "password123",
-    orgName: "GeoChem Labs",
-    role: "Admin" as const,
+    password: "",
+    organization: "Auric Mining Ltd",
   });
   const [loading, setLoading] = useState(false);
 
@@ -26,33 +27,40 @@ export function RegisterForm() {
     if (!formData.email.trim() || !formData.password.trim() || !formData.name.trim()) return;
 
     setLoading(true);
+    const role = "Customer" as const;
     try {
-      await registerUser(formData.email, formData.password, formData.name, formData.role, formData.orgName);
-      toast.success("Workspace request processed securely! Check your email to verify.");
-      window.location.href = "/app";
-    } catch (err: any) {
-      console.warn("Real Auth registration failed:", err.message);
-      // Fallback sandbox registration
-      switchUserRole("Admin");
-      toast.info("Created LIMS Workspace (Sandbox simulation)");
-      window.location.href = "/app";
+      await registerUser(
+        formData.email,
+        formData.password,
+        formData.name,
+        role,
+        formData.organization
+      );
+      toast.success("Registration complete! Welcome to the UniPod GeoChem customer portal.");
+      window.location.href = getPortalPathForRole(role);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Registration failed";
+      console.warn("Auth registration:", message);
+      switchUserRole("Customer");
+      toast.info("Registered (sandbox) — opening your customer portal.");
+      window.location.href = getPortalPathForRole("Customer");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="w-full max-w-md rounded-xl border border-border bg-card p-8 shadow-sm">
-      <Link to="/" className="flex items-center gap-2">
-        <div className="grid size-8 place-items-center rounded-md gradient-primary text-white">
-          <FlaskConical className="size-4" />
-        </div>
-        <span className="font-bold text-foreground">GeoChem Suite</span>
-      </Link>
-      
-      <h1 className="mt-6 text-2xl font-bold text-foreground tracking-tight">Request access</h1>
-      <p className="mt-1 text-sm text-muted-foreground font-medium">Set up your organization workspace.</p>
-      
+    <div className="w-full max-w-md rounded-xl border border-border bg-card p-8 shadow-lg shadow-primary/5">
+      <UniPodLogo height={36} linkToHome />
+
+      <h1 className="mt-6 text-2xl font-bold text-foreground tracking-tight font-display">
+        Register for laboratory access
+      </h1>
+      <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+        Create your customer account to submit samples, track progress, and download analytical
+        certificates from UniPod Nsuk GeoChem Suite.
+      </p>
+
       <form className="mt-6 space-y-3" onSubmit={handleSubmit}>
         <InputField
           label="Full name"
@@ -63,17 +71,17 @@ export function RegisterForm() {
           required
         />
         <InputField
-          label="Work email"
+          label="Email"
           name="email"
           type="email"
           value={formData.email}
           onChange={handleChange}
-          placeholder="you@lab.com"
+          placeholder="you@company.com"
           disabled={loading}
           required
         />
         <InputField
-          label="Secure password"
+          label="Password"
           name="password"
           type="password"
           value={formData.password}
@@ -82,31 +90,34 @@ export function RegisterForm() {
           required
         />
         <InputField
-          label="Organization Name"
-          name="orgName"
-          value={formData.orgName}
+          label="Organization / company"
+          name="organization"
+          value={formData.organization}
           onChange={handleChange}
           disabled={loading}
           required
         />
-        
+
         <button
           type="submit"
           disabled={loading}
-          className="w-full inline-flex items-center justify-center gap-1.5 rounded-md gradient-primary px-3 py-2 text-sm font-semibold text-white cursor-pointer hover:opacity-90 shadow-sm transition disabled:opacity-50 disabled:pointer-events-none mt-2"
+          className="w-full inline-flex items-center justify-center gap-1.5 rounded-md gradient-primary px-3 py-2.5 text-sm font-semibold text-white cursor-pointer hover:opacity-90 shadow-md transition disabled:opacity-50 mt-2"
         >
           {loading ? (
             <>
-              <Loader2 className="size-4 animate-spin" /> Setting up...
+              <Loader2 className="size-4 animate-spin" /> Creating account…
             </>
           ) : (
-            "Create workspace"
+            "Register & open portal"
           )}
         </button>
       </form>
-      
-      <p className="mt-4 text-center text-xs text-muted-foreground font-medium">
-        Already have a workspace? <Link to="/login" className="text-primary hover:underline font-semibold">Sign in</Link>
+
+      <p className="mt-4 text-center text-xs text-muted-foreground">
+        Staff (admin or lab coordinator)?{" "}
+        <Link to="/login" search={{}} className="text-primary hover:underline font-semibold">
+          Sign in with credentials
+        </Link>
       </p>
     </div>
   );

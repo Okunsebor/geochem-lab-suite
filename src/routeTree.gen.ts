@@ -13,14 +13,22 @@ import { Route as RegisterRouteImport } from './routes/register'
 import { Route as PortalRouteImport } from './routes/portal'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
+import { Route as CoordinatorRouteImport } from './routes/coordinator'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PortalIndexRouteImport } from './routes/portal.index'
+import { Route as CoordinatorIndexRouteImport } from './routes/coordinator.index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as PortalSupportRouteImport } from './routes/portal.support'
 import { Route as PortalSubmitRouteImport } from './routes/portal.submit'
 import { Route as PortalReportsRouteImport } from './routes/portal.reports'
 import { Route as PortalNotificationsRouteImport } from './routes/portal.notifications'
+import { Route as CoordinatorReportsRouteImport } from './routes/coordinator.reports'
+import { Route as CoordinatorQaQcRouteImport } from './routes/coordinator.qa-qc'
+import { Route as CoordinatorPreparationRouteImport } from './routes/coordinator.preparation'
+import { Route as CoordinatorNotificationsRouteImport } from './routes/coordinator.notifications'
+import { Route as CoordinatorIntakeRouteImport } from './routes/coordinator.intake'
+import { Route as CoordinatorAnalysisRouteImport } from './routes/coordinator.analysis'
 import { Route as AppUsersRouteImport } from './routes/app.users'
 import { Route as AppStorageRouteImport } from './routes/app.storage'
 import { Route as AppSettingsRouteImport } from './routes/app.settings'
@@ -33,6 +41,7 @@ import { Route as AppInstrumentsRouteImport } from './routes/app.instruments'
 import { Route as AppAnalyticsRouteImport } from './routes/app.analytics'
 import { Route as AppAnalysisRouteImport } from './routes/app.analysis'
 import { Route as AppActivityRouteImport } from './routes/app.activity'
+import { Route as CoordinatorSamplesIndexRouteImport } from './routes/coordinator.samples.index'
 import { Route as AppSettingsIndexRouteImport } from './routes/app.settings.index'
 import { Route as AppSamplesIndexRouteImport } from './routes/app.samples.index'
 import { Route as AppSettingsSecurityRouteImport } from './routes/app.settings.security'
@@ -62,6 +71,11 @@ const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
   path: '/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CoordinatorRoute = CoordinatorRouteImport.update({
+  id: '/coordinator',
+  path: '/coordinator',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppRoute = AppRouteImport.update({
   id: '/app',
   path: '/app',
@@ -76,6 +90,11 @@ const PortalIndexRoute = PortalIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => PortalRoute,
+} as any)
+const CoordinatorIndexRoute = CoordinatorIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => CoordinatorRoute,
 } as any)
 const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
@@ -101,6 +120,37 @@ const PortalNotificationsRoute = PortalNotificationsRouteImport.update({
   id: '/notifications',
   path: '/notifications',
   getParentRoute: () => PortalRoute,
+} as any)
+const CoordinatorReportsRoute = CoordinatorReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => CoordinatorRoute,
+} as any)
+const CoordinatorQaQcRoute = CoordinatorQaQcRouteImport.update({
+  id: '/qa-qc',
+  path: '/qa-qc',
+  getParentRoute: () => CoordinatorRoute,
+} as any)
+const CoordinatorPreparationRoute = CoordinatorPreparationRouteImport.update({
+  id: '/preparation',
+  path: '/preparation',
+  getParentRoute: () => CoordinatorRoute,
+} as any)
+const CoordinatorNotificationsRoute =
+  CoordinatorNotificationsRouteImport.update({
+    id: '/notifications',
+    path: '/notifications',
+    getParentRoute: () => CoordinatorRoute,
+  } as any)
+const CoordinatorIntakeRoute = CoordinatorIntakeRouteImport.update({
+  id: '/intake',
+  path: '/intake',
+  getParentRoute: () => CoordinatorRoute,
+} as any)
+const CoordinatorAnalysisRoute = CoordinatorAnalysisRouteImport.update({
+  id: '/analysis',
+  path: '/analysis',
+  getParentRoute: () => CoordinatorRoute,
 } as any)
 const AppUsersRoute = AppUsersRouteImport.update({
   id: '/users',
@@ -162,6 +212,11 @@ const AppActivityRoute = AppActivityRouteImport.update({
   path: '/activity',
   getParentRoute: () => AppRoute,
 } as any)
+const CoordinatorSamplesIndexRoute = CoordinatorSamplesIndexRouteImport.update({
+  id: '/samples/',
+  path: '/samples/',
+  getParentRoute: () => CoordinatorRoute,
+} as any)
 const AppSettingsIndexRoute = AppSettingsIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -207,6 +262,7 @@ const AppSamplesIdRoute = AppSamplesIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
+  '/coordinator': typeof CoordinatorRouteWithChildren
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/portal': typeof PortalRouteWithChildren
@@ -223,11 +279,18 @@ export interface FileRoutesByFullPath {
   '/app/settings': typeof AppSettingsRouteWithChildren
   '/app/storage': typeof AppStorageRoute
   '/app/users': typeof AppUsersRoute
+  '/coordinator/analysis': typeof CoordinatorAnalysisRoute
+  '/coordinator/intake': typeof CoordinatorIntakeRoute
+  '/coordinator/notifications': typeof CoordinatorNotificationsRoute
+  '/coordinator/preparation': typeof CoordinatorPreparationRoute
+  '/coordinator/qa-qc': typeof CoordinatorQaQcRoute
+  '/coordinator/reports': typeof CoordinatorReportsRoute
   '/portal/notifications': typeof PortalNotificationsRoute
   '/portal/reports': typeof PortalReportsRoute
   '/portal/submit': typeof PortalSubmitRoute
   '/portal/support': typeof PortalSupportRoute
   '/app/': typeof AppIndexRoute
+  '/coordinator/': typeof CoordinatorIndexRoute
   '/portal/': typeof PortalIndexRoute
   '/app/samples/$id': typeof AppSamplesIdRoute
   '/app/settings/api': typeof AppSettingsApiRoute
@@ -237,6 +300,7 @@ export interface FileRoutesByFullPath {
   '/app/settings/security': typeof AppSettingsSecurityRoute
   '/app/samples/': typeof AppSamplesIndexRoute
   '/app/settings/': typeof AppSettingsIndexRoute
+  '/coordinator/samples/': typeof CoordinatorSamplesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -254,11 +318,18 @@ export interface FileRoutesByTo {
   '/app/reports': typeof AppReportsRoute
   '/app/storage': typeof AppStorageRoute
   '/app/users': typeof AppUsersRoute
+  '/coordinator/analysis': typeof CoordinatorAnalysisRoute
+  '/coordinator/intake': typeof CoordinatorIntakeRoute
+  '/coordinator/notifications': typeof CoordinatorNotificationsRoute
+  '/coordinator/preparation': typeof CoordinatorPreparationRoute
+  '/coordinator/qa-qc': typeof CoordinatorQaQcRoute
+  '/coordinator/reports': typeof CoordinatorReportsRoute
   '/portal/notifications': typeof PortalNotificationsRoute
   '/portal/reports': typeof PortalReportsRoute
   '/portal/submit': typeof PortalSubmitRoute
   '/portal/support': typeof PortalSupportRoute
   '/app': typeof AppIndexRoute
+  '/coordinator': typeof CoordinatorIndexRoute
   '/portal': typeof PortalIndexRoute
   '/app/samples/$id': typeof AppSamplesIdRoute
   '/app/settings/api': typeof AppSettingsApiRoute
@@ -268,11 +339,13 @@ export interface FileRoutesByTo {
   '/app/settings/security': typeof AppSettingsSecurityRoute
   '/app/samples': typeof AppSamplesIndexRoute
   '/app/settings': typeof AppSettingsIndexRoute
+  '/coordinator/samples': typeof CoordinatorSamplesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
+  '/coordinator': typeof CoordinatorRouteWithChildren
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/portal': typeof PortalRouteWithChildren
@@ -289,11 +362,18 @@ export interface FileRoutesById {
   '/app/settings': typeof AppSettingsRouteWithChildren
   '/app/storage': typeof AppStorageRoute
   '/app/users': typeof AppUsersRoute
+  '/coordinator/analysis': typeof CoordinatorAnalysisRoute
+  '/coordinator/intake': typeof CoordinatorIntakeRoute
+  '/coordinator/notifications': typeof CoordinatorNotificationsRoute
+  '/coordinator/preparation': typeof CoordinatorPreparationRoute
+  '/coordinator/qa-qc': typeof CoordinatorQaQcRoute
+  '/coordinator/reports': typeof CoordinatorReportsRoute
   '/portal/notifications': typeof PortalNotificationsRoute
   '/portal/reports': typeof PortalReportsRoute
   '/portal/submit': typeof PortalSubmitRoute
   '/portal/support': typeof PortalSupportRoute
   '/app/': typeof AppIndexRoute
+  '/coordinator/': typeof CoordinatorIndexRoute
   '/portal/': typeof PortalIndexRoute
   '/app/samples/$id': typeof AppSamplesIdRoute
   '/app/settings/api': typeof AppSettingsApiRoute
@@ -303,12 +383,14 @@ export interface FileRoutesById {
   '/app/settings/security': typeof AppSettingsSecurityRoute
   '/app/samples/': typeof AppSamplesIndexRoute
   '/app/settings/': typeof AppSettingsIndexRoute
+  '/coordinator/samples/': typeof CoordinatorSamplesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/app'
+    | '/coordinator'
     | '/forgot-password'
     | '/login'
     | '/portal'
@@ -325,11 +407,18 @@ export interface FileRouteTypes {
     | '/app/settings'
     | '/app/storage'
     | '/app/users'
+    | '/coordinator/analysis'
+    | '/coordinator/intake'
+    | '/coordinator/notifications'
+    | '/coordinator/preparation'
+    | '/coordinator/qa-qc'
+    | '/coordinator/reports'
     | '/portal/notifications'
     | '/portal/reports'
     | '/portal/submit'
     | '/portal/support'
     | '/app/'
+    | '/coordinator/'
     | '/portal/'
     | '/app/samples/$id'
     | '/app/settings/api'
@@ -339,6 +428,7 @@ export interface FileRouteTypes {
     | '/app/settings/security'
     | '/app/samples/'
     | '/app/settings/'
+    | '/coordinator/samples/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -356,11 +446,18 @@ export interface FileRouteTypes {
     | '/app/reports'
     | '/app/storage'
     | '/app/users'
+    | '/coordinator/analysis'
+    | '/coordinator/intake'
+    | '/coordinator/notifications'
+    | '/coordinator/preparation'
+    | '/coordinator/qa-qc'
+    | '/coordinator/reports'
     | '/portal/notifications'
     | '/portal/reports'
     | '/portal/submit'
     | '/portal/support'
     | '/app'
+    | '/coordinator'
     | '/portal'
     | '/app/samples/$id'
     | '/app/settings/api'
@@ -370,10 +467,12 @@ export interface FileRouteTypes {
     | '/app/settings/security'
     | '/app/samples'
     | '/app/settings'
+    | '/coordinator/samples'
   id:
     | '__root__'
     | '/'
     | '/app'
+    | '/coordinator'
     | '/forgot-password'
     | '/login'
     | '/portal'
@@ -390,11 +489,18 @@ export interface FileRouteTypes {
     | '/app/settings'
     | '/app/storage'
     | '/app/users'
+    | '/coordinator/analysis'
+    | '/coordinator/intake'
+    | '/coordinator/notifications'
+    | '/coordinator/preparation'
+    | '/coordinator/qa-qc'
+    | '/coordinator/reports'
     | '/portal/notifications'
     | '/portal/reports'
     | '/portal/submit'
     | '/portal/support'
     | '/app/'
+    | '/coordinator/'
     | '/portal/'
     | '/app/samples/$id'
     | '/app/settings/api'
@@ -404,11 +510,13 @@ export interface FileRouteTypes {
     | '/app/settings/security'
     | '/app/samples/'
     | '/app/settings/'
+    | '/coordinator/samples/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
+  CoordinatorRoute: typeof CoordinatorRouteWithChildren
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   LoginRoute: typeof LoginRoute
   PortalRoute: typeof PortalRouteWithChildren
@@ -445,6 +553,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/coordinator': {
+      id: '/coordinator'
+      path: '/coordinator'
+      fullPath: '/coordinator'
+      preLoaderRoute: typeof CoordinatorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/app': {
       id: '/app'
       path: '/app'
@@ -465,6 +580,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/portal/'
       preLoaderRoute: typeof PortalIndexRouteImport
       parentRoute: typeof PortalRoute
+    }
+    '/coordinator/': {
+      id: '/coordinator/'
+      path: '/'
+      fullPath: '/coordinator/'
+      preLoaderRoute: typeof CoordinatorIndexRouteImport
+      parentRoute: typeof CoordinatorRoute
     }
     '/app/': {
       id: '/app/'
@@ -500,6 +622,48 @@ declare module '@tanstack/react-router' {
       fullPath: '/portal/notifications'
       preLoaderRoute: typeof PortalNotificationsRouteImport
       parentRoute: typeof PortalRoute
+    }
+    '/coordinator/reports': {
+      id: '/coordinator/reports'
+      path: '/reports'
+      fullPath: '/coordinator/reports'
+      preLoaderRoute: typeof CoordinatorReportsRouteImport
+      parentRoute: typeof CoordinatorRoute
+    }
+    '/coordinator/qa-qc': {
+      id: '/coordinator/qa-qc'
+      path: '/qa-qc'
+      fullPath: '/coordinator/qa-qc'
+      preLoaderRoute: typeof CoordinatorQaQcRouteImport
+      parentRoute: typeof CoordinatorRoute
+    }
+    '/coordinator/preparation': {
+      id: '/coordinator/preparation'
+      path: '/preparation'
+      fullPath: '/coordinator/preparation'
+      preLoaderRoute: typeof CoordinatorPreparationRouteImport
+      parentRoute: typeof CoordinatorRoute
+    }
+    '/coordinator/notifications': {
+      id: '/coordinator/notifications'
+      path: '/notifications'
+      fullPath: '/coordinator/notifications'
+      preLoaderRoute: typeof CoordinatorNotificationsRouteImport
+      parentRoute: typeof CoordinatorRoute
+    }
+    '/coordinator/intake': {
+      id: '/coordinator/intake'
+      path: '/intake'
+      fullPath: '/coordinator/intake'
+      preLoaderRoute: typeof CoordinatorIntakeRouteImport
+      parentRoute: typeof CoordinatorRoute
+    }
+    '/coordinator/analysis': {
+      id: '/coordinator/analysis'
+      path: '/analysis'
+      fullPath: '/coordinator/analysis'
+      preLoaderRoute: typeof CoordinatorAnalysisRouteImport
+      parentRoute: typeof CoordinatorRoute
     }
     '/app/users': {
       id: '/app/users'
@@ -584,6 +748,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/app/activity'
       preLoaderRoute: typeof AppActivityRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/coordinator/samples/': {
+      id: '/coordinator/samples/'
+      path: '/samples'
+      fullPath: '/coordinator/samples/'
+      preLoaderRoute: typeof CoordinatorSamplesIndexRouteImport
+      parentRoute: typeof CoordinatorRoute
     }
     '/app/settings/': {
       id: '/app/settings/'
@@ -704,6 +875,32 @@ const AppRouteChildren: AppRouteChildren = {
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
+interface CoordinatorRouteChildren {
+  CoordinatorAnalysisRoute: typeof CoordinatorAnalysisRoute
+  CoordinatorIntakeRoute: typeof CoordinatorIntakeRoute
+  CoordinatorNotificationsRoute: typeof CoordinatorNotificationsRoute
+  CoordinatorPreparationRoute: typeof CoordinatorPreparationRoute
+  CoordinatorQaQcRoute: typeof CoordinatorQaQcRoute
+  CoordinatorReportsRoute: typeof CoordinatorReportsRoute
+  CoordinatorIndexRoute: typeof CoordinatorIndexRoute
+  CoordinatorSamplesIndexRoute: typeof CoordinatorSamplesIndexRoute
+}
+
+const CoordinatorRouteChildren: CoordinatorRouteChildren = {
+  CoordinatorAnalysisRoute: CoordinatorAnalysisRoute,
+  CoordinatorIntakeRoute: CoordinatorIntakeRoute,
+  CoordinatorNotificationsRoute: CoordinatorNotificationsRoute,
+  CoordinatorPreparationRoute: CoordinatorPreparationRoute,
+  CoordinatorQaQcRoute: CoordinatorQaQcRoute,
+  CoordinatorReportsRoute: CoordinatorReportsRoute,
+  CoordinatorIndexRoute: CoordinatorIndexRoute,
+  CoordinatorSamplesIndexRoute: CoordinatorSamplesIndexRoute,
+}
+
+const CoordinatorRouteWithChildren = CoordinatorRoute._addFileChildren(
+  CoordinatorRouteChildren,
+)
+
 interface PortalRouteChildren {
   PortalNotificationsRoute: typeof PortalNotificationsRoute
   PortalReportsRoute: typeof PortalReportsRoute
@@ -726,6 +923,7 @@ const PortalRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
+  CoordinatorRoute: CoordinatorRouteWithChildren,
   ForgotPasswordRoute: ForgotPasswordRoute,
   LoginRoute: LoginRoute,
   PortalRoute: PortalRouteWithChildren,

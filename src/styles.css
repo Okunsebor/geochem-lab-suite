@@ -62,13 +62,13 @@
   --card-foreground: #0f172a;
   --popover: #ffffff;
   --popover-foreground: #0f172a;
-  --primary: #1DA1E8;
+  --primary: #00AEEF;
   --primary-foreground: #ffffff;
   --secondary: #f1f5f9;
   --secondary-foreground: #1e293b;
   --muted: #f8fafc;
   --muted-foreground: #64748b;
-  --accent: #F4C430;
+  --accent: #F5B800;
   --accent-foreground: #0f172a;
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
@@ -80,20 +80,23 @@
   --info-foreground: #ffffff;
   --border: #e2e8f0;
   --input: #e2e8f0;
-  --ring: #1DA1E8;
-  --chart-1: #1DA1E8;
+  --ring: #00AEEF;
+  --chart-1: #00AEEF;
   --chart-2: #10b981;
   --chart-3: #f59e0b;
   --chart-4: #ef4444;
   --chart-5: #6366f1;
   --sidebar: #ffffff;
   --sidebar-foreground: #0f172a;
-  --sidebar-primary: #1DA1E8;
+  --sidebar-primary: #00AEEF;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #f1f5f9;
   --sidebar-accent-foreground: #0f172a;
   --sidebar-border: #e2e8f0;
-  --sidebar-ring: #1DA1E8;
+  --sidebar-ring: #00AEEF;
+
+  --opacity-primary-05: rgba(0, 174, 239, 0.05);
+  --opacity-primary-08: rgba(0, 174, 239, 0.08);
 
   /* Spacing System */
   --space-0: 0px;
@@ -106,8 +109,6 @@
   --space-8: 3rem;
 
   /* Opacity Layers */
-  --opacity-primary-05: rgba(29, 161, 232, 0.05);
-  --opacity-primary-08: rgba(29, 161, 232, 0.08);
   --opacity-white-03: rgba(255, 255, 255, 0.03);
 
   /* Elevation Shadows */
@@ -123,13 +124,13 @@
   --card-foreground: #f8fafc;
   --popover: #07111C;
   --popover-foreground: #f8fafc;
-  --primary: #1DA1E8;
+  --primary: #00AEEF;
   --primary-foreground: #050B12;
   --secondary: #0D1723;
   --secondary-foreground: #f8fafc;
   --muted: #0D1723;
   --muted-foreground: #94a3b8;
-  --accent: #F4C430;
+  --accent: #F5B800;
   --accent-foreground: #050B12;
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
@@ -141,15 +142,15 @@
   --info-foreground: #ffffff;
   --border: rgba(29, 161, 232, 0.15);
   --input: rgba(29, 161, 232, 0.12);
-  --ring: #1DA1E8;
+  --ring: #00AEEF;
   --sidebar: #07111C;
   --sidebar-foreground: #f8fafc;
-  --sidebar-primary: #1DA1E8;
+  --sidebar-primary: #00AEEF;
   --sidebar-primary-foreground: #050B12;
   --sidebar-accent: #0D1723;
   --sidebar-accent-foreground: #f8fafc;
   --sidebar-border: rgba(29, 161, 232, 0.15);
-  --sidebar-ring: #1DA1E8;
+  --sidebar-ring: #00AEEF;
 }
 
 @layer base {
@@ -168,7 +169,10 @@
 
 @layer utilities {
   .gradient-primary {
-    background: linear-gradient(135deg, oklch(0.52 0.16 240), oklch(0.62 0.18 195));
+    background: linear-gradient(135deg, #00AEEF 0%, #0090C8 100%);
+  }
+  .gradient-accent {
+    background: linear-gradient(135deg, #F5B800 0%, #FFD54F 100%);
   }
   .gradient-mesh {
     background:
@@ -177,7 +181,7 @@
       radial-gradient(at 50% 90%, oklch(0.55 0.2 320 / 0.08) 0, transparent 50%);
   }
   .text-gradient {
-    background: linear-gradient(135deg, oklch(0.52 0.16 240), oklch(0.62 0.18 195));
+    background: linear-gradient(135deg, #00AEEF 0%, #0090C8 55%, #F5B800 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -326,5 +330,48 @@
   @keyframes slide-up {
     0% { transform: translateY(8px); opacity: 0; }
     100% { transform: translateY(0); opacity: 1; }
+  }
+
+  /* Customer portal 3D scene */
+  .portal-3d-scene {
+    perspective: 1200px;
+    background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(0, 174, 239, 0.12), transparent 60%);
+  }
+  .portal-3d-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(60px);
+    opacity: 0.45;
+  }
+  .portal-3d-orb--cyan {
+    width: 420px;
+    height: 420px;
+    top: -10%;
+    right: 10%;
+    background: rgba(0, 174, 239, 0.35);
+  }
+  .portal-3d-orb--gold {
+    width: 320px;
+    height: 320px;
+    bottom: 5%;
+    left: 5%;
+    background: rgba(245, 184, 0, 0.28);
+  }
+  .portal-3d-grid {
+    position: absolute;
+    inset: -50%;
+    background-image:
+      linear-gradient(rgba(0, 174, 239, 0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 174, 239, 0.06) 1px, transparent 1px);
+    background-size: 48px 48px;
+    transform: rotateX(55deg) translateZ(-200px);
+    opacity: 0.5;
+  }
+  .portal-3d-card {
+    transform-style: preserve-3d;
+    transition: box-shadow 0.25s ease, transform 0.25s ease;
+  }
+  .portal-3d-card:hover {
+    box-shadow: 0 24px 48px rgba(0, 174, 239, 0.12), 0 0 0 1px rgba(0, 174, 239, 0.08);
   }
 }

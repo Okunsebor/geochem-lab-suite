@@ -1,31 +1,39 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { FlaskConical } from "lucide-react";
+import { createFileRoute, useSearch } from "@tanstack/react-router";
+import { z } from "zod";
 import { LoginForm } from "../features/auth/components/login-form";
+import { BRAND_ASSETS } from "@/lib/branding";
+import { UniPodLogo } from "@/components/branding/UniPodLogo";
 
-export const Route = createFileRoute("/login")({ component: Login });
+const loginSearchSchema = z.object({
+  intent: z.string().optional(),
+});
+
+export const Route = createFileRoute("/login")({
+  validateSearch: loginSearchSchema,
+  component: Login,
+});
 
 function Login() {
+  const { intent } = useSearch({ from: "/login" });
+
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
-      <div className="hidden lg:flex relative flex-col justify-between p-10 bg-sidebar text-sidebar-foreground overflow-hidden">
-        <div className="absolute inset-0 gradient-mesh opacity-50" />
-        <div className="relative">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="grid size-9 place-items-center rounded-md gradient-primary text-white">
-              <FlaskConical className="size-4" />
-            </div>
-            <span className="text-white font-semibold">GeoChem Suite</span>
-          </Link>
-        </div>
-        <div className="relative">
-          <blockquote className="text-xl text-white/90 leading-snug">
-            "GeoChem replaced four spreadsheets and a paper logbook. Turnaround dropped from 9 days to 3."
+      <div className="hidden lg:block relative overflow-hidden">
+        <img
+          src={BRAND_ASSETS.entrance}
+          alt="UniPod Nsuk"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0B1F33]/90 via-[#0B1F33]/40 to-transparent" />
+        <div className="relative flex flex-col justify-between p-10 min-h-full text-white">
+          <UniPodLogo height={36} linkToHome showTagline />
+          <blockquote className="text-xl leading-snug max-w-md">
+            &ldquo;Precision geochemistry for exploration and mining — from UniPod Nsuk.&rdquo;
           </blockquote>
-          <p className="mt-4 text-sm text-sidebar-foreground/70">— Lab Manager, Auric Mining Ltd</p>
         </div>
       </div>
       <div className="flex items-center justify-center p-6 sm:p-10 bg-background">
-        <LoginForm />
+        <LoginForm portalIntent={intent === "portal"} />
       </div>
     </div>
   );

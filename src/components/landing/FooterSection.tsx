@@ -1,18 +1,61 @@
-import { FlaskConical } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { UniPodLogo } from "@/components/branding/UniPodLogo";
+
+const PRODUCT_LINKS = [
+  { label: "Laboratory", href: "#laboratory" },
+  { label: "Workflow", href: "#workflow" },
+  { label: "Modules", href: "#modules" },
+  { label: "Security", href: "#security" },
+];
 
 export default function FooterSection() {
   return (
-    <footer className="border-t border-border bg-muted/10">
-      <div className="mx-auto flex max-w-7xl flex-col gap-4 px-6 py-10 text-xs sm:text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-2">
-          <div className="grid size-6 place-items-center rounded bg-primary text-white font-bold"><FlaskConical className="size-3" /></div>
-          <span className="font-semibold text-foreground">© 2026 GeoChem Suite · ISO 17025 Compliant LIMS.</span>
+    <footer className="border-t border-border bg-[#0B1F33] text-white/80">
+      <div className="mx-auto max-w-7xl px-6 py-14">
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+          <div>
+            <UniPodLogo height={36} linkToHome showTagline />
+            <p className="mt-4 text-xs leading-relaxed max-w-xs text-white/60">
+              GeoChem Suite — geochemistry laboratory information system at UniPod Nsuk.
+            </p>
+          </div>
+          <div>
+            <h3 className="text-xs font-bold font-mono uppercase tracking-widest text-accent mb-4">Explore</h3>
+            <ul className="space-y-2 text-sm">
+              {PRODUCT_LINKS.map((l) => (
+                <li key={l.label}>
+                  <a href={l.href} className="hover:text-white transition-colors">
+                    {l.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <h3 className="text-xs font-bold font-mono uppercase tracking-widest text-accent mb-4">Access</h3>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <Link to="/register" className="hover:text-white transition-colors">
+                  Register
+                </Link>
+              </li>
+              <li>
+                <Link to="/login" search={{}} className="hover:text-white transition-colors">
+                  Sign in
+                </Link>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h3 className="text-xs font-bold font-mono uppercase tracking-widest text-accent mb-4">Contact</h3>
+            <a href="mailto:geochem@unipod.edu.ng" className="text-sm hover:text-white transition-colors">
+              geochem@unipod.edu.ng
+            </a>
+          </div>
         </div>
-        <div className="flex gap-6 font-semibold">
-          <a href="#" className="hover:text-primary transition-colors">Documentation</a>
-          <a href="#" className="hover:text-primary transition-colors">Security Audit</a>
-          <a href="#" className="hover:text-primary transition-colors">Contact Support</a>
-        </div>
+        <p className="mt-12 pt-8 border-t border-white/10 text-xs text-white/50">
+          © 2026 UniPod · GeoChem Suite. All rights reserved.
+        </p>
       </div>
     </footer>
   );

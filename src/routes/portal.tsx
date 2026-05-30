@@ -1,10 +1,12 @@
 import { createFileRoute, Link, Outlet, useRouterState, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { FlaskConical, Home, FilePlus2, FileText, Bell, LifeBuoy, Beaker, Sun, Moon, Menu, X } from "lucide-react";
+import { Home, FilePlus2, FileText, Bell, LifeBuoy, Sun, Moon, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
+import { Portal3DScene } from "@/components/portal/Portal3DScene";
+import { UniPodLogo } from "@/components/branding/UniPodLogo";
 
 export const Route = createFileRoute("/portal")({ component: PortalLayout });
 
@@ -40,10 +42,14 @@ function PortalLayout() {
   useEffect(() => {
     if (!loading) {
       if (!currentUser) {
-        navigate({ to: "/login" });
-      } else if (currentUser.role !== "Customer" && currentUser.role !== "Admin") {
-        toast.info("Redirected to internal laboratory workspace.");
+        toast.info("Register or sign in to access the customer portal.");
+        navigate({ to: "/register" });
+      } else if (currentUser.role === "Admin") {
         navigate({ to: "/app" });
+      } else if (currentUser.role === "Lab Coordinator" || currentUser.role === "Lab Staff") {
+        window.location.href = "/coordinator";
+      } else if (currentUser.role !== "Customer") {
+        navigate({ to: "/login", search: {} });
       }
     }
   }, [loading, currentUser, navigate]);
@@ -80,8 +86,9 @@ function PortalLayout() {
   const initials = currentUser.name.split(" ").map((x) => x[0]).join("").slice(0, 2);
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <header className="sticky top-0 z-30 shrink-0 border-x-0 border-t-0 rounded-none shadow-sm glass">
+    <div className="min-h-screen flex flex-col bg-background relative">
+      <Portal3DScene />
+      <header className="sticky top-0 z-30 shrink-0 border-x-0 border-t-0 rounded-none shadow-sm glass border-b border-primary/10">
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-6">
           
           <div className="flex items-center gap-3">
@@ -94,11 +101,11 @@ function PortalLayout() {
               <Menu className="size-5" />
             </button>
 
-            <Link to="/" className="flex items-center gap-2">
-              <div className="grid size-8 place-items-center rounded-md gradient-primary text-white">
-                <FlaskConical className="size-4" />
-              </div>
-              <span className="font-semibold text-foreground truncate">GeoChem · Customer Portal</span>
+            <Link to="/portal" className="flex items-center gap-3 min-w-0">
+              <UniPodLogo height={28} linkToHome={false} />
+              <span className="font-semibold text-foreground truncate text-sm border-l border-border pl-3">
+                Customer Portal
+              </span>
             </Link>
           </div>
 

@@ -2,8 +2,9 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard, FlaskConical, Workflow, Activity, FileText,
   Users2, Bell, Settings, ScanBarcode, Beaker, ShieldCheck,
-  Boxes, ClipboardList, BarChart3, HardDrive, LifeBuoy,
+  Boxes, ClipboardList, BarChart3,
 } from "lucide-react";
+import { UniPodLogo } from "@/components/branding/UniPodLogo";
 import { cn } from "@/lib/utils";
 
 const nav = [
@@ -36,13 +37,6 @@ const nav = [
       { to: "/app/settings", label: "Settings", icon: Settings },
     ],
   },
-  {
-    label: "Customer",
-    items: [
-      { to: "/portal", label: "Customer Portal", icon: HardDrive },
-      { to: "/portal/support", label: "Support", icon: LifeBuoy },
-    ],
-  },
 ];
 
 import { useLimsState } from "@/hooks/use-lims-state";
@@ -54,13 +48,11 @@ export function AppSidebar() {
 
   return (
     <aside className="hidden lg:flex w-64 shrink-0 flex-col text-sidebar-foreground border-y-0 border-l-0 rounded-none shadow-sm glass">
-      <div className="flex h-14 items-center gap-2 px-5 border-b border-sidebar-border">
-        <div className="grid size-8 place-items-center rounded-md gradient-primary text-white shadow-sm">
-          <FlaskConical className="size-4" />
-        </div>
-        <div className="flex flex-col leading-tight">
-          <span className="text-sm font-semibold text-sidebar-foreground">GeoChem Suite</span>
-          <span className="text-[10px] uppercase tracking-wider text-sidebar-foreground/60">LIMS · v0.9</span>
+      <div className="flex h-14 items-center gap-2 px-4 border-b border-sidebar-border">
+        <UniPodLogo height={28} linkToHome={false} />
+        <div className="flex flex-col leading-tight min-w-0">
+          <span className="text-xs font-semibold text-sidebar-foreground truncate">Admin Portal</span>
+          <span className="text-[10px] uppercase tracking-wider text-accent font-bold">GeoChem Suite</span>
         </div>
       </div>
       <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-6">

@@ -9,6 +9,7 @@ import { SAMPLE_STATUSES } from "../../types";
 import { InputField, TextAreaField, SelectField } from "../../components/shared/form-controls";
 import { toast } from "sonner";
 import { Priority } from "../../types";
+import { Portal3DCard } from "@/components/portal/Portal3DScene";
 
 // 1. Customer Dashboard Feature
 export function PortalDashboardFeature() {
@@ -25,20 +26,32 @@ export function PortalDashboardFeature() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground tracking-tight">Welcome back, {currentUser?.name?.split(" ")[0] || "Jane"}</h1>
-        <p className="text-sm text-muted-foreground mt-1">{tenantClient} · {activeCount} active samples</p>
-      </div>
+      <Portal3DCard className="rounded-2xl border border-primary/20 bg-card/80 backdrop-blur-xl p-6 shadow-xl">
+        <p className="text-[10px] font-bold font-mono uppercase tracking-widest text-accent">Registered customer</p>
+        <h1 className="text-2xl font-bold text-foreground tracking-tight font-display mt-1">
+          Welcome back, {currentUser?.name?.split(" ")[0] || "Client"}
+        </h1>
+        <p className="text-sm text-muted-foreground mt-1">
+          {tenantClient} · {activeCount} active samples in the UniPod GeoChem pipeline
+        </p>
+      </Portal3DCard>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Active Samples" value={activeCount.toString()} delta="+3" icon={<Beaker className="size-4" />} />
-        <StatCard label="Avg Turnaround" value="3.4d" delta="-0.6d" icon={<Clock className="size-4" />} />
-        <StatCard label="Ready to Download" value={readyReports.toString()} icon={<CheckCircle2 className="size-4" />} />
-        <StatCard label="Reports YTD" value="86" icon={<FileText className="size-4" />} />
+        {[
+          { label: "Active Samples", value: activeCount.toString(), delta: "+3", icon: <Beaker className="size-4" /> },
+          { label: "Avg Turnaround", value: "3.4d", delta: "-0.6d", icon: <Clock className="size-4" /> },
+          { label: "Ready to Download", value: readyReports.toString(), icon: <CheckCircle2 className="size-4" /> },
+          { label: "Reports YTD", value: "86", icon: <FileText className="size-4" /> },
+        ].map((stat, i) => (
+          <Portal3DCard key={stat.label} delay={i * 0.06}>
+            <StatCard label={stat.label} value={stat.value} delta={stat.delta} icon={stat.icon} />
+          </Portal3DCard>
+        ))}
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
-        <div className="lg:col-span-2 rounded-xl border border-border bg-card">
+        <Portal3DCard className="lg:col-span-2 rounded-xl border border-border bg-card/90 backdrop-blur-md" delay={0.15}>
+        <div className="rounded-xl overflow-hidden h-full">
           <div className="border-b border-border px-5 py-3 flex items-center justify-between bg-card">
             <h3 className="text-sm font-semibold text-foreground">My Samples</h3>
             <Link
@@ -73,8 +86,10 @@ export function PortalDashboardFeature() {
             })}
           </div>
         </div>
+        </Portal3DCard>
 
-        <div className="rounded-xl border border-border bg-card p-5 h-fit">
+        <Portal3DCard className="rounded-xl border border-border bg-card/90 backdrop-blur-md p-5 h-fit" delay={0.2}>
+        <div className="h-full">
           <h3 className="text-sm font-semibold text-foreground">Ready to download</h3>
           <ul className="mt-3 space-y-2 max-h-[350px] overflow-y-auto">
             {reports
@@ -103,6 +118,7 @@ export function PortalDashboardFeature() {
             )}
           </ul>
         </div>
+        </Portal3DCard>
       </div>
 
       {/* Sample Tracking Drawer */}
@@ -599,7 +615,7 @@ export function PortalSupportFeature() {
                 </div>
                 <StatusBadge status={t.status === "Open" ? "Pending Approval" : "Completed"} />
               </li>
-            ))}
+              ))}
           </ul>
         </div>
       </div>

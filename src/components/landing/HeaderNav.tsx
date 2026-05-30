@@ -1,29 +1,98 @@
+import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { FlaskConical, ArrowRight } from "lucide-react";
+import { ArrowRight, Menu, X } from "lucide-react";
+import { UniPodLogo } from "@/components/branding/UniPodLogo";
+
+const NAV_LINKS = [
+  { label: "Laboratory", href: "#laboratory" },
+  { label: "Workflow", href: "#workflow" },
+  { label: "Modules", href: "#modules" },
+  { label: "Security", href: "#security" },
+];
 
 export default function HeaderNav() {
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const closeMobile = () => setMobileOpen(false);
+
   return (
-    <header className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur">
+    <header className="sticky top-0 z-50 border-b border-border/60 bg-background/90 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
-        <Link to="/" className="flex items-center gap-2 group">
-          <div className="grid size-8 place-items-center rounded-md gradient-primary text-white transition-transform group-hover:scale-105 group-hover:rotate-6">
-            <FlaskConical className="size-4" />
-          </div>
-          <span className="font-semibold tracking-tight transition-colors group-hover:text-primary">GeoChem Suite</span>
-        </Link>
-        <nav className="hidden md:flex items-center gap-7 text-sm text-muted-foreground">
-          {["Platform", "Modules", "Analytics", "Security"].map(n => (
-            <a key={n} href={`#${n.toLowerCase()}`}
-              className="hover:text-foreground transition-colors relative after:absolute after:-bottom-1 after:left-0 after:h-[1.5px] after:w-0 after:bg-primary after:transition-all hover:after:w-full">{n}</a>
+        <div onClick={closeMobile}>
+          <UniPodLogo height={32} />
+        </div>
+
+        <nav className="hidden md:flex items-center gap-7 text-sm text-muted-foreground" aria-label="Main">
+          {NAV_LINKS.map((n) => (
+            <a
+              key={n.label}
+              href={n.href}
+              className="hover:text-foreground transition-colors relative after:absolute after:-bottom-1 after:left-0 after:h-[2px] after:w-0 after:bg-accent after:transition-all hover:after:w-full"
+            >
+              {n.label}
+            </a>
           ))}
         </nav>
-        <div className="flex items-center gap-2">
-          <Link to="/login" className="hidden sm:inline-flex items-center rounded-md px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted transition-colors">Sign in</Link>
-          <Link to="/app" className="inline-flex items-center gap-1.5 rounded-md gradient-primary px-3.5 py-1.5 text-sm font-medium text-white shadow-sm hover:opacity-95 transition-all hover:shadow-md hover:shadow-primary/10 hover:-translate-y-0.5">
-            Launch app <ArrowRight className="size-3.5" />
+
+        <div className="hidden md:flex items-center gap-2">
+          <Link
+            to="/login"
+            search={{}}
+            className="inline-flex items-center rounded-md px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted transition-colors"
+          >
+            Sign in
+          </Link>
+          <Link
+            to="/register"
+            className="inline-flex items-center gap-1.5 rounded-md gradient-primary px-4 py-2 text-sm font-semibold text-white shadow-sm hover:opacity-95 transition-all hover:shadow-md hover:shadow-primary/15"
+          >
+            Register <ArrowRight className="size-3.5" />
           </Link>
         </div>
+
+        <button
+          type="button"
+          className="md:hidden inline-flex items-center justify-center size-9 rounded-md border border-border hover:bg-muted"
+          aria-expanded={mobileOpen}
+          aria-label={mobileOpen ? "Close menu" : "Open menu"}
+          onClick={() => setMobileOpen((o) => !o)}
+        >
+          {mobileOpen ? <X className="size-5" /> : <Menu className="size-5" />}
+        </button>
       </div>
+
+      {mobileOpen && (
+        <div className="md:hidden border-t border-border/60 bg-background/95 backdrop-blur-xl">
+          <nav className="mx-auto max-w-7xl px-6 py-4 flex flex-col gap-3" aria-label="Mobile">
+            {NAV_LINKS.map((n) => (
+              <a
+                key={n.label}
+                href={n.href}
+                onClick={closeMobile}
+                className="text-sm font-medium text-muted-foreground hover:text-foreground py-1"
+              >
+                {n.label}
+              </a>
+            ))}
+            <div className="border-t border-border/60 pt-3 flex flex-col gap-2">
+              <Link
+                to="/login"
+                search={{}}
+                onClick={closeMobile}
+                className="text-center rounded-md border border-border py-2.5 text-sm font-medium"
+              >
+                Sign in
+              </Link>
+              <Link
+                to="/register"
+                onClick={closeMobile}
+                className="inline-flex items-center justify-center gap-1.5 rounded-md gradient-primary py-2.5 text-sm font-semibold text-white"
+              >
+                Register <ArrowRight className="size-3.5" />
+              </Link>
+            </div>
+          </nav>
+        </div>
+      )}
     </header>
   );
 }
