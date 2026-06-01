@@ -23,6 +23,8 @@ function Login() {
           src={BRAND_ASSETS.entrance}
           alt="UniPod Nsuk"
           className="absolute inset-0 w-full h-full object-cover"
+          loading="lazy"
+          decoding="async"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#0B1F33]/90 via-[#0B1F33]/40 to-transparent" />
         <div className="relative flex flex-col justify-between p-10 min-h-full text-white">

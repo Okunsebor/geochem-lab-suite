@@ -1,8 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { motion, useReducedMotion } from "framer-motion";
-import { ArrowRight, Lock } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { BRAND_ASSETS } from "@/lib/branding";
-import { UniPodLogo } from "@/components/branding/UniPodLogo";
+import { OptimizedImage } from "@/components/shared/OptimizedImage";
 
 const container = {
   hidden: { opacity: 0 },
@@ -14,11 +14,7 @@ const item = {
   show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 88, damping: 14 } },
 } as const;
 
-const TRUST_POINTS = [
-  { val: "UniPod Nsuk", label: "Geochemistry laboratory" },
-  { val: "Secure intake", label: "Chain of custody" },
-  { val: "Registered access", label: "Customer portal" },
-];
+
 
 export default function HeroSection() {
   const reduceMotion = useReducedMotion();
@@ -71,33 +67,7 @@ export default function HeroSection() {
             </Link>
           </motion.div>
 
-          <motion.div
-            variants={item}
-            className="inline-flex items-start gap-2 rounded-lg border border-border/80 bg-muted/30 px-4 py-3 text-xs text-muted-foreground max-w-md"
-          >
-            <Lock className="size-4 text-primary shrink-0 mt-0.5" />
-            <span>
-              The customer portal is available only after registration. Laboratory operations and
-              coordinator tools require authorized staff credentials.
-            </span>
-          </motion.div>
 
-          <motion.div
-            variants={item}
-            className="grid grid-cols-1 sm:grid-cols-3 gap-5 border-t border-border/40 pt-8"
-          >
-            {TRUST_POINTS.map((s) => (
-              <div
-                key={s.label}
-                className="text-[10px] font-bold font-mono uppercase tracking-widest text-muted-foreground"
-              >
-                <span className="text-base sm:text-lg font-black text-foreground block font-display normal-case tracking-tight mb-1">
-                  {s.val}
-                </span>
-                {s.label}
-              </div>
-            ))}
-          </motion.div>
         </motion.div>
 
         <motion.div
@@ -108,10 +78,13 @@ export default function HeroSection() {
         >
           <div className="relative rounded-2xl overflow-hidden border border-border/60 shadow-2xl shadow-primary/10 ring-1 ring-primary/10">
             <div className="absolute inset-0 bg-gradient-to-t from-[#0B1F33]/80 via-transparent to-transparent z-10 pointer-events-none" />
-            <img
+            <OptimizedImage
               src={BRAND_ASSETS.entrance}
               alt="UniPod Nsuk laboratory entrance"
               className="w-full aspect-[4/3] object-cover"
+              width={1200}
+              height={900}
+              priority
             />
             <div className="absolute bottom-0 left-0 right-0 z-20 p-6 sm:p-8">
               <p className="text-white/90 text-sm font-medium max-w-md drop-shadow-md">

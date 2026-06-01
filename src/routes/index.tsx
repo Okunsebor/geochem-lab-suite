@@ -1,15 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import {
-  HeaderNav,
-  HeroSection,
-  TrustBarSection,
-  LaboratorySection,
-  SecurityComplianceSection,
-  TestimonialsSection,
-  FaqSection,
-  CtaSection,
-  FooterSection,
-} from "../components/landing";
+import { lazy, Suspense } from "react";
+import HeaderNav from "../components/landing/HeaderNav";
+import HeroSection from "../components/landing/HeroSection";
+
+const LandingDeferred = lazy(() => import("../components/landing/LandingDeferred"));
 
 export const Route = createFileRoute("/")({
   component: Landing,
@@ -24,21 +18,18 @@ export const Route = createFileRoute("/")({
           "Welcome to the UniPod Geochemistry Laboratory at Nsuk. Register for secure access to submit samples, track analysis, and download certified reports.",
       },
     ],
+    links: [{ rel: "preload", href: "/branding/unipod-nsuk-entrance.png", as: "image" }],
   }),
-} as any);
+});
 
 function Landing() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <HeaderNav />
       <HeroSection />
-      <TrustBarSection />
-      <LaboratorySection />
-      <SecurityComplianceSection />
-      <TestimonialsSection />
-      <FaqSection />
-      <CtaSection />
-      <FooterSection />
+      <Suspense fallback={<div className="min-h-[50vh]" aria-busy="true" aria-label="Loading page content" />}>
+        <LandingDeferred />
+      </Suspense>
     </div>
   );
 }

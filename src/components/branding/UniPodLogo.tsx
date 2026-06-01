@@ -14,7 +14,9 @@ export function UniPodLogo({ className, showTagline = false, linkToHome = true, 
     <img
       src={BRAND_ASSETS.logo}
       alt="UniPod"
+      width={Math.round(height * 3.2)}
       height={height}
+      decoding="async"
       className={cn("h-auto w-auto object-contain", className)}
       style={{ height }}
     />

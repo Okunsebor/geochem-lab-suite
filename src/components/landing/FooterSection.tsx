@@ -2,10 +2,10 @@ import { Link } from "@tanstack/react-router";
 import { UniPodLogo } from "@/components/branding/UniPodLogo";
 
 const PRODUCT_LINKS = [
-  { label: "Laboratory", href: "#laboratory" },
-  { label: "Workflow", href: "#workflow" },
-  { label: "Modules", href: "#modules" },
-  { label: "Security", href: "#security" },
+  { label: "What we provide", href: "#provide" },
+  { label: "Technology", href: "#technology" },
+  { label: "Why choose us", href: "#reasons" },
+  { label: "Partners", href: "#trusted" },
 ];
 
 export default function FooterSection() {

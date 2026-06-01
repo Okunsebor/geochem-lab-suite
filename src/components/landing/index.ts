@@ -1,12 +1,8 @@
-export { default as WorkflowStorytelling } from "./WorkflowStorytelling";
 export { default as HeaderNav } from "./HeaderNav";
 export { default as HeroSection } from "./HeroSection";
-export { default as TrustBarSection } from "./TrustBarSection";
-export { default as LaboratorySection } from "./LaboratorySection";
-export { default as ModulesSection } from "./ModulesSection";
-export { default as PlatformSection } from "./PlatformSection";
-export { default as SecurityComplianceSection } from "./SecurityComplianceSection";
-export { default as TestimonialsSection } from "./TestimonialsSection";
-export { default as FaqSection } from "./FaqSection";
+export { default as WhatWeProvideSection } from "./WhatWeProvideSection";
+export { default as TechnologyStackSection } from "./TechnologyStackSection";
+export { default as ReasonsToChooseSection } from "./ReasonsToChooseSection";
+export { default as TrustedBySection } from "./TrustedBySection";
 export { default as CtaSection } from "./CtaSection";
 export { default as FooterSection } from "./FooterSection";

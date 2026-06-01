@@ -4,10 +4,10 @@ import { ArrowRight, Menu, X } from "lucide-react";
 import { UniPodLogo } from "@/components/branding/UniPodLogo";
 
 const NAV_LINKS = [
-  { label: "Laboratory", href: "#laboratory" },
-  { label: "Workflow", href: "#workflow" },
-  { label: "Modules", href: "#modules" },
-  { label: "Security", href: "#security" },
+  { label: "Services", href: "#provide" },
+  { label: "Technology", href: "#technology" },
+  { label: "Why us", href: "#reasons" },
+  { label: "Partners", href: "#trusted" },
 ];
 
 export default function HeaderNav() {

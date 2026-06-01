@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { RegisterForm } from "../features/auth/components/register-form";
 import { BRAND_ASSETS } from "@/lib/branding";
+import { OptimizedImage } from "@/components/shared/OptimizedImage";
 
 export const Route = createFileRoute("/register")({ component: Register });
 
@@ -8,10 +9,12 @@ function Register() {
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
       <div className="hidden lg:block relative overflow-hidden">
-        <img
+        <OptimizedImage
           src={BRAND_ASSETS.labInterior}
           alt="UniPod geochemistry laboratory"
           className="absolute inset-0 w-full h-full object-cover"
+          width={1200}
+          height={900}
         />
         <div className="absolute inset-0 bg-gradient-to-r from-[#0B1F33]/85 to-transparent" />
         <div className="relative p-10 flex flex-col justify-end min-h-full text-white max-w-lg">
