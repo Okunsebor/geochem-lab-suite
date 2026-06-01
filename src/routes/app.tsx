@@ -4,6 +4,7 @@ import { AppSidebar } from "@/components/layout/AppSidebar";
 import { AppTopbar } from "@/components/layout/AppTopbar";
 import { supabaseHelpers } from "@/lib/supabase";
 import { useAuth } from "@/hooks/use-auth";
+import { getVerifyEmailPath } from "@/lib/auth-routes";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 
@@ -12,7 +13,7 @@ export const Route = createFileRoute("/app")({
 });
 
 function AppLayout() {
-  const { currentUser, loading } = useAuth();
+  const { currentUser, loading, emailVerified, session } = useAuth();
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
@@ -24,6 +25,9 @@ function AppLayout() {
     if (!loading) {
       if (!currentUser) {
         navigate({ to: "/login", search: {} });
+      } else if (session && !emailVerified) {
+        toast.info("Verify your email before accessing the admin workspace.");
+        window.location.href = getVerifyEmailPath(currentUser.email);
       } else if (currentUser.role === "Customer") {
         toast.error("Please use your registered customer portal.");
         navigate({ to: "/portal" });
@@ -34,7 +38,7 @@ function AppLayout() {
         navigate({ to: "/login", search: {} });
       }
     }
-  }, [loading, currentUser, navigate]);
+  }, [loading, currentUser, emailVerified, session, navigate]);
 
   if (loading) {
     return (

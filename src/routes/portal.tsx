@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Home, FilePlus2, FileText, Bell, LifeBuoy, Sun, Moon, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
+import { getVerifyEmailPath } from "@/lib/auth-routes";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { Portal3DScene } from "@/components/portal/Portal3DScene";
@@ -20,7 +21,7 @@ const nav = [
 
 function PortalLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const { currentUser, loading } = useAuth();
+  const { currentUser, loading, emailVerified, session } = useAuth();
   const navigate = useNavigate();
 
   const [dark, setDark] = useState(() => {
@@ -44,15 +45,18 @@ function PortalLayout() {
       if (!currentUser) {
         toast.info("Register or sign in to access the customer portal.");
         navigate({ to: "/register" });
+      } else if (session && !emailVerified) {
+        toast.info("Please verify your email to access the portal.");
+        window.location.href = getVerifyEmailPath(currentUser.email);
       } else if (currentUser.role === "Admin") {
         navigate({ to: "/app" });
       } else if (currentUser.role === "Lab Coordinator" || currentUser.role === "Lab Staff") {
         window.location.href = "/coordinator";
       } else if (currentUser.role !== "Customer") {
-        navigate({ to: "/login", search: {} });
+        navigate({ to: "/login", search: { intent: "portal" } });
       }
     }
-  }, [loading, currentUser, navigate]);
+  }, [loading, currentUser, emailVerified, session, navigate]);
 
   if (loading) {
     return (

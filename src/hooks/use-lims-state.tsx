@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useRef } from "react";
 import { supabase } from "../lib/supabase";
-import { useAuth } from "./use-auth";
+import { useAuth, type RegisterUserInput } from "./use-auth";
 import {
   Sample,
   Instrument,
@@ -33,7 +33,7 @@ interface LimsStateContextType {
   
   // Actions
   login: (email: string, password: string) => Promise<any>;
-  registerUser: (email: string, password: string, name: string, role: User["role"]) => Promise<any>;
+  registerUser: (input: RegisterUserInput) => Promise<{ needsVerification: boolean; email: string }>;
   logout: () => Promise<void>;
   registerSample: (sampleData: {
     client: string;

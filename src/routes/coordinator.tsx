@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { CoordinatorSidebar } from "@/components/layout/CoordinatorSidebar";
 import { AppTopbar } from "@/components/layout/AppTopbar";
 import { useAuth } from "@/hooks/use-auth";
+import { getVerifyEmailPath } from "@/lib/auth-routes";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 
@@ -13,7 +14,7 @@ export const Route = createFileRoute("/coordinator")({
 const COORDINATOR_ROLES = ["Lab Coordinator", "Lab Staff"] as const;
 
 function CoordinatorLayout() {
-  const { currentUser, loading } = useAuth();
+  const { currentUser, loading, emailVerified, session } = useAuth();
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
@@ -21,6 +22,9 @@ function CoordinatorLayout() {
     if (!loading) {
       if (!currentUser) {
         navigate({ to: "/login", search: {} });
+      } else if (session && !emailVerified) {
+        toast.info("Verify your email before accessing the coordinator workspace.");
+        window.location.href = getVerifyEmailPath(currentUser.email);
       } else if (currentUser.role === "Customer") {
         toast.error("Customer accounts use the registered customer portal.");
         navigate({ to: "/portal" });
@@ -30,13 +34,13 @@ function CoordinatorLayout() {
         navigate({ to: "/login", search: {} });
       }
     }
-  }, [loading, currentUser, navigate]);
+  }, [loading, currentUser, emailVerified, session, navigate]);
 
   if (loading) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
         <p className="text-[10px] uppercase font-mono tracking-widest text-primary font-bold">
-          Loading coordinator workspaceù
+          Loading coordinator workspace?
         </p>
       </div>
     );

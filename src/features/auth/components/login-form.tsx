@@ -1,21 +1,13 @@
 import React, { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
-import { useAuth } from "../../../hooks/use-auth";
+import { useAuth, formatAuthError, getPortalPathForRole } from "../../../hooks/use-auth";
 import { InputField } from "../../../components/shared/form-controls";
 import { toast } from "sonner";
-import { getPortalPathForRole } from "@/lib/auth-routes";
+import { getVerifyEmailPath } from "@/lib/auth-routes";
 import type { User } from "@/types";
 import { UniPodLogo } from "@/components/branding/UniPodLogo";
-
-function resolveRoleFromEmail(email: string, portalIntent: boolean): User["role"] {
-  const e = email.toLowerCase();
-  if (e.includes("adaeze") || e.includes("admin")) return "Admin";
-  if (e.includes("rivera") || e.includes("coordinator")) return "Lab Coordinator";
-  if (e.includes("keiko") || e.includes("staff") || e.includes("tech")) return "Lab Staff";
-  if (portalIntent || e.includes("jane") || e.includes("mining") || e.includes("client")) return "Customer";
-  return "Customer";
-}
+import { DEMO_MODE_ENABLED } from "@/lib/auth-utils";
 
 export function LoginForm({ portalIntent = false }: { portalIntent?: boolean }) {
   const { login, switchUserRole } = useAuth();
@@ -33,20 +25,24 @@ export function LoginForm({ portalIntent = false }: { portalIntent?: boolean }) 
 
     setLoading(true);
     try {
-      await login(email, password);
-      toast.success("Signed in securely!");
-      const role = resolveRoleFromEmail(email, portalIntent);
+      const { role } = await login(email, password);
+      toast.success("Signed in securely.");
       redirectForRole(role);
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Login failed";
-      console.warn("Auth login:", message);
-      toast.error(message || "Failed to authenticate. Verify credentials.");
+      const message = formatAuthError(err);
+      if (message.includes("verify your email")) {
+        toast.error(message);
+        window.location.href = getVerifyEmailPath(email);
+        return;
+      }
+      toast.error(message);
     } finally {
       setLoading(false);
     }
   };
 
   const handleRoleEnter = async (role: User["role"]) => {
+    if (!DEMO_MODE_ENABLED) return;
     const roleEmails: Record<User["role"], string> = {
       Admin: "adaeze@geochem.io",
       "Lab Coordinator": "m.rivera@geochem.io",
@@ -56,12 +52,12 @@ export function LoginForm({ portalIntent = false }: { portalIntent?: boolean }) 
 
     setLoading(true);
     try {
-      await login(roleEmails[role], "password123");
-      toast.success(`Signed in as ${role}`);
-      redirectForRole(role);
+      const { role: resolvedRole } = await login(roleEmails[role], "password123");
+      toast.success(`Signed in as ${resolvedRole}`);
+      redirectForRole(resolvedRole);
     } catch {
       switchUserRole(role);
-      toast.info(`Sandbox session: ${role}`);
+      toast.info(`Development sandbox: ${role}`);
       redirectForRole(role);
     } finally {
       setLoading(false);
@@ -77,7 +73,7 @@ export function LoginForm({ portalIntent = false }: { portalIntent?: boolean }) 
       </h1>
       <p className="mt-1 text-sm text-muted-foreground">
         {portalIntent
-          ? "Access your registered customer workspace."
+          ? "Access your verified customer workspace."
           : "Admin, lab coordinator, or registered customer accounts."}
       </p>
 
@@ -90,6 +86,7 @@ export function LoginForm({ portalIntent = false }: { portalIntent?: boolean }) 
           icon={<Mail className="size-4 text-muted-foreground" />}
           disabled={loading}
           required
+          autoComplete="email"
         />
 
         <div className="space-y-1">
@@ -106,6 +103,7 @@ export function LoginForm({ portalIntent = false }: { portalIntent?: boolean }) 
             icon={<Lock className="size-4 text-muted-foreground" />}
             disabled={loading}
             required
+            autoComplete="current-password"
           />
         </div>
 
@@ -126,31 +124,33 @@ export function LoginForm({ portalIntent = false }: { portalIntent?: boolean }) 
         </button>
       </form>
 
-      <div className="mt-6 border-t border-border pt-4">
-        <p className="text-[10px] text-muted-foreground mb-2 text-center uppercase tracking-wider font-bold">
-          Demo portals (sandbox)
-        </p>
-        <div className="grid grid-cols-2 gap-2">
-          {(
-            [
-              { role: "Admin" as const, label: "Admin" },
-              { role: "Lab Coordinator" as const, label: "Coordinator" },
-              { role: "Lab Staff" as const, label: "Staff" },
-              { role: "Customer" as const, label: "Customer" },
-            ] as const
-          ).map((r) => (
-            <button
-              key={r.role}
-              type="button"
-              onClick={() => handleRoleEnter(r.role)}
-              disabled={loading}
-              className="rounded-md border border-border bg-card px-2 py-2 text-xs text-center cursor-pointer hover:border-accent/50 hover:bg-accent/10 font-semibold transition disabled:opacity-50"
-            >
-              {r.label}
-            </button>
-          ))}
+      {DEMO_MODE_ENABLED && (
+        <div className="mt-6 border-t border-border pt-4">
+          <p className="text-[10px] text-muted-foreground mb-2 text-center uppercase tracking-wider font-bold">
+            Development demo portals
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            {(
+              [
+                { role: "Admin" as const, label: "Admin" },
+                { role: "Lab Coordinator" as const, label: "Coordinator" },
+                { role: "Lab Staff" as const, label: "Staff" },
+                { role: "Customer" as const, label: "Customer" },
+              ] as const
+            ).map((r) => (
+              <button
+                key={r.role}
+                type="button"
+                onClick={() => handleRoleEnter(r.role)}
+                disabled={loading}
+                className="rounded-md border border-border bg-card px-2 py-2 text-xs text-center cursor-pointer hover:border-accent/50 hover:bg-accent/10 font-semibold transition disabled:opacity-50"
+              >
+                {r.label}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       <p className="mt-6 text-center text-xs text-muted-foreground">
         New client?{" "}

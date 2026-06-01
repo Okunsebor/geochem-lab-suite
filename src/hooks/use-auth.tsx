@@ -1,224 +1,276 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import type { Session, User as SupabaseUser } from "@supabase/supabase-js";
 import { supabase } from "../lib/supabase";
 import { User } from "../types";
 import { toast } from "sonner";
+import {
+  assertCanResendVerification,
+  DEMO_MODE_ENABLED,
+  formatAuthError,
+  getVerifyEmailUrl,
+  isEmailConfirmed,
+  mapDbRoleToUi,
+  mapUiRoleToDb,
+  recordVerificationResend,
+  getVerificationResendCooldown,
+} from "@/lib/auth-utils";
+import { getPortalPathForRole } from "@/lib/auth-routes";
+
+export interface RegisterUserInput {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  organization: string;
+  phone: string;
+}
 
 interface AuthContextType {
   currentUser: User | null;
+  session: Session | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<any>;
-  registerUser: (email: string, password: string, name: string, role: User["role"], orgName?: string) => Promise<any>;
+  emailVerified: boolean;
+  login: (email: string, password: string) => Promise<{ role: User["role"]; emailVerified: boolean }>;
+  registerUser: (input: RegisterUserInput) => Promise<{ needsVerification: boolean; email: string }>;
   logout: () => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
   resetPassword: (password: string) => Promise<void>;
+  resendVerificationEmail: (email: string) => Promise<void>;
+  getResendCooldown: (email: string) => number;
+  verifyEmailOtp: (email: string, token: string) => Promise<void>;
   switchUserRole: (role: User["role"]) => void;
   inviteUser: (name: string, email: string, role: User["role"]) => Promise<void>;
+  refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Helper to map DB roles to UI roles
-const mapDbRoleToUi = (role: string): User["role"] => {
-  switch (role?.toLowerCase()) {
-    case "admin":
-      return "Admin";
-    case "manager":
-      return "Lab Coordinator";
-    case "technician":
-      return "Lab Staff";
-    case "customer":
-    default:
-      return "Customer";
-  }
-};
-
-// Helper to map UI roles to DB roles
-const mapUiRoleToDb = (role: User["role"]): string => {
-  switch (role) {
-    case "Admin":
-      return "admin";
-    case "Lab Coordinator":
-      return "manager";
-    case "Lab Staff":
-      return "technician";
-    case "Customer":
-    default:
-      return "customer";
-  }
-};
+function buildDisplayName(firstName: string, lastName: string): string {
+  return [firstName.trim(), lastName.trim()].filter(Boolean).join(" ");
+}
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [emailVerified, setEmailVerified] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Sync user profile from auth session
-  const syncProfile = async (sessionUser: any) => {
-    if (!sessionUser) {
-      setCurrentUser(null);
-      return;
-    }
+  const syncProfile = useCallback(async (sessionUser: SupabaseUser) => {
+    const verified = isEmailConfirmed(sessionUser);
+    setEmailVerified(verified);
 
     try {
-      // Attempt to fetch profile from the PostgreSQL public.users table
       const { data: profile, error } = await supabase
         .from("users" as any)
-        .select("*, organizations(*)")
+        .select("*, organizations(name)")
         .eq("id", sessionUser.id)
         .maybeSingle();
 
       if (error) throw error;
 
       if (profile) {
-        setCurrentUser({
-          id: 1, // Keep numeric matching for mock LIMS structures
-          name: profile.full_name || sessionUser.user_metadata?.full_name || "Adaeze Nwosu",
-          email: sessionUser.email || "",
-          role: mapDbRoleToUi(profile.role),
-          status: "Active",
-          lastSeen: "Just now",
-        });
-      } else {
-        // Auto-create profile if missing in DB to remain robust
-        const dbRole = mapUiRoleToDb(sessionUser.user_metadata?.role || "Admin");
-        const fullName = sessionUser.user_metadata?.full_name || "Adaeze Nwosu";
-        
-        try {
-          await supabase.from("users" as any).insert({
-            id: sessionUser.id,
-            full_name: fullName,
-            role: dbRole,
-          });
-        } catch (insertErr) {
-          console.warn("Could not auto-insert public user profile:", insertErr);
-        }
-
+        const org = profile.organizations as { name?: string } | null;
         setCurrentUser({
           id: 1,
-          name: fullName,
+          name: profile.full_name || buildDisplayName(
+            sessionUser.user_metadata?.first_name ?? "",
+            sessionUser.user_metadata?.last_name ?? ""
+          ) || sessionUser.email?.split("@")[0] || "User",
           email: sessionUser.email || "",
-          role: sessionUser.user_metadata?.role || "Admin",
-          status: "Active",
+          role: mapDbRoleToUi(profile.role),
+          status: verified ? "Active" : "Invited",
           lastSeen: "Just now",
+          organization: org?.name ?? sessionUser.user_metadata?.organization_name,
         });
+        return mapDbRoleToUi(profile.role);
       }
-    } catch (err: any) {
-      console.warn("Postgres profile fetch bypassed, using auth metadata:", err.message);
-      // Fallback sandbox resolution
+
+      const metaRole = sessionUser.user_metadata?.role as User["role"] | undefined;
+      const uiRole =
+        typeof metaRole === "string" && ["Admin", "Lab Coordinator", "Lab Staff", "Customer"].includes(metaRole)
+          ? metaRole
+          : mapDbRoleToUi(mapUiRoleToDb("Customer"));
+
       setCurrentUser({
         id: 1,
-        name: sessionUser.user_metadata?.full_name || "Adaeze Nwosu",
+        name:
+          sessionUser.user_metadata?.full_name ||
+          buildDisplayName(
+            sessionUser.user_metadata?.first_name ?? "",
+            sessionUser.user_metadata?.last_name ?? ""
+          ) ||
+          "User",
         email: sessionUser.email || "",
-        role: sessionUser.user_metadata?.role || "Admin",
-        status: "Active",
+        role: uiRole,
+        status: verified ? "Active" : "Invited",
         lastSeen: "Just now",
+        organization: sessionUser.user_metadata?.organization_name,
       });
-    }
-  };
+      return uiRole;
+    } catch (err) {
+      console.warn("Profile sync fallback:", err);
+      const metaRole = sessionUser.user_metadata?.role;
+      const uiRole =
+        metaRole === "Admin" ||
+        metaRole === "Lab Coordinator" ||
+        metaRole === "Lab Staff" ||
+        metaRole === "Customer"
+          ? metaRole
+          : "Customer";
 
-  useEffect(() => {
-    // 1. Get initial active session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        syncProfile(session.user).then(() => setLoading(false));
-      } else {
-        // Fallback demo user checks if no active remote session
-        const demoRole = localStorage.getItem("gcs_demo_role");
+      setCurrentUser({
+        id: 1,
+        name: sessionUser.user_metadata?.full_name || sessionUser.email?.split("@")[0] || "User",
+        email: sessionUser.email || "",
+        role: uiRole,
+        status: verified ? "Active" : "Invited",
+        lastSeen: "Just now",
+        organization: sessionUser.user_metadata?.organization_name,
+      });
+      return uiRole;
+    }
+  }, []);
+
+  const handleSession = useCallback(
+    async (nextSession: Session | null) => {
+      setSession(nextSession);
+      if (nextSession?.user) {
+        await syncProfile(nextSession.user);
+      } else if (DEMO_MODE_ENABLED) {
+        const demoRole = localStorage.getItem("gcs_demo_role") as User["role"] | null;
         if (demoRole) {
-          const names: Record<string, string> = {
-            "Admin": "Adaeze Nwosu",
+          const names: Record<User["role"], string> = {
+            Admin: "Adaeze Nwosu",
             "Lab Coordinator": "M. Rivera",
             "Lab Staff": "Keiko Nakamura",
-            "Customer": "Jane Smith",
+            Customer: "Jane Smith",
           };
           setCurrentUser({
             id: 1,
-            name: names[demoRole] || "Adaeze Nwosu",
-            email: `${demoRole.toLowerCase().replace(" ", "")}@geochem.io`,
-            role: demoRole as User["role"],
+            name: names[demoRole] || "Demo User",
+            email: `${demoRole.toLowerCase().replace(/\s+/g, "")}@geochem.io`,
+            role: demoRole,
             status: "Active",
             lastSeen: "Just now",
           });
+          setEmailVerified(true);
         } else {
           setCurrentUser(null);
+          setEmailVerified(false);
         }
-        setLoading(false);
-      }
-    });
-
-    // 2. Listen to real-time auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) {
-        syncProfile(session.user).then(() => setLoading(false));
       } else {
-        const demoRole = localStorage.getItem("gcs_demo_role");
-        if (!demoRole) {
-          setCurrentUser(null);
-        }
-        setLoading(false);
+        setCurrentUser(null);
+        setEmailVerified(false);
       }
+    },
+    [syncProfile]
+  );
+
+  useEffect(() => {
+    let mounted = true;
+
+    supabase.auth.getSession().then(({ data: { session: initial } }) => {
+      if (!mounted) return;
+      handleSession(initial).finally(() => {
+        if (mounted) setLoading(false);
+      });
     });
 
-    return () => subscription.unsubscribe();
-  }, []);
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      handleSession(nextSession);
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, [handleSession]);
+
+  const refreshProfile = async () => {
+    const { data: { session: current } } = await supabase.auth.getSession();
+    if (current?.user) await syncProfile(current.user);
+  };
 
   const login = async (email: string, password: string) => {
     setLoading(true);
     localStorage.removeItem("gcs_demo_role");
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
-      return data;
+
+      const user = data.user;
+      if (!user) throw new Error("Sign-in succeeded but no user was returned.");
+
+      const verified = isEmailConfirmed(user);
+      if (!verified) {
+        await supabase.auth.signOut();
+        throw new Error("Email not confirmed");
+      }
+
+      const role = await syncProfile(user);
+      return { role, emailVerified: verified };
     } finally {
       setLoading(false);
     }
   };
 
-  const registerUser = async (email: string, password: string, name: string, role: User["role"], orgName?: string) => {
+  const registerUser = async (input: RegisterUserInput) => {
     setLoading(true);
     localStorage.removeItem("gcs_demo_role");
     try {
+      const fullName = buildDisplayName(input.firstName, input.lastName);
       const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
+        email: input.email.trim(),
+        password: input.password,
         options: {
+          emailRedirectTo: getVerifyEmailUrl(),
           data: {
-            full_name: name,
-            role: role,
+            first_name: input.firstName.trim(),
+            last_name: input.lastName.trim(),
+            full_name: fullName,
+            phone: input.phone.trim(),
+            organization_name: input.organization.trim(),
+            role: "customer",
           },
         },
       });
       if (error) throw error;
 
-      // Safe creation of public org and profile on database if session is immediate
-      if (data?.user) {
-        try {
-          let orgId = null;
-          if (orgName) {
-            const { data: orgData } = await supabase
-              .from("organizations" as any)
-              .insert({ name: orgName })
-              .select()
-              .single();
-            orgId = orgData?.id;
-          }
-
-          await supabase.from("users" as any).insert({
-            id: data.user.id,
-            full_name: name,
-            role: mapUiRoleToDb(role),
-            organization_id: orgId,
-          });
-        } catch (dbErr) {
-          console.warn("Public profile write skipped during signup:", dbErr);
-        }
+      // Profile is provisioned by DB trigger; sign out so portal stays locked until verified
+      if (data.session) {
+        await supabase.auth.signOut();
       }
 
-      return data;
+      const needsVerification = !data.user?.email_confirmed_at;
+      return { needsVerification, email: input.email.trim() };
     } finally {
       setLoading(false);
+    }
+  };
+
+  const resendVerificationEmail = async (email: string) => {
+    assertCanResendVerification(email);
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email: email.trim(),
+      options: { emailRedirectTo: getVerifyEmailUrl() },
+    });
+    if (error) throw error;
+    recordVerificationResend(email);
+    toast.success("Verification email sent. Check your inbox.");
+  };
+
+  const verifyEmailOtp = async (email: string, token: string) => {
+    const { data, error } = await supabase.auth.verifyOtp({
+      email: email.trim(),
+      token: token.trim(),
+      type: "email",
+    });
+    if (error) throw error;
+    if (data.session?.user) {
+      await syncProfile(data.session.user);
     }
   };
 
@@ -228,9 +280,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       await supabase.auth.signOut();
     } catch (err) {
-      console.warn("Supabase signOut error, completing local logout:", err);
+      console.warn("Supabase signOut error:", err);
     } finally {
       setCurrentUser(null);
+      setSession(null);
+      setEmailVerified(false);
       localStorage.removeItem("gcs_samples");
       setLoading(false);
       window.location.href = "/login";
@@ -244,7 +298,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         redirectTo: `${window.location.origin}/reset-password`,
       });
       if (error) throw error;
-      toast.success("Password recovery email dispatched successfully!");
+      toast.success("Password recovery email sent.");
     } finally {
       setLoading(false);
     }
@@ -255,52 +309,54 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const { error } = await supabase.auth.updateUser({ password });
       if (error) throw error;
-      toast.success("Your credentials have been securely updated!");
+      toast.success("Your password has been updated.");
     } finally {
       setLoading(false);
     }
   };
 
   const switchUserRole = (role: User["role"]) => {
+    if (!DEMO_MODE_ENABLED) return;
     localStorage.setItem("gcs_demo_role", role);
-    const names: Record<string, string> = {
-      "Admin": "Adaeze Nwosu",
+    const names: Record<User["role"], string> = {
+      Admin: "Adaeze Nwosu",
       "Lab Coordinator": "M. Rivera",
       "Lab Staff": "Keiko Nakamura",
-      "Customer": "Jane Smith",
+      Customer: "Jane Smith",
     };
     setCurrentUser({
       id: 1,
-      name: names[role] || "Adaeze Nwosu",
-      email: `${role.toLowerCase().replace(" ", "")}@geochem.io`,
+      name: names[role] || "Demo User",
+      email: `${role.toLowerCase().replace(/\s+/g, "")}@geochem.io`,
       role,
       status: "Active",
       lastSeen: "Just now",
     });
+    setEmailVerified(true);
   };
 
   const inviteUser = async (name: string, email: string, role: User["role"]) => {
-    // Simulates dynamic invite and registers in DB users profile if possible
-    try {
-      // In production LIMS context, this would invoke a Supabase edge function or invite API
-      console.log(`Dispatched workspace invite for ${email} with role ${role}`);
-    } catch (err) {
-      console.warn("Bypassed real invite, running inside local memory", err);
-    }
+    console.log(`Workspace invite queued for ${email} (${role}) — ${name}`);
   };
 
   return (
     <AuthContext.Provider
       value={{
         currentUser,
+        session,
         loading,
+        emailVerified,
         login,
         registerUser,
         logout,
         forgotPassword,
         resetPassword,
+        resendVerificationEmail,
+        getResendCooldown: getVerificationResendCooldown,
+        verifyEmailOtp,
         switchUserRole,
         inviteUser,
+        refreshProfile,
       }}
     >
       {children}
@@ -315,3 +371,5 @@ export function useAuth() {
   }
   return context;
 }
+
+export { formatAuthError, getPortalPathForRole };

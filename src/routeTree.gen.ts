@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as VerifyEmailRouteImport } from './routes/verify-email'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as PortalRouteImport } from './routes/portal'
 import { Route as LoginRouteImport } from './routes/login'
@@ -51,6 +52,11 @@ import { Route as AppSettingsBrandingRouteImport } from './routes/app.settings.b
 import { Route as AppSettingsApiRouteImport } from './routes/app.settings.api'
 import { Route as AppSamplesIdRouteImport } from './routes/app.samples.$id'
 
+const VerifyEmailRoute = VerifyEmailRouteImport.update({
+  id: '/verify-email',
+  path: '/verify-email',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
   path: '/register',
@@ -267,6 +273,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/portal': typeof PortalRouteWithChildren
   '/register': typeof RegisterRoute
+  '/verify-email': typeof VerifyEmailRoute
   '/app/activity': typeof AppActivityRoute
   '/app/analysis': typeof AppAnalysisRoute
   '/app/analytics': typeof AppAnalyticsRoute
@@ -307,6 +314,7 @@ export interface FileRoutesByTo {
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/verify-email': typeof VerifyEmailRoute
   '/app/activity': typeof AppActivityRoute
   '/app/analysis': typeof AppAnalysisRoute
   '/app/analytics': typeof AppAnalyticsRoute
@@ -350,6 +358,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/portal': typeof PortalRouteWithChildren
   '/register': typeof RegisterRoute
+  '/verify-email': typeof VerifyEmailRoute
   '/app/activity': typeof AppActivityRoute
   '/app/analysis': typeof AppAnalysisRoute
   '/app/analytics': typeof AppAnalyticsRoute
@@ -395,6 +404,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/portal'
     | '/register'
+    | '/verify-email'
     | '/app/activity'
     | '/app/analysis'
     | '/app/analytics'
@@ -435,6 +445,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/login'
     | '/register'
+    | '/verify-email'
     | '/app/activity'
     | '/app/analysis'
     | '/app/analytics'
@@ -477,6 +488,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/portal'
     | '/register'
+    | '/verify-email'
     | '/app/activity'
     | '/app/analysis'
     | '/app/analytics'
@@ -521,10 +533,18 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   PortalRoute: typeof PortalRouteWithChildren
   RegisterRoute: typeof RegisterRoute
+  VerifyEmailRoute: typeof VerifyEmailRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/verify-email': {
+      id: '/verify-email'
+      path: '/verify-email'
+      fullPath: '/verify-email'
+      preLoaderRoute: typeof VerifyEmailRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/register': {
       id: '/register'
       path: '/register'
@@ -928,6 +948,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   PortalRoute: PortalRouteWithChildren,
   RegisterRoute: RegisterRoute,
+  VerifyEmailRoute: VerifyEmailRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
