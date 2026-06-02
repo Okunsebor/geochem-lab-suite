@@ -97,46 +97,6 @@ export function VerifyEmailPage({ initialEmail }: { initialEmail?: string }) {
   }, [email, getResendCooldown]);
 
   useEffect(() => {
-    let cancelled = false;
-
-    async function processHashConfirmation() {
-      const hash = window.location.hash;
-      if (!hash || !hash.includes("access_token")) return;
-
-      setStatus("verifying");
-      setMessage("Confirming your email addressù");
-
-      const { data: { session }, error } = await supabase.auth.getSession();
-
-      if (cancelled) return;
-
-      if (error) {
-        const msg = formatAuthError(error);
-        if (msg.toLowerCase().includes("expired")) {
-          setStatus("expired");
-          setMessage(msg);
-        } else {
-          setStatus("invalid");
-          setMessage(msg);
-        }
-        window.history.replaceState(null, "", window.location.pathname + window.location.search);
-        return;
-      }
-
-      if (session?.user?.email_confirmed_at) {
-        if (session.user.email) setEmail(session.user.email);
-        window.history.replaceState(null, "", window.location.pathname + window.location.search);
-        await handleVerifiedRedirect();
-      }
-    }
-
-    processHashConfirmation();
-    return () => {
-      cancelled = true;
-    };
-  }, [handleVerifiedRedirect]);
-
-  useEffect(() => {
     if (emailVerified && currentUser) {
       handleVerifiedRedirect();
     }
@@ -225,7 +185,7 @@ export function VerifyEmailPage({ initialEmail }: { initialEmail?: string }) {
                   Email verified
                 </h1>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  Your account is active. Redirecting to your customer dashboardù
+                  Your account is active. Redirecting to your customer dashboard?
                 </p>
                 <motion.div
                   className="mt-6 h-1 rounded-full bg-muted overflow-hidden"
@@ -257,14 +217,14 @@ export function VerifyEmailPage({ initialEmail }: { initialEmail?: string }) {
                       Verify your email
                     </h1>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      UniPod GeoChem Suite ù Secure onboarding
+                      UniPod GeoChem Suite ? Secure onboarding
                     </p>
                   </div>
                 </div>
 
                 <p className="mt-5 text-sm text-muted-foreground leading-relaxed">
-                  We sent a verification link to your inbox. Open the link, or enter the
-                  6-digit code from the email below.
+                  We sent a 6-digit verification code to your inbox. Enter it below to
+                  activate your account.
                 </p>
 
                 {status === "verifying" && (
@@ -274,7 +234,7 @@ export function VerifyEmailPage({ initialEmail }: { initialEmail?: string }) {
                     className="mt-4 flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-primary"
                   >
                     <Loader2 className="size-4 animate-spin shrink-0" />
-                    {message || "Verifyingù"}
+                    {message || "Verifying?"}
                   </motion.div>
                 )}
 
@@ -333,7 +293,7 @@ export function VerifyEmailPage({ initialEmail }: { initialEmail?: string }) {
                     {submittingOtp ? (
                       <>
                         <Loader2 className="size-4 animate-spin" />
-                        Verifying codeù
+                        Verifying code?
                       </>
                     ) : (
                       <>
@@ -356,14 +316,14 @@ export function VerifyEmailPage({ initialEmail }: { initialEmail?: string }) {
                     {resending ? (
                       <>
                         <Loader2 className="size-4 animate-spin" />
-                        Sendingù
+                        Sending?
                       </>
                     ) : cooldown > 0 ? (
                       <>Resend available in {cooldown}s</>
                     ) : (
                       <>
                         <RefreshCw className="size-4" />
-                        Resend verification email
+                        Resend verification code
                       </>
                     )}
                   </button>
@@ -374,7 +334,7 @@ export function VerifyEmailPage({ initialEmail }: { initialEmail?: string }) {
                   <Link to="/register" className="text-primary font-semibold hover:underline">
                     Register again
                   </Link>
-                  {" ù "}
+                  {" ? "}
                   <Link to="/login" search={{ intent: "portal" }} className="text-primary font-semibold hover:underline">
                     Sign in
                   </Link>

@@ -7,7 +7,6 @@ import {
   assertCanResendVerification,
   DEMO_MODE_ENABLED,
   formatAuthError,
-  getVerifyEmailUrl,
   isEmailConfirmed,
   mapDbRoleToUi,
   mapUiRoleToDb,
@@ -236,7 +235,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email: input.email.trim(),
         password: input.password,
         options: {
-          emailRedirectTo: getVerifyEmailUrl(),
           data: {
             first_name: input.firstName.trim(),
             last_name: input.lastName.trim(),
@@ -266,18 +264,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { error } = await supabase.auth.resend({
       type: "signup",
       email: email.trim(),
-      options: { emailRedirectTo: getVerifyEmailUrl() },
     });
     if (error) throw error;
     recordVerificationResend(email);
-    toast.success("Verification email sent. Check your inbox.");
+    toast.success("Verification code sent. Check your inbox.");
   };
 
   const verifyEmailOtp = async (email: string, token: string) => {
     const { data, error } = await supabase.auth.verifyOtp({
       email: email.trim(),
       token: token.trim(),
-      type: "email",
+      type: "signup",
     });
     if (error) throw error;
     if (data.session?.user) {

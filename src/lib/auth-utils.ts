@@ -115,10 +115,10 @@ export function formatAuthError(error: unknown): string {
       return "Password must be at least 8 characters long.";
     }
     if (msg.includes("otp_expired") || msg.includes("expired")) {
-      return "This verification link has expired. Request a new verification email.";
+      return "This verification code has expired. Request a new code.";
     }
-    if (msg.includes("invalid") && msg.includes("token")) {
-      return "This verification code is invalid. Check the code or request a new email.";
+    if (msg.includes("invalid") && (msg.includes("token") || msg.includes("otp"))) {
+      return "This verification code is invalid. Check the code or request a new one.";
     }
     return msg;
   }
