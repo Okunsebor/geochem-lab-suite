@@ -114,11 +114,23 @@ export function formatAuthError(error: unknown): string {
     if (msg.includes("Password should be at least")) {
       return "Password must be at least 8 characters long.";
     }
+    if (msg.includes("rate limit") || msg.includes("too many requests") || msg.includes("429")) {
+      return "Too many email requests. Wait a few minutes, then try again.";
+    }
+    if (msg.includes("signup_disabled") || msg.includes("Signups not allowed")) {
+      return "New signups are disabled in Supabase. Enable signups under Authentication → Providers → Email.";
+    }
+    if (msg.includes("not authorized")) {
+      return "This email cannot receive messages from the default Supabase mailer. Configure custom SMTP in your Supabase project.";
+    }
     if (msg.includes("otp_expired") || msg.includes("expired")) {
       return "This verification code has expired. Request a new code.";
     }
     if (msg.includes("invalid") && (msg.includes("token") || msg.includes("otp"))) {
       return "This verification code is invalid. Check the code or request a new one.";
+    }
+    if (msg.includes("Error sending confirmation email")) {
+      return "Supabase could not send the confirmation email. Check Auth email/SMTP settings in your Supabase dashboard.";
     }
     return msg;
   }

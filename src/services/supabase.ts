@@ -188,7 +188,14 @@ export interface Database {
 }
 
 // 3. Central isomorphic typed Supabase client singleton instance
-export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true,
+    flowType: "pkce",
+  },
+});
 
 // 4. Client helpers for core LIMS data pipelines
 export const supabaseHelpers = {

@@ -17,6 +17,11 @@ import { UniPodLogo } from "@/components/branding/UniPodLogo";
 import { UNIPOD_BRAND } from "@/lib/branding";
 import { getPortalPathForRole } from "@/lib/auth-routes";
 import { mapDbRoleToUi } from "@/lib/auth-utils";
+import {
+  completeEmailVerificationFromUrl,
+  isSupabaseConfigured,
+  parseEmailVerificationCallback,
+} from "@/lib/auth-email-verification";
 import { cn } from "@/lib/utils";
 import type { User } from "@/types";
 
@@ -61,6 +66,8 @@ export function VerifyEmailPage({ initialEmail }: { initialEmail?: string }) {
   const [resending, setResending] = useState(false);
   const [cooldown, setCooldown] = useState(0);
   const [submittingOtp, setSubmittingOtp] = useState(false);
+  const [handlingEmailLink, setHandlingEmailLink] = useState(false);
+  const supabaseReady = isSupabaseConfigured();
 
   const handleVerifiedRedirect = useCallback(async () => {
     setStatus("success");
@@ -101,6 +108,40 @@ export function VerifyEmailPage({ initialEmail }: { initialEmail?: string }) {
       handleVerifiedRedirect();
     }
   }, [emailVerified, currentUser, handleVerifiedRedirect]);
+
+  // User clicked "Confirm" in email — complete verification from URL params (PKCE / token_hash).
+  useEffect(() => {
+    const callback = parseEmailVerificationCallback();
+    if (callback.kind === "none") return;
+
+    let cancelled = false;
+    setHandlingEmailLink(true);
+    setStatus("verifying");
+    setMessage("Confirming your email from the verification link…");
+
+    completeEmailVerificationFromUrl()
+      .then(async (ok) => {
+        if (cancelled) return;
+        if (ok) {
+          await handleVerifiedRedirect();
+        } else {
+          setStatus("error");
+          setMessage("Could not confirm your email from this link. Request a new code below.");
+        }
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setStatus("error");
+        setMessage(formatAuthError(err));
+      })
+      .finally(() => {
+        if (!cancelled) setHandlingEmailLink(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [handleVerifiedRedirect]);
 
   const handleResend = async () => {
     if (!email.trim()) {
@@ -223,11 +264,23 @@ export function VerifyEmailPage({ initialEmail }: { initialEmail?: string }) {
                 </div>
 
                 <p className="mt-5 text-sm text-muted-foreground leading-relaxed">
-                  We sent a 6-digit verification code to your inbox. Enter it below to
-                  activate your account.
+                  We sent a verification email to your inbox. You can enter the 6-digit code
+                  below, or open the email and click the confirmation link (both work).
                 </p>
 
-                {status === "verifying" && (
+                {!supabaseReady && (
+                  <div className="mt-4 flex items-start gap-2 rounded-lg border border-warning/40 bg-warning/10 px-4 py-3 text-sm text-foreground">
+                    <AlertCircle className="size-4 shrink-0 mt-0.5 text-warning" />
+                    <span>
+                      Supabase is not configured in this environment. Add{" "}
+                      <code className="text-xs">VITE_SUPABASE_URL</code> and{" "}
+                      <code className="text-xs">VITE_SUPABASE_ANON_KEY</code> to your{" "}
+                      <code className="text-xs">.env</code> file, then restart the dev server.
+                    </span>
+                  </div>
+                )}
+
+                {(status === "verifying" || handlingEmailLink) && (
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -275,7 +328,7 @@ export function VerifyEmailPage({ initialEmail }: { initialEmail?: string }) {
                       value={otp}
                       onChange={setOtp}
                       containerClassName="flex justify-center gap-2"
-                      disabled={submittingOtp}
+                      disabled={submittingOtp || handlingEmailLink}
                     >
                       <div className="flex gap-2">
                         {Array.from({ length: 6 }).map((_, i) => (
@@ -287,7 +340,7 @@ export function VerifyEmailPage({ initialEmail }: { initialEmail?: string }) {
 
                   <button
                     type="submit"
-                    disabled={submittingOtp || otp.length < 6 || !email.trim()}
+                    disabled={submittingOtp || handlingEmailLink || otp.length < 6 || !email.trim()}
                     className="w-full inline-flex items-center justify-center gap-2 rounded-lg gradient-primary px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
                   >
                     {submittingOtp ? (
@@ -310,7 +363,7 @@ export function VerifyEmailPage({ initialEmail }: { initialEmail?: string }) {
                   <button
                     type="button"
                     onClick={handleResend}
-                    disabled={resending || cooldown > 0 || !email.trim()}
+                    disabled={resending || handlingEmailLink || cooldown > 0 || !email.trim() || !supabaseReady}
                     className="w-full inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-muted/30 px-4 py-2.5 text-sm font-medium text-foreground hover:bg-muted/60 transition disabled:opacity-50"
                   >
                     {resending ? (

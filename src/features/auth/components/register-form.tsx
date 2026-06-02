@@ -80,7 +80,9 @@ export function RegisterForm() {
         phone: formData.phone,
       });
       if (result.needsVerification) {
-        toast.success("Account created. Check your email for a 6-digit verification code.");
+        toast.success(
+          "Account created. Check your inbox (and spam) for a 6-digit code or confirmation link."
+        );
         window.location.href = getVerifyEmailPath(result.email);
       } else {
         toast.success("Account created. You can sign in now.");

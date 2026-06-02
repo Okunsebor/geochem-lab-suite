@@ -13,6 +13,7 @@ import {
   recordVerificationResend,
   getVerificationResendCooldown,
 } from "@/lib/auth-utils";
+import { getSignupEmailOptions, verifySignupOtpCode } from "@/lib/auth-email-verification";
 import { getPortalPathForRole } from "@/lib/auth-routes";
 
 export interface RegisterUserInput {
@@ -235,6 +236,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email: input.email.trim(),
         password: input.password,
         options: {
+          ...getSignupEmailOptions(),
           data: {
             first_name: input.firstName.trim(),
             last_name: input.lastName.trim(),
@@ -246,6 +248,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         },
       });
       if (error) throw error;
+
+      // Supabase returns an empty identities array when the email is already registered
+      if (data.user?.identities && data.user.identities.length === 0) {
+        throw new Error("User already registered");
+      }
 
       // Profile is provisioned by DB trigger; sign out so portal stays locked until verified
       if (data.session) {
@@ -264,6 +271,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { error } = await supabase.auth.resend({
       type: "signup",
       email: email.trim(),
+      options: getSignupEmailOptions(),
     });
     if (error) throw error;
     recordVerificationResend(email);
@@ -271,12 +279,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const verifyEmailOtp = async (email: string, token: string) => {
-    const { data, error } = await supabase.auth.verifyOtp({
-      email: email.trim(),
-      token: token.trim(),
-      type: "signup",
-    });
-    if (error) throw error;
+    const data = await verifySignupOtpCode(email, token);
     if (data.session?.user) {
       await syncProfile(data.session.user);
     }

@@ -45,12 +45,14 @@ import { Route as AppActivityRouteImport } from './routes/app.activity'
 import { Route as CoordinatorSamplesIndexRouteImport } from './routes/coordinator.samples.index'
 import { Route as AppSettingsIndexRouteImport } from './routes/app.settings.index'
 import { Route as AppSamplesIndexRouteImport } from './routes/app.samples.index'
+import { Route as PortalTrackSampleIdRouteImport } from './routes/portal.track.$sampleId'
 import { Route as AppSettingsSecurityRouteImport } from './routes/app.settings.security'
 import { Route as AppSettingsNotificationsRouteImport } from './routes/app.settings.notifications'
 import { Route as AppSettingsLaboratoryRouteImport } from './routes/app.settings.laboratory'
 import { Route as AppSettingsBrandingRouteImport } from './routes/app.settings.branding'
 import { Route as AppSettingsApiRouteImport } from './routes/app.settings.api'
 import { Route as AppSamplesIdRouteImport } from './routes/app.samples.$id'
+import { Route as AppNotificationsDeliveryRouteImport } from './routes/app.notifications.delivery'
 
 const VerifyEmailRoute = VerifyEmailRouteImport.update({
   id: '/verify-email',
@@ -233,6 +235,11 @@ const AppSamplesIndexRoute = AppSamplesIndexRouteImport.update({
   path: '/samples/',
   getParentRoute: () => AppRoute,
 } as any)
+const PortalTrackSampleIdRoute = PortalTrackSampleIdRouteImport.update({
+  id: '/track/$sampleId',
+  path: '/track/$sampleId',
+  getParentRoute: () => PortalRoute,
+} as any)
 const AppSettingsSecurityRoute = AppSettingsSecurityRouteImport.update({
   id: '/security',
   path: '/security',
@@ -264,6 +271,12 @@ const AppSamplesIdRoute = AppSamplesIdRouteImport.update({
   path: '/samples/$id',
   getParentRoute: () => AppRoute,
 } as any)
+const AppNotificationsDeliveryRoute =
+  AppNotificationsDeliveryRouteImport.update({
+    id: '/delivery',
+    path: '/delivery',
+    getParentRoute: () => AppNotificationsRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -279,7 +292,7 @@ export interface FileRoutesByFullPath {
   '/app/analytics': typeof AppAnalyticsRoute
   '/app/instruments': typeof AppInstrumentsRoute
   '/app/intake': typeof AppIntakeRoute
-  '/app/notifications': typeof AppNotificationsRoute
+  '/app/notifications': typeof AppNotificationsRouteWithChildren
   '/app/preparation': typeof AppPreparationRoute
   '/app/qa-qc': typeof AppQaQcRoute
   '/app/reports': typeof AppReportsRoute
@@ -299,12 +312,14 @@ export interface FileRoutesByFullPath {
   '/app/': typeof AppIndexRoute
   '/coordinator/': typeof CoordinatorIndexRoute
   '/portal/': typeof PortalIndexRoute
+  '/app/notifications/delivery': typeof AppNotificationsDeliveryRoute
   '/app/samples/$id': typeof AppSamplesIdRoute
   '/app/settings/api': typeof AppSettingsApiRoute
   '/app/settings/branding': typeof AppSettingsBrandingRoute
   '/app/settings/laboratory': typeof AppSettingsLaboratoryRoute
   '/app/settings/notifications': typeof AppSettingsNotificationsRoute
   '/app/settings/security': typeof AppSettingsSecurityRoute
+  '/portal/track/$sampleId': typeof PortalTrackSampleIdRoute
   '/app/samples/': typeof AppSamplesIndexRoute
   '/app/settings/': typeof AppSettingsIndexRoute
   '/coordinator/samples/': typeof CoordinatorSamplesIndexRoute
@@ -320,7 +335,7 @@ export interface FileRoutesByTo {
   '/app/analytics': typeof AppAnalyticsRoute
   '/app/instruments': typeof AppInstrumentsRoute
   '/app/intake': typeof AppIntakeRoute
-  '/app/notifications': typeof AppNotificationsRoute
+  '/app/notifications': typeof AppNotificationsRouteWithChildren
   '/app/preparation': typeof AppPreparationRoute
   '/app/qa-qc': typeof AppQaQcRoute
   '/app/reports': typeof AppReportsRoute
@@ -339,12 +354,14 @@ export interface FileRoutesByTo {
   '/app': typeof AppIndexRoute
   '/coordinator': typeof CoordinatorIndexRoute
   '/portal': typeof PortalIndexRoute
+  '/app/notifications/delivery': typeof AppNotificationsDeliveryRoute
   '/app/samples/$id': typeof AppSamplesIdRoute
   '/app/settings/api': typeof AppSettingsApiRoute
   '/app/settings/branding': typeof AppSettingsBrandingRoute
   '/app/settings/laboratory': typeof AppSettingsLaboratoryRoute
   '/app/settings/notifications': typeof AppSettingsNotificationsRoute
   '/app/settings/security': typeof AppSettingsSecurityRoute
+  '/portal/track/$sampleId': typeof PortalTrackSampleIdRoute
   '/app/samples': typeof AppSamplesIndexRoute
   '/app/settings': typeof AppSettingsIndexRoute
   '/coordinator/samples': typeof CoordinatorSamplesIndexRoute
@@ -364,7 +381,7 @@ export interface FileRoutesById {
   '/app/analytics': typeof AppAnalyticsRoute
   '/app/instruments': typeof AppInstrumentsRoute
   '/app/intake': typeof AppIntakeRoute
-  '/app/notifications': typeof AppNotificationsRoute
+  '/app/notifications': typeof AppNotificationsRouteWithChildren
   '/app/preparation': typeof AppPreparationRoute
   '/app/qa-qc': typeof AppQaQcRoute
   '/app/reports': typeof AppReportsRoute
@@ -384,12 +401,14 @@ export interface FileRoutesById {
   '/app/': typeof AppIndexRoute
   '/coordinator/': typeof CoordinatorIndexRoute
   '/portal/': typeof PortalIndexRoute
+  '/app/notifications/delivery': typeof AppNotificationsDeliveryRoute
   '/app/samples/$id': typeof AppSamplesIdRoute
   '/app/settings/api': typeof AppSettingsApiRoute
   '/app/settings/branding': typeof AppSettingsBrandingRoute
   '/app/settings/laboratory': typeof AppSettingsLaboratoryRoute
   '/app/settings/notifications': typeof AppSettingsNotificationsRoute
   '/app/settings/security': typeof AppSettingsSecurityRoute
+  '/portal/track/$sampleId': typeof PortalTrackSampleIdRoute
   '/app/samples/': typeof AppSamplesIndexRoute
   '/app/settings/': typeof AppSettingsIndexRoute
   '/coordinator/samples/': typeof CoordinatorSamplesIndexRoute
@@ -430,12 +449,14 @@ export interface FileRouteTypes {
     | '/app/'
     | '/coordinator/'
     | '/portal/'
+    | '/app/notifications/delivery'
     | '/app/samples/$id'
     | '/app/settings/api'
     | '/app/settings/branding'
     | '/app/settings/laboratory'
     | '/app/settings/notifications'
     | '/app/settings/security'
+    | '/portal/track/$sampleId'
     | '/app/samples/'
     | '/app/settings/'
     | '/coordinator/samples/'
@@ -470,12 +491,14 @@ export interface FileRouteTypes {
     | '/app'
     | '/coordinator'
     | '/portal'
+    | '/app/notifications/delivery'
     | '/app/samples/$id'
     | '/app/settings/api'
     | '/app/settings/branding'
     | '/app/settings/laboratory'
     | '/app/settings/notifications'
     | '/app/settings/security'
+    | '/portal/track/$sampleId'
     | '/app/samples'
     | '/app/settings'
     | '/coordinator/samples'
@@ -514,12 +537,14 @@ export interface FileRouteTypes {
     | '/app/'
     | '/coordinator/'
     | '/portal/'
+    | '/app/notifications/delivery'
     | '/app/samples/$id'
     | '/app/settings/api'
     | '/app/settings/branding'
     | '/app/settings/laboratory'
     | '/app/settings/notifications'
     | '/app/settings/security'
+    | '/portal/track/$sampleId'
     | '/app/samples/'
     | '/app/settings/'
     | '/coordinator/samples/'
@@ -790,6 +815,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSamplesIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/portal/track/$sampleId': {
+      id: '/portal/track/$sampleId'
+      path: '/track/$sampleId'
+      fullPath: '/portal/track/$sampleId'
+      preLoaderRoute: typeof PortalTrackSampleIdRouteImport
+      parentRoute: typeof PortalRoute
+    }
     '/app/settings/security': {
       id: '/app/settings/security'
       path: '/security'
@@ -832,8 +864,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSamplesIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/notifications/delivery': {
+      id: '/app/notifications/delivery'
+      path: '/delivery'
+      fullPath: '/app/notifications/delivery'
+      preLoaderRoute: typeof AppNotificationsDeliveryRouteImport
+      parentRoute: typeof AppNotificationsRoute
+    }
   }
 }
+
+interface AppNotificationsRouteChildren {
+  AppNotificationsDeliveryRoute: typeof AppNotificationsDeliveryRoute
+}
+
+const AppNotificationsRouteChildren: AppNotificationsRouteChildren = {
+  AppNotificationsDeliveryRoute: AppNotificationsDeliveryRoute,
+}
+
+const AppNotificationsRouteWithChildren =
+  AppNotificationsRoute._addFileChildren(AppNotificationsRouteChildren)
 
 interface AppSettingsRouteChildren {
   AppSettingsApiRoute: typeof AppSettingsApiRoute
@@ -863,7 +913,7 @@ interface AppRouteChildren {
   AppAnalyticsRoute: typeof AppAnalyticsRoute
   AppInstrumentsRoute: typeof AppInstrumentsRoute
   AppIntakeRoute: typeof AppIntakeRoute
-  AppNotificationsRoute: typeof AppNotificationsRoute
+  AppNotificationsRoute: typeof AppNotificationsRouteWithChildren
   AppPreparationRoute: typeof AppPreparationRoute
   AppQaQcRoute: typeof AppQaQcRoute
   AppReportsRoute: typeof AppReportsRoute
@@ -881,7 +931,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppAnalyticsRoute: AppAnalyticsRoute,
   AppInstrumentsRoute: AppInstrumentsRoute,
   AppIntakeRoute: AppIntakeRoute,
-  AppNotificationsRoute: AppNotificationsRoute,
+  AppNotificationsRoute: AppNotificationsRouteWithChildren,
   AppPreparationRoute: AppPreparationRoute,
   AppQaQcRoute: AppQaQcRoute,
   AppReportsRoute: AppReportsRoute,
@@ -927,6 +977,7 @@ interface PortalRouteChildren {
   PortalSubmitRoute: typeof PortalSubmitRoute
   PortalSupportRoute: typeof PortalSupportRoute
   PortalIndexRoute: typeof PortalIndexRoute
+  PortalTrackSampleIdRoute: typeof PortalTrackSampleIdRoute
 }
 
 const PortalRouteChildren: PortalRouteChildren = {
@@ -935,6 +986,7 @@ const PortalRouteChildren: PortalRouteChildren = {
   PortalSubmitRoute: PortalSubmitRoute,
   PortalSupportRoute: PortalSupportRoute,
   PortalIndexRoute: PortalIndexRoute,
+  PortalTrackSampleIdRoute: PortalTrackSampleIdRoute,
 }
 
 const PortalRouteWithChildren =
