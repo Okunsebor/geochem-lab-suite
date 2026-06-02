@@ -71,7 +71,16 @@ export function PortalDashboardFeature() {
                       <p className="font-mono text-xs text-primary font-medium hover:underline">{s.id}</p>
                       <p className="text-sm font-semibold text-foreground mt-0.5">{s.project}</p>
                     </div>
-                    <StatusBadge status={s.status} />
+                    <div className="flex items-center gap-2">
+                      <Link
+                        to="/portal/track/$sampleId"
+                        params={{ sampleId: s.id }}
+                        className="rounded border border-primary/30 bg-primary/5 px-2 py-1 text-[10px] font-semibold text-primary hover:bg-primary/10"
+                      >
+                        Live Track
+                      </Link>
+                      <StatusBadge status={s.status} />
+                    </div>
                   </div>
                   <div className="mt-3 flex items-center gap-1">
                     {SAMPLE_STATUSES.map((_, i) => (
@@ -506,16 +515,37 @@ export function PortalReportsFeature() {
 
 // 4. Portal Notifications List Feature
 export function PortalNotificationsFeature() {
-  const { notifications } = useLimsState();
+  const { notifications, unreadNotificationCount, markAllNotificationsRead, markNotificationRead } = useLimsState();
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-semibold text-foreground">Notifications</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-semibold text-foreground">Notifications</h1>
+        <div className="flex items-center gap-3">
+          <span className="rounded-full border border-border bg-card px-3 py-1 text-xs font-semibold text-primary">
+            {unreadNotificationCount} unread
+          </span>
+          <button
+            onClick={markAllNotificationsRead}
+            className="text-xs font-semibold text-primary hover:underline"
+          >
+            Mark all read
+          </button>
+        </div>
+      </div>
       <ul className="rounded-xl border border-border bg-card divide-y divide-border overflow-hidden">
         {notifications.map((n) => (
           <li key={n.id} className="p-4 text-sm hover:bg-muted/10 transition-colors">
-            <p className="font-medium text-foreground">{n.title}</p>
-            <p className="text-xs text-muted-foreground mt-0.5 font-semibold">{n.time} ago</p>
+            <div className="flex items-center justify-between gap-3">
+              <p className={`font-medium ${n.isRead ? "text-muted-foreground" : "text-foreground"}`}>{n.title}</p>
+              {!n.isRead && (
+                <button className="text-[11px] text-primary font-semibold" onClick={() => void markNotificationRead(n.id)}>
+                  Mark read
+                </button>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground mt-0.5 font-semibold">{n.time}</p>
+            {n.body && <p className="text-xs text-muted-foreground mt-1">{n.body}</p>}
           </li>
         ))}
       </ul>

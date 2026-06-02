@@ -1,6 +1,7 @@
 export type SampleStatus =
   | "Received"
   | "Verified"
+  | "Registered"
   | "In Preparation"
   | "In Analysis"
   | "Completed"
@@ -8,6 +9,7 @@ export type SampleStatus =
 export const SAMPLE_STATUSES: SampleStatus[] = [
   "Received",
   "Verified",
+  "Registered",
   "In Preparation",
   "In Analysis",
   "Completed",
@@ -104,11 +106,18 @@ export interface ActivityLog {
 }
 
 export interface SystemNotification {
-  id: number;
+  id: number | string;
   title: string;
   time: string;
+  createdAt?: string;
+  body?: string;
+  eventType?: string;
+  audienceRole?: string;
+  channel?: "in-app" | "email" | "workflow-alert";
+  metadata?: Record<string, unknown>;
   kind: "alert" | "approval" | "info";
   isRead?: boolean;
+  readAt?: string | null;
 }
 
 export interface ReportLog {

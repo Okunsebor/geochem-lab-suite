@@ -25,6 +25,8 @@ interface LimsStateContextType {
   reports: AnalyticalReport[];
   activity: ActivityLog[];
   notifications: SystemNotification[];
+  notificationsLoading: boolean;
+  unreadNotificationCount: number;
   users: User[];
   currentUser: User | null;
   loading: boolean;
@@ -57,6 +59,7 @@ interface LimsStateContextType {
   inviteUser: (name: string, email: string, role: User["role"]) => void;
   toggleInstrumentStatus: (instrumentId: string, status: Instrument["status"]) => void;
   markAllNotificationsRead: () => void;
+  markNotificationRead: (notificationId: string | number) => Promise<void>;
   switchUserRole: (role: User["role"]) => void;
   verifySample: (sampleId: string, notes: string, storageLocation: string) => Promise<void>;
   rejectSample: (sampleId: string, reason: string) => Promise<void>;
@@ -71,11 +74,19 @@ interface LimsStateContextType {
 const LimsStateContext = createContext<LimsStateContextType | undefined>(undefined);
 
 export function LimsStateProvider({ children }: { children: React.ReactNode }) {
-  const { currentUser, loading, login, registerUser, logout, switchUserRole } = useAuth();
+  const { currentUser, session, loading, login, registerUser, logout, switchUserRole } = useAuth();
   const currentName = currentUser?.name || "System";
 
   const { activity, addActivity, clearActivity } = useActivityCore();
-  const { notifications, addNotification, markAllNotificationsRead, clearNotifications } = useNotificationsCore();
+  const {
+    notifications,
+    loadingNotifications,
+    unreadCount,
+    addNotification,
+    markNotificationRead,
+    markAllNotificationsRead,
+    clearNotifications,
+  } = useNotificationsCore(currentUser?.role, session?.user?.id);
 
   const addActivityHelper = (who: string, what: string, target: string) => {
     addActivity({
@@ -88,12 +99,11 @@ export function LimsStateProvider({ children }: { children: React.ReactNode }) {
   };
 
   const addNotificationHelper = (title: string, kind: string) => {
-    addNotification({
-      id: Date.now(),
+    void addNotification({
       title,
-      time: "Just now",
       kind: kind as any,
-      isRead: false,
+      eventType: "system",
+      channel: "in-app",
     });
   };
 
@@ -160,6 +170,13 @@ export function LimsStateProvider({ children }: { children: React.ReactNode }) {
           syncReportsFromDb();
         }
       )
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "tracking_updates" as any },
+        () => {
+          syncSamplesFromDb();
+        }
+      )
       .subscribe();
 
     return () => {
@@ -194,6 +211,8 @@ export function LimsStateProvider({ children }: { children: React.ReactNode }) {
         reports,
         activity,
         notifications,
+        notificationsLoading: loadingNotifications,
+        unreadNotificationCount: unreadCount,
         users,
         currentUser,
         loading,
@@ -213,6 +232,7 @@ export function LimsStateProvider({ children }: { children: React.ReactNode }) {
         inviteUser,
         toggleInstrumentStatus,
         markAllNotificationsRead,
+        markNotificationRead,
         switchUserRole,
         verifySample,
         rejectSample,

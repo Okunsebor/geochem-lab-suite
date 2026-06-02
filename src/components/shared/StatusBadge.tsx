@@ -4,6 +4,7 @@ import type { SampleStatus } from "../../types";
 const styles: Record<string, string> = {
   Received: "bg-muted text-muted-foreground border-border",
   Verified: "bg-info/10 text-info border-info/30",
+  Registered: "bg-indigo-500/10 text-indigo-600 border-indigo-500/30 dark:text-indigo-300",
   "In Preparation": "bg-warning/15 text-warning-foreground border-warning/30 dark:text-warning",
   "In Analysis": "bg-primary/10 text-primary border-primary/30",
   Completed: "bg-success/15 text-success border-success/30",

@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { TopbarSearch } from "./TopbarSearch";
 import { TopbarUserMenu } from "./TopbarUserMenu";
+import { TopbarNotifications } from "./TopbarNotifications";
 
 // Hierarchical LIMS sidebar menus
 const nav = [
@@ -39,6 +40,7 @@ const nav = [
     items: [
       { to: "/app/users", label: "Users & Roles", icon: Users2 },
       { to: "/app/notifications", label: "Notifications", icon: Bell },
+      { to: "/app/notifications/delivery", label: "Delivery Console", icon: Mail },
       { to: "/app/settings", label: "Settings", icon: Settings },
     ],
   },
@@ -75,6 +77,7 @@ export function AppTopbar() {
           <TopbarSearch />
         </div>
         
+        <TopbarNotifications />
         <TopbarUserMenu />
       </header>
 

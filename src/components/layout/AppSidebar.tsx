@@ -1,7 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard, FlaskConical, Workflow, Activity, FileText,
-  Users2, Bell, Settings, ScanBarcode, Beaker, ShieldCheck,
+  Users2, Bell, Settings, ScanBarcode, Beaker, ShieldCheck, MailCheck,
   Boxes, ClipboardList, BarChart3,
 } from "lucide-react";
 import { UniPodLogo } from "@/components/branding/UniPodLogo";
@@ -34,6 +34,7 @@ const nav = [
     items: [
       { to: "/app/users", label: "Users & Roles", icon: Users2 },
       { to: "/app/notifications", label: "Notifications", icon: Bell },
+      { to: "/app/notifications/delivery", label: "Delivery Console", icon: MailCheck },
       { to: "/app/settings", label: "Settings", icon: Settings },
     ],
   },
