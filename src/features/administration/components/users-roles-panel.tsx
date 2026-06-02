@@ -10,7 +10,7 @@ export function UsersRolesPanel() {
   const { users, inviteUser } = useLimsState();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState<any>("Lab Staff");
+  const [role, setRole] = useState<any>("Lab Coordinator");
   const [showInviteModal, setShowInviteModal] = useState(false);
 
   const handleInviteSubmit = (e: React.FormEvent) => {
@@ -69,7 +69,6 @@ export function UsersRolesPanel() {
               options={[
                 { label: "Admin", value: "Admin" },
                 { label: "Lab Coordinator", value: "Lab Coordinator" },
-                { label: "Lab Staff", value: "Lab Staff" },
                 { label: "Customer", value: "Customer" },
               ]}
             />
@@ -96,7 +95,6 @@ export function UsersRolesPanel() {
         {[
           ["Admin", "Full platform access", users.filter((u) => u.role === "Admin").length],
           ["Lab Coordinator", "Workflow + reporting", users.filter((u) => u.role === "Lab Coordinator").length],
-          ["Lab Staff", "Sample handling", users.filter((u) => u.role === "Lab Staff").length],
           ["Customer", "Portal access", users.filter((u) => u.role === "Customer").length],
         ].map((r) => (
           <div key={r[0]} className="rounded-xl border border-border bg-card p-5 hover:border-primary/20 transition-colors">

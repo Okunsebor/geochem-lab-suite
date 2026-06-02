@@ -77,7 +77,8 @@ export function mapDbRoleToUi(role: string): User["role"] {
     case "manager":
       return "Lab Coordinator";
     case "technician":
-      return "Lab Staff";
+      // WBS groups Lab Coordinator / Lab Staff; treat both as Lab Coordinator in the UI
+      return "Lab Coordinator";
     case "customer":
     default:
       return "Customer";
@@ -90,8 +91,6 @@ export function mapUiRoleToDb(role: User["role"]): string {
       return "admin";
     case "Lab Coordinator":
       return "manager";
-    case "Lab Staff":
-      return "technician";
     case "Customer":
     default:
       return "customer";

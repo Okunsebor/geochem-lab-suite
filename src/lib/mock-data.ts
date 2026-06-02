@@ -83,8 +83,8 @@ export const instruments = [
 export const users = [
   { id: 1, name: "Adaeze Nwosu", email: "adaeze@geochem.io", role: "Admin", status: "Active", lastSeen: "2m ago" },
   { id: 2, name: "Marcus Rivera", email: "m.rivera@geochem.io", role: "Lab Coordinator", status: "Active", lastSeen: "12m ago" },
-  { id: 3, name: "Keiko Nakamura", email: "keiko@geochem.io", role: "Lab Staff", status: "Active", lastSeen: "1h ago" },
-  { id: 4, name: "Samir Patel", email: "samir@geochem.io", role: "Lab Staff", status: "Active", lastSeen: "3h ago" },
+  { id: 3, name: "Keiko Nakamura", email: "keiko@geochem.io", role: "Lab Coordinator", status: "Active", lastSeen: "1h ago" },
+  { id: 4, name: "Samir Patel", email: "samir@geochem.io", role: "Lab Coordinator", status: "Active", lastSeen: "3h ago" },
   { id: 5, name: "Jane Chen", email: "jane@auricmining.com", role: "Customer", status: "Active", lastSeen: "yesterday" },
   { id: 6, name: "Anders Volkov", email: "anders@northstar.geo", role: "Customer", status: "Invited", lastSeen: "—" },
 ];

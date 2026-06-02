@@ -89,7 +89,7 @@ export interface User {
   id: number;
   name: string;
   email: string;
-  role: "Admin" | "Lab Coordinator" | "Lab Staff" | "Customer";
+  role: "Admin" | "Lab Coordinator" | "Customer";
   status: "Active" | "Invited" | "Suspended";
   lastSeen: string;
   organization?: string; // e.g. "Auric Mining Ltd" — for portal tenancy filtering

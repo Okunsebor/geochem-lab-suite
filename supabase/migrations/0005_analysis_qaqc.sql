@@ -115,10 +115,26 @@ ALTER TABLE calibration_records ENABLE ROW LEVEL SECURITY;
 ALTER TABLE qa_flags            ENABLE ROW LEVEL SECURITY;
 ALTER TABLE analytical_methods  ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "lab_access_runs"    ON analytical_runs    FOR ALL USING (auth.role() = 'authenticated');
-CREATE POLICY "lab_access_cal"     ON calibration_records FOR ALL USING (auth.role() = 'authenticated');
-CREATE POLICY "lab_access_flags"   ON qa_flags            FOR ALL USING (auth.role() = 'authenticated');
-CREATE POLICY "lab_read_methods"   ON analytical_methods  FOR SELECT USING (auth.role() = 'authenticated');
+-- Explicit lab staff policies for analysis, QA/QC and methods
+CREATE POLICY "runs_select" ON analytical_runs FOR SELECT USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin','manager','technician'));
+CREATE POLICY "runs_insert" ON analytical_runs FOR INSERT WITH CHECK ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin','manager','technician'));
+CREATE POLICY "runs_update" ON analytical_runs FOR UPDATE USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin','manager','technician'));
+CREATE POLICY "runs_delete" ON analytical_runs FOR DELETE USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin','manager','technician'));
+
+CREATE POLICY "cal_select" ON calibration_records FOR SELECT USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin','manager','technician'));
+CREATE POLICY "cal_insert" ON calibration_records FOR INSERT WITH CHECK ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin','manager','technician'));
+CREATE POLICY "cal_update" ON calibration_records FOR UPDATE USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin','manager','technician'));
+CREATE POLICY "cal_delete" ON calibration_records FOR DELETE USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin','manager','technician'));
+
+CREATE POLICY "flags_select" ON qa_flags FOR SELECT USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin','manager','technician'));
+CREATE POLICY "flags_insert" ON qa_flags FOR INSERT WITH CHECK ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin','manager','technician'));
+CREATE POLICY "flags_update" ON qa_flags FOR UPDATE USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin','manager','technician'));
+CREATE POLICY "flags_delete" ON qa_flags FOR DELETE USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin','manager','technician'));
+
+CREATE POLICY "methods_select" ON analytical_methods FOR SELECT USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin','manager','technician'));
+CREATE POLICY "methods_insert" ON analytical_methods FOR INSERT WITH CHECK ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin','manager','technician'));
+CREATE POLICY "methods_update" ON analytical_methods FOR UPDATE USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin','manager','technician'));
+CREATE POLICY "methods_delete" ON analytical_methods FOR DELETE USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin','manager','technician'));
 
 -- ─────────────────────────────────────────────
 -- SEED: ANALYTICAL METHODS LIBRARY

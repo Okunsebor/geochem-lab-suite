@@ -46,7 +46,6 @@ export function LoginForm({ portalIntent = false }: { portalIntent?: boolean }) 
     const roleEmails: Record<User["role"], string> = {
       Admin: "adaeze@geochem.io",
       "Lab Coordinator": "m.rivera@geochem.io",
-      "Lab Staff": "keiko@geochem.io",
       Customer: "jane@auricmining.com",
     };
 
@@ -134,7 +133,6 @@ export function LoginForm({ portalIntent = false }: { portalIntent?: boolean }) 
               [
                 { role: "Admin" as const, label: "Admin" },
                 { role: "Lab Coordinator" as const, label: "Coordinator" },
-                { role: "Lab Staff" as const, label: "Staff" },
                 { role: "Customer" as const, label: "Customer" },
               ] as const
             ).map((r) => (

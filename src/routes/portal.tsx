@@ -1,15 +1,44 @@
-import { createFileRoute, Link, Outlet, useRouterState, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, redirect, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Home, FilePlus2, FileText, Bell, LifeBuoy, Sun, Moon, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { getVerifyEmailPath } from "@/lib/auth-routes";
-import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { Portal3DScene } from "@/components/portal/Portal3DScene";
 import { UniPodLogo } from "@/components/branding/UniPodLogo";
+import { supabase } from "@/lib/supabase";
+import { mapDbRoleToUi, isEmailConfirmed } from "@/lib/auth-utils";
 
-export const Route = createFileRoute("/portal")({ component: PortalLayout });
+export const Route = createFileRoute("/portal")({
+  beforeLoad: async () => {
+    const { data: { session }, error } = await supabase.auth.getSession();
+    if (error || !session?.user) {
+      throw redirect({ to: "/register" });
+    }
+
+    if (!isEmailConfirmed(session.user)) {
+      throw redirect({ href: getVerifyEmailPath(session.user.email) });
+    }
+
+    const { data: profile } = await supabase
+      .from("users" as any)
+      .select("role")
+      .eq("id", session.user.id)
+      .maybeSingle();
+
+    const role = profile ? mapDbRoleToUi(profile.role) : mapDbRoleToUi("customer");
+
+    if (role === "Admin") {
+      throw redirect({ to: "/app" });
+    } else if (role === "Lab Coordinator") {
+      throw redirect({ to: "/coordinator" });
+    } else if (role !== "Customer") {
+      throw redirect({ to: "/login", search: { intent: "portal" } });
+    }
+  },
+  component: PortalLayout,
+});
 
 const nav = [
   { to: "/portal", label: "Dashboard", icon: Home, exact: true },
@@ -21,8 +50,7 @@ const nav = [
 
 function PortalLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const { currentUser, loading, emailVerified, session } = useAuth();
-  const navigate = useNavigate();
+  const { currentUser, loading } = useAuth();
 
   const [dark, setDark] = useState(() => {
     try {
@@ -39,24 +67,6 @@ function PortalLayout() {
     document.documentElement.classList.toggle("dark", dark);
     localStorage.setItem("gcs_dark_mode", String(dark));
   }, [dark]);
-
-  useEffect(() => {
-    if (!loading) {
-      if (!currentUser) {
-        toast.info("Register or sign in to access the customer portal.");
-        navigate({ to: "/register" });
-      } else if (session && !emailVerified) {
-        toast.info("Please verify your email to access the portal.");
-        window.location.href = getVerifyEmailPath(currentUser.email);
-      } else if (currentUser.role === "Admin") {
-        navigate({ to: "/app" });
-      } else if (currentUser.role === "Lab Coordinator" || currentUser.role === "Lab Staff") {
-        window.location.href = "/coordinator";
-      } else if (currentUser.role !== "Customer") {
-        navigate({ to: "/login", search: { intent: "portal" } });
-      }
-    }
-  }, [loading, currentUser, emailVerified, session, navigate]);
 
   if (loading) {
     return (

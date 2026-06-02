@@ -93,9 +93,13 @@ CREATE TRIGGER trg_prep_job_updated_at
 ALTER TABLE preparation_jobs  ENABLE ROW LEVEL SECURITY;
 ALTER TABLE preparation_steps ENABLE ROW LEVEL SECURITY;
 
--- Lab staff and admins can read/write all prep records
-CREATE POLICY "prep_jobs_lab_access" ON preparation_jobs
-  FOR ALL USING (auth.role() IN ('authenticated'));
+-- Explicit lab staff policies for prep records
+CREATE POLICY "prep_jobs_select" ON preparation_jobs FOR SELECT USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin','manager','technician'));
+CREATE POLICY "prep_jobs_insert" ON preparation_jobs FOR INSERT WITH CHECK ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin','manager','technician'));
+CREATE POLICY "prep_jobs_update" ON preparation_jobs FOR UPDATE USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin','manager','technician'));
+CREATE POLICY "prep_jobs_delete" ON preparation_jobs FOR DELETE USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin','manager','technician'));
 
-CREATE POLICY "prep_steps_lab_access" ON preparation_steps
-  FOR ALL USING (auth.role() IN ('authenticated'));
+CREATE POLICY "prep_steps_select" ON preparation_steps FOR SELECT USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin','manager','technician'));
+CREATE POLICY "prep_steps_insert" ON preparation_steps FOR INSERT WITH CHECK ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin','manager','technician'));
+CREATE POLICY "prep_steps_update" ON preparation_steps FOR UPDATE USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin','manager','technician'));
+CREATE POLICY "prep_steps_delete" ON preparation_steps FOR DELETE USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin','manager','technician'));

@@ -55,8 +55,25 @@ CREATE INDEX IF NOT EXISTS idx_report_logs_id    ON public.report_logs(report_id
 ALTER TABLE public.reports ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.report_logs ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "lab_access_reports" ON public.reports FOR ALL USING (auth.role() = 'authenticated');
-CREATE POLICY "lab_access_report_logs" ON public.report_logs FOR ALL USING (auth.role() = 'authenticated');
+-- Explicit policies for reports with organization-level scoping for customers
+CREATE POLICY "reports_select" ON public.reports FOR SELECT USING (
+  (SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin','manager','technician')
+  OR
+  (client_org_id = (SELECT organization_id::text FROM public.users WHERE id = auth.uid()))
+);
+CREATE POLICY "reports_insert" ON public.reports FOR INSERT WITH CHECK ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin','manager','technician'));
+CREATE POLICY "reports_update" ON public.reports FOR UPDATE USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin','manager','technician'));
+CREATE POLICY "reports_delete" ON public.reports FOR DELETE USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin','manager','technician'));
+
+-- Explicit policies for report logs
+CREATE POLICY "report_logs_select" ON public.report_logs FOR SELECT USING (
+  (SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin','manager','technician')
+  OR
+  (report_id IN (SELECT id FROM public.reports WHERE client_org_id = (SELECT organization_id::text FROM public.users WHERE id = auth.uid())))
+);
+CREATE POLICY "report_logs_insert" ON public.report_logs FOR INSERT WITH CHECK ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin','manager','technician'));
+CREATE POLICY "report_logs_update" ON public.report_logs FOR UPDATE USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin','manager','technician'));
+CREATE POLICY "report_logs_delete" ON public.report_logs FOR DELETE USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin','manager','technician'));
 
 -- ─────────────────────────────────────────────
 -- AUDIT TRIGGER LINKAGE

@@ -87,7 +87,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const metaRole = sessionUser.user_metadata?.role as User["role"] | undefined;
       const uiRole =
-        typeof metaRole === "string" && ["Admin", "Lab Coordinator", "Lab Staff", "Customer"].includes(metaRole)
+        typeof metaRole === "string" && ["Admin", "Lab Coordinator", "Customer"].includes(metaRole)
           ? metaRole
           : mapDbRoleToUi(mapUiRoleToDb("Customer"));
 
@@ -113,7 +113,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const uiRole =
         metaRole === "Admin" ||
         metaRole === "Lab Coordinator" ||
-        metaRole === "Lab Staff" ||
         metaRole === "Customer"
           ? metaRole
           : "Customer";
@@ -142,7 +141,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const names: Record<User["role"], string> = {
             Admin: "Adaeze Nwosu",
             "Lab Coordinator": "M. Rivera",
-            "Lab Staff": "Keiko Nakamura",
             Customer: "Jane Smith",
           };
           setCurrentUser({
@@ -210,6 +208,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       const role = await syncProfile(user);
+
+      // Auth audit (best-effort, never blocks login)
+      try {
+        await supabase.from("auth_audit_events" as any).insert({
+          event_type: "login",
+          actor_user_id: user.id,
+          user_agent: typeof navigator !== "undefined" ? navigator.userAgent : null,
+          meta: { email: user.email },
+        });
+      } catch (err) {
+        console.warn("Auth audit (login) failed:", err);
+      }
+
       return { role, emailVerified: verified };
     } finally {
       setLoading(false);
@@ -278,6 +289,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setLoading(true);
     localStorage.removeItem("gcs_demo_role");
     try {
+      // Auth audit (best-effort)
+      try {
+        const {
+          data: { session: s },
+        } = await supabase.auth.getSession();
+        if (s?.user?.id) {
+          await supabase.from("auth_audit_events" as any).insert({
+            event_type: "logout",
+            actor_user_id: s.user.id,
+            user_agent: typeof navigator !== "undefined" ? navigator.userAgent : null,
+            meta: { email: s.user.email },
+          });
+        }
+      } catch (err) {
+        console.warn("Auth audit (logout) failed:", err);
+      }
+
       await supabase.auth.signOut();
     } catch (err) {
       console.warn("Supabase signOut error:", err);
@@ -321,7 +349,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const names: Record<User["role"], string> = {
       Admin: "Adaeze Nwosu",
       "Lab Coordinator": "M. Rivera",
-      "Lab Staff": "Keiko Nakamura",
       Customer: "Jane Smith",
     };
     setCurrentUser({

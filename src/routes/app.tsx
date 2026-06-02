@@ -1,44 +1,51 @@
-import { createFileRoute, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
+import { createFileRoute, Outlet, redirect, useRouterState } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { AppTopbar } from "@/components/layout/AppTopbar";
 import { supabaseHelpers } from "@/lib/supabase";
 import { useAuth } from "@/hooks/use-auth";
 import { getVerifyEmailPath } from "@/lib/auth-routes";
-import { toast } from "sonner";
 import { motion } from "framer-motion";
+import { supabase } from "@/lib/supabase";
+import { mapDbRoleToUi, isEmailConfirmed } from "@/lib/auth-utils";
 
 export const Route = createFileRoute("/app")({
+  beforeLoad: async () => {
+    const { data: { session }, error } = await supabase.auth.getSession();
+    if (error || !session?.user) {
+      throw redirect({ to: "/login" });
+    }
+
+    if (!isEmailConfirmed(session.user)) {
+      throw redirect({ href: getVerifyEmailPath(session.user.email) });
+    }
+
+    const { data: profile } = await supabase
+      .from("users" as any)
+      .select("role")
+      .eq("id", session.user.id)
+      .maybeSingle();
+
+    const role = profile ? mapDbRoleToUi(profile.role) : mapDbRoleToUi("customer");
+
+    if (role === "Customer") {
+      throw redirect({ to: "/portal" });
+    } else if (role === "Lab Coordinator") {
+      throw redirect({ to: "/coordinator" });
+    } else if (role !== "Admin") {
+      throw redirect({ to: "/login" });
+    }
+  },
   component: AppLayout,
 });
 
 function AppLayout() {
-  const { currentUser, loading, emailVerified, session } = useAuth();
-  const navigate = useNavigate();
+  const { currentUser, loading } = useAuth();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   useEffect(() => {
     supabaseHelpers.healthCheck();
   }, []);
-
-  useEffect(() => {
-    if (!loading) {
-      if (!currentUser) {
-        navigate({ to: "/login", search: {} });
-      } else if (session && !emailVerified) {
-        toast.info("Verify your email before accessing the admin workspace.");
-        window.location.href = getVerifyEmailPath(currentUser.email);
-      } else if (currentUser.role === "Customer") {
-        toast.error("Please use your registered customer portal.");
-        navigate({ to: "/portal" });
-      } else if (currentUser.role === "Lab Coordinator" || currentUser.role === "Lab Staff") {
-        toast.info("Redirected to the Lab Coordinator portal.");
-        window.location.href = "/coordinator";
-      } else if (currentUser.role !== "Admin") {
-        navigate({ to: "/login", search: {} });
-      }
-    }
-  }, [loading, currentUser, emailVerified, session, navigate]);
 
   if (loading) {
     return (
