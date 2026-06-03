@@ -41,7 +41,7 @@ export default function HeroSection() {
 
   return (
     <section
-      className="relative overflow-hidden bg-[#07111B] min-h-[calc(100vh-64px)] flex items-center justify-center py-20 px-4 md:px-8 cursor-crosshair select-none"
+      className="relative overflow-hidden bg-[#F7F9FC] min-h-[calc(100vh-64px)] flex items-center justify-center py-20 px-4 md:px-8 cursor-crosshair select-none"
       onMouseMove={handleMouseMove}
       onTouchMove={handleTouchMove}
       onMouseEnter={() => setIsHovered(true)}
@@ -49,16 +49,16 @@ export default function HeroSection() {
       onTouchStart={() => setIsHovered(true)}
       onTouchEnd={() => setIsHovered(false)}
     >
-      {/* LAYER 1: Deep Navy Base Background & Fine Grid lines */}
+      {/* LAYER 1: Light Base Background & Fine Grid lines */}
       <div className="absolute inset-0 z-0 pointer-events-none" />
-      <div className="absolute inset-0 landing-grid-fine opacity-20 z-0 pointer-events-none" />
+      <div className="absolute inset-0 landing-grid-fine opacity-60 z-0 pointer-events-none" />
 
-      {/* Premium ambient mesh gradients (Soft cyan/blue/gold) */}
+      {/* Premium ambient mesh gradients (Soft cyan/blue/slate) */}
       <div
         className="absolute inset-0 z-0 pointer-events-none"
         style={{
           background:
-            "radial-gradient(circle at 10% 20%, rgba(0, 110, 181, 0.15) 0%, transparent 50%), radial-gradient(circle at 90% 80%, rgba(212, 160, 23, 0.08) 0%, transparent 50%)",
+            "radial-gradient(circle at 10% 20%, rgba(37, 99, 235, 0.05) 0%, transparent 50%), radial-gradient(circle at 90% 80%, rgba(14, 165, 233, 0.03) 0%, transparent 50%)",
         }}
       />
 
@@ -77,9 +77,9 @@ export default function HeroSection() {
         style={{
           left: spotlightX,
           top: spotlightY,
-          opacity: useTransform(spotlightOpacity, (op: number) => op * 0.2),
+          opacity: useTransform(spotlightOpacity, (op: number) => op * 0.15),
           transform: "translate(-50%, -50%)",
-          background: "radial-gradient(circle, rgba(0, 174, 239, 0.4) 0%, transparent 70%)",
+          background: "radial-gradient(circle, rgba(37, 99, 235, 0.15) 0%, transparent 70%)",
         }}
         className="absolute size-[600px] rounded-full pointer-events-none blur-2xl z-12"
       />
@@ -92,12 +92,12 @@ export default function HeroSection() {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary/20 bg-primary/5 backdrop-blur-md text-xs font-mono text-primary tracking-wider"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#E2E8F0] bg-[#F1F5F9] backdrop-blur-md text-xs font-mono text-[#2563EB] tracking-wider"
         >
-          <Lock className="size-3.5 text-accent animate-pulse" />
+          <Lock className="size-3.5 text-[#2563EB] animate-pulse" />
           <span>CONTROLLED ACCESS</span>
-          <span className="h-3 w-px bg-primary/20" />
-          <span className="text-[#7D92A8]">SECURE SYSTEM</span>
+          <span className="h-3 w-px bg-[#E2E8F0]" />
+          <span className="text-[#475569]">SECURE SYSTEM</span>
         </motion.div>
 
         {/* Centralised Title Container - Luxury Glass Box Console */}
@@ -105,23 +105,23 @@ export default function HeroSection() {
           initial={{ opacity: 0, scale: 0.97 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
-          className="p-8 md:p-12 rounded-3xl border border-white/5 bg-[#0B2B4A]/10 backdrop-blur-md shadow-2xl space-y-6"
+          className="p-8 md:p-12 rounded-3xl border border-[#E2E8F0] bg-white/80 backdrop-blur-md shadow-lg shadow-slate-900/5 space-y-6"
         >
-          <h1 className="text-4xl md:text-6xl xl:text-7xl font-extrabold tracking-tight text-white leading-none font-display font-bold">
+          <h1 className="text-4xl md:text-6xl xl:text-7xl font-extrabold tracking-tight text-[#0F172A] leading-none font-display font-bold">
             Scientific Infrastructure.
-            <span className="block mt-2 text-transparent bg-clip-text bg-gradient-to-r from-[#00AEEF] to-[#0090C8]">
+            <span className="block mt-2 text-transparent bg-clip-text bg-gradient-to-r from-[#2563EB] to-[#0EA5E9]">
               Reimagined.
             </span>
           </h1>
 
-          <div className="h-px w-24 bg-gradient-to-r from-transparent via-primary/50 to-transparent mx-auto my-6" />
+          <div className="h-px w-24 bg-gradient-to-r from-transparent via-[#E2E8F0] to-transparent mx-auto my-6" />
 
           {/* Centralized outcome messages */}
           <div className="space-y-3 max-w-2xl mx-auto">
-            <p className="text-xl md:text-2xl font-bold text-white/90">
+            <p className="text-xl md:text-2xl font-bold text-[#0F172A]">
               Trusted Analytical Intelligence.
             </p>
-            <p className="text-md md:text-lg font-bold text-muted-foreground">
+            <p className="text-md md:text-lg font-bold text-[#475569]">
               Built for Institutions. Designed for Precision.
             </p>
           </div>
@@ -130,14 +130,14 @@ export default function HeroSection() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-8">
             <Link
               to="/register"
-              className="btn-theme-cyan inline-flex items-center justify-center gap-2 min-w-[200px] text-base py-3.5 !rounded-xl shadow-lg"
+              className="btn-theme-cyan inline-flex items-center justify-center gap-2 min-w-[200px] text-base py-3.5 !rounded-xl shadow-md"
             >
               Request Access <ArrowRight className="size-4" />
             </Link>
             
             <button
               onClick={() => setIsModalOpen(true)}
-              className="btn-theme-outline inline-flex items-center justify-center gap-2 min-w-[200px] text-base py-3.5 !rounded-xl backdrop-blur-sm border-white/20 text-white hover:bg-white hover:text-black hover:border-transparent transition-all"
+              className="btn-theme-outline inline-flex items-center justify-center gap-2 min-w-[200px] text-base py-3.5 !rounded-xl border-[#E2E8F0] text-[#475569] hover:bg-[#F1F5F9] hover:text-[#0F172A] hover:border-[#E2E8F0] transition-all"
             >
               Institutional Partnership
             </button>
@@ -149,15 +149,15 @@ export default function HeroSection() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5, duration: 0.6 }}
-          className="flex flex-wrap items-center justify-center gap-6 text-xs text-muted-foreground/80 font-mono tracking-wider pt-4"
+          className="flex flex-wrap items-center justify-center gap-6 text-xs text-[#475569]/80 font-mono tracking-wider pt-4"
         >
           <span className="flex items-center gap-1.5">
-            <Server className="size-3.5 text-primary" />
+            <Server className="size-3.5 text-[#2563EB]" />
             POWERED BY UNIPOD
           </span>
           <span className="hidden sm:inline">·</span>
           <span className="flex items-center gap-1.5">
-            <Shield className="size-3.5 text-accent" />
+            <Shield className="size-3.5 text-[#0EA5E9]" />
             ENCRYPTED SESSION
           </span>
           <span className="hidden sm:inline">·</span>
