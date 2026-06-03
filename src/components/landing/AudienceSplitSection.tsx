@@ -86,7 +86,7 @@ export default function AudienceSplitSection() {
           <AudienceCard card={LAB_CARD} index={0}>
             <Link
               to="/register"
-              className="mt-8 inline-flex items-center gap-2 rounded-lg gradient-primary px-6 py-3.5 text-sm font-semibold text-white w-fit shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5"
+              className="mt-8 btn-theme-cyan text-sm w-fit"
             >
               {LAB_CARD.cta} <ArrowRight className="size-4" />
             </Link>
@@ -95,7 +95,7 @@ export default function AudienceSplitSection() {
             <Link
               to="/login"
               search={{ intent: "portal" }}
-              className="mt-8 inline-flex items-center gap-2 rounded-lg gradient-primary px-6 py-3.5 text-sm font-semibold text-white w-fit shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5"
+              className="mt-8 btn-theme-cyan text-sm w-fit"
             >
               {CLIENT_CARD.cta} <ArrowRight className="size-4" />
             </Link>

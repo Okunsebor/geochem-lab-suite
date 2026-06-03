@@ -56,7 +56,7 @@ export default function LaboratorySection() {
             </ul>
             <Link
               to="/register"
-              className="inline-flex items-center gap-2 rounded-lg gradient-accent px-7 py-3.5 text-sm font-bold text-accent-foreground shadow-md hover:opacity-95 transition-all"
+              className="btn-theme-cyan text-sm"
             >
               Register for laboratory access <ArrowRight className="size-4" />
             </Link>

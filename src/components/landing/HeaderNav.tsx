@@ -43,7 +43,7 @@ export default function HeaderNav() {
           </Link>
           <Link
             to="/register"
-            className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:shadow-[0_0_15px_rgba(255,215,0,0.6)]"
+            className="btn-theme-cyan inline-flex items-center gap-1.5 rounded-md text-sm"
           >
             Request Access <ArrowRight className="size-3.5" />
           </Link>
@@ -86,7 +86,7 @@ export default function HeaderNav() {
               <Link
                 to="/register"
                 onClick={closeMobile}
-                className="inline-flex items-center justify-center gap-1.5 rounded-md gradient-primary py-2.5 text-sm font-semibold text-white"
+              className="btn-theme-cyan inline-flex items-center justify-center gap-1.5 rounded-md text-sm"
               >
                 Request Access <ArrowRight className="size-3.5" />
               </Link>

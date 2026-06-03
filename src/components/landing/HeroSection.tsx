@@ -1,12 +1,8 @@
-import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { Lock, ArrowRight, Server, Shield } from "lucide-react";
-import PartnershipModal from "./shared/PartnershipModal";
 
 export default function HeroSection() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
   return (
     <section className="relative overflow-hidden min-h-[calc(100vh-64px)] flex items-center justify-start py-20 px-4 md:px-12 lg:px-24 select-none">
       {/* BACKGROUND LAYER: Full visibility image */}
@@ -58,7 +54,7 @@ export default function HeroSection() {
           {/* Subtext */}
           <div className="space-y-2 max-w-2xl">
             <p className="text-xl md:text-2xl font-bold text-white">
-              Trusted Analytical Intelligence.
+               Trusted Analytical Intelligence.
             </p>
             <p className="text-base md:text-lg font-semibold text-white/80">
               Built for Institutions. Designed for Precision.
@@ -73,13 +69,6 @@ export default function HeroSection() {
             >
               Get Started <ArrowRight className="size-4" />
             </Link>
-
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="inline-flex items-center justify-center gap-2 min-w-[200px] text-base py-3.5 rounded-xl bg-white/10 text-white font-semibold border border-white/20 hover:bg-white/20 transition backdrop-blur-sm"
-            >
-              Institutional Partnership
-            </button>
           </div>
         </motion.div>
 
@@ -103,9 +92,6 @@ export default function HeroSection() {
           <span>ESTABLISHED 2026</span>
         </motion.div>
       </motion.div>
-
-      {/* Secure Partnership Modal */}
-      <PartnershipModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </section>
   );
 }

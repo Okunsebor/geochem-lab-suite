@@ -11,4 +11,7 @@ export const BRAND_ASSETS = {
   logo: "/branding/unipod-logo.png",
   entrance: "/branding/unipod-nsuk-entrance.png",
   labInterior: "/branding/unipod-lab-interior.png",
+  samplePrepLab: "/branding/SAMPLE PREPARATION LAB.png",
+  valueProposition: "/branding/unipod-value-proposition.png",
 } as const;
+

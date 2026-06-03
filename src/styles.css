@@ -471,76 +471,59 @@
   }
 
   /* Landing page — theme buttons (see utilities.css .interactive-button) */
-  .btn-theme-cyan {
-    @apply rounded-full font-semibold text-sm px-6 py-3;
-    transition: transform 180ms ease-out, box-shadow 180ms ease-out, background-color 180ms ease-out, border-color 180ms ease-out;
-    background: #00AEEF; /* Primary brand: Cyan */
-    color: #000000; /* Elite black text on Cyan background for contrast */
-    border: 1px solid transparent;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-  }
-  .btn-theme-cyan:hover:not(:disabled) {
-    background: #0090C8; /* Hover brand: slightly darker primary */
-    color: #000000;
-    box-shadow: 0 4px 12px rgba(0, 174, 239, 0.45); /* Cyan glow */
-    transform: translateY(-2px);
-  }
-  .btn-theme-cyan:active:not(:disabled) {
-    transform: translateY(1px);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-  }
-  .btn-theme-cyan:disabled {
-    transform: none;
-    box-shadow: none;
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-
-  .btn-theme-gold {
-    @apply rounded-full font-semibold text-sm px-6 py-3;
-    transition: transform 180ms ease-out, box-shadow 180ms ease-out, background-color 180ms ease-out, border-color 180ms ease-out;
-    background: #F5B800; /* Accent brand: Gold */
-    color: #000000; /* Elite black text on Gold background for contrast */
-    border: 1px solid transparent;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-  }
-  .btn-theme-gold:hover:not(:disabled) {
-    background: #FFD54F; /* Hover accent: lighter gold */
-    color: #000000;
-    box-shadow: 0 4px 12px rgba(245, 184, 0, 0.45); /* Gold glow */
-    transform: translateY(-2px);
-  }
-  .btn-theme-gold:active:not(:disabled) {
-    transform: translateY(1px);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-  }
-  .btn-theme-gold:disabled {
-    transform: none;
-    box-shadow: none;
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-
+  /* ─── Unified Landing Button System ───────────────────────────────────────
+     Default : solid primary cyan (#00AEEF), black text
+     Hover   : transitions to accent gold (#F5B800)
+     Active  : bright cyan glow burst
+     ──────────────────────────────────────────────────────────────────────── */
+  .btn-theme-primary,
+  .btn-theme-cyan,
+  .btn-theme-gold,
   .btn-theme-outline {
-    @apply rounded-full font-semibold text-sm px-6 py-3 border border-border text-muted-foreground bg-transparent;
-    transition: transform 180ms ease-out, box-shadow 180ms ease-out, background-color 180ms ease-out, border-color 180ms ease-out;
+    @apply rounded-full font-semibold text-sm px-6 py-3;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background: #00AEEF;
+    color: #000000;
+    border: 1px solid transparent;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    transition:
+      background-color 200ms ease-out,
+      color 200ms ease-out,
+      box-shadow 200ms ease-out,
+      transform 180ms ease-out;
+    cursor: pointer;
   }
+  .btn-theme-primary:hover:not(:disabled),
+  .btn-theme-cyan:hover:not(:disabled),
+  .btn-theme-gold:hover:not(:disabled),
   .btn-theme-outline:hover:not(:disabled) {
-    background: #F1F5F9; /* Surface 2 */
-    border-color: #CBD5E1; /* Slight border brightening */
-    color: #0F172A; /* Primary text */
-    box-shadow: var(--elevation-2);
+    background: #F5B800;
+    color: #000000;
+    box-shadow: 0 4px 14px rgba(245, 184, 0, 0.45);
     transform: translateY(-2px);
   }
+  .btn-theme-primary:active:not(:disabled),
+  .btn-theme-cyan:active:not(:disabled),
+  .btn-theme-gold:active:not(:disabled),
   .btn-theme-outline:active:not(:disabled) {
-    transform: translateY(1px);
-    box-shadow: none;
+    transform: translateY(0px);
+    box-shadow:
+      0 0 0 3px rgba(0, 174, 239, 0.25),
+      0 0 20px rgba(0, 174, 239, 0.55);
+    background: #00AEEF;
+    color: #000000;
   }
+  .btn-theme-primary:disabled,
+  .btn-theme-cyan:disabled,
+  .btn-theme-gold:disabled,
   .btn-theme-outline:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
     transform: none;
     box-shadow: none;
-    opacity: 0.6;
-    cursor: not-allowed;
   }
 
   .landing-3d-panel {

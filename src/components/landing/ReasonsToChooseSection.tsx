@@ -27,8 +27,8 @@ const REASONS = [
       "Immutable audit ledgers verifying specimen data custody",
       "Multi-signatory approval processes for verified academic output",
     ],
-    image: BRAND_ASSETS.entrance,
-    imageAlt: "UniPod Nsuk facility",
+    image: BRAND_ASSETS.samplePrepLab,
+    imageAlt: "Sample preparation laboratory",
   },
   {
     id: "reliability",
@@ -39,8 +39,8 @@ const REASONS = [
       "Isolated internal data storage protecting proprietary assets",
       "Multi-factor cryptographic authentication protocols",
     ],
-    image: BRAND_ASSETS.labInterior,
-    imageAlt: "Laboratory operations",
+    image: BRAND_ASSETS.entrance,
+    imageAlt: "UniPod Nsuk facility entrance",
   },
   {
     id: "commitment",
@@ -51,17 +51,12 @@ const REASONS = [
       "Backed by development partners (UNDP, GIZ, and GFG)",
       "Pioneering the public university research ecosystem",
     ],
-    image: BRAND_ASSETS.entrance,
-    imageAlt: "UniPod commitment",
+    image: BRAND_ASSETS.valueProposition,
+    imageAlt: "UniPod value proposition slide mapping",
   },
 ];
 
-const VALUE_SEGMENTS = [
-  { num: "01", title: "Close the R&D gap", side: "left" as const },
-  { num: "02", title: "Nurture future talent", side: "left" as const },
-  { num: "03", title: "Public university excellence", side: "right" as const },
-  { num: "04", title: "Institutional co-creation", side: "right" as const },
-];
+
 
 export default function ReasonsToChooseSection() {
   const [active, setActive] = useState(0);
@@ -75,38 +70,6 @@ export default function ReasonsToChooseSection() {
           title="Rigorous Standards. Certified Infrastructure."
         />
 
-        {/* Value proposition ring  inspired by UniPod slide */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
-          className="mb-16 hidden lg:grid grid-cols-[1fr_auto_1fr] gap-8 items-center max-w-5xl mx-auto"
-        >
-          <div className="space-y-10 text-right">
-            {VALUE_SEGMENTS.filter((s) => s.side === "left").map((s) => (
-              <div key={s.num}>
-                <p className="text-xs font-mono text-accent font-bold">{s.num}</p>
-                <p className="text-sm font-bold text-foreground mt-1">{s.title}</p>
-              </div>
-            ))}
-          </div>
-          <div className="landing-value-ring relative size-52 shrink-0">
-            <div className="landing-value-ring-inner flex items-center justify-center text-center p-6">
-              <p className="text-xs font-bold font-display text-foreground leading-snug">
-                UniPod<br />
-                <span className="text-primary">Value</span>
-              </p>
-            </div>
-          </div>
-          <div className="space-y-10 text-left">
-            {VALUE_SEGMENTS.filter((s) => s.side === "right").map((s) => (
-              <div key={s.num}>
-                <p className="text-xs font-mono text-accent font-bold">{s.num}</p>
-                <p className="text-sm font-bold text-foreground mt-1">{s.title}</p>
-              </div>
-            ))}
-          </div>
-        </motion.div>
 
         <div className="grid gap-10 lg:grid-cols-12 items-stretch">
           {/* Tabs */}
@@ -116,10 +79,10 @@ export default function ReasonsToChooseSection() {
                 key={r.id}
                 type="button"
                 onClick={() => setActive(i)}
-                className={`shrink-0 text-left rounded-xl px-5 py-4 text-sm font-bold transition-all duration-[180ms] ease-out border ${
+                className={`shrink-0 text-left rounded-xl px-5 py-4 text-sm font-bold transition-all duration-200 ease-out border ${
                   active === i
-                    ? "gradient-primary text-white border-transparent shadow-lg shadow-primary/25"
-                    : "bg-card border-border text-muted-foreground hover:-translate-y-[2px] hover:shadow-md hover:border-slate-300 hover:text-foreground active:translate-y-[1px]"
+                    ? "bg-primary text-black border-transparent shadow-lg shadow-primary/25"
+                    : "bg-card border-border text-muted-foreground hover:bg-primary hover:text-black hover:border-transparent hover:-translate-y-[2px] hover:shadow-md active:shadow-[0_0_0_3px_rgba(0,174,239,0.25),0_0_20px_rgba(0,174,239,0.55)]"
                 }`}
               >
                 {r.label}
