@@ -232,7 +232,7 @@ export function TopbarSearch() {
     <>
       <button 
         onClick={() => setShowSearch(true)}
-        className="group flex w-full max-w-md items-center gap-2 rounded-lg border border-border bg-card px-3 py-1.5 text-sm text-muted-foreground hover:border-primary/40 transition cursor-pointer"
+        className="group interactive-lift interactive-motion flex w-full max-w-md items-center gap-2 rounded-lg border border-border bg-card px-3 py-1.5 text-sm text-muted-foreground hover:border-primary/40"
       >
         <Search className="size-4" />
         <span className="flex-1 text-left truncate">Search samples, reports, instruments...</span>

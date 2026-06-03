@@ -9,7 +9,7 @@ export function StatCard({
   trend?: "up" | "down"; icon?: ReactNode; hint?: string;
 }) {
   return (
-    <div className="group relative overflow-hidden rounded-xl border border-border bg-card p-5 transition hover:border-primary/40 hover:shadow-sm">
+    <div className="group interactive-card relative overflow-hidden rounded-xl border border-border bg-card p-5">
       <div className="flex items-start justify-between">
         <div>
           <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{label}</p>

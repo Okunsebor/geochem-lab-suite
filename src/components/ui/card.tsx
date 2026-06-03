@@ -4,14 +4,17 @@ import { cn } from "@/lib/utils";
 
 export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   glass?: boolean;
+  /** Soft elevation on hover (no scale). Use for clickable cards. */
+  interactive?: boolean;
 }
 
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
-  ({ className, glass, ...props }, ref) => (
+  ({ className, glass, interactive, ...props }, ref) => (
     <div
       ref={ref}
       className={cn(
         glass ? "glass rounded-xl shadow-lg" : "rounded-xl border bg-card text-card-foreground shadow",
+        interactive && "interactive-card cursor-pointer",
         className
       )}
       {...props}

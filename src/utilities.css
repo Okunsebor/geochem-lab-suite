@@ -69,19 +69,102 @@
   animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
-/* Hover glow states */
+/* === Interaction system (150–200ms, responsive, no heavy motion) === */
+
+.interactive-motion {
+  transition:
+    transform 180ms ease-out,
+    box-shadow 180ms ease-out,
+    border-color 180ms ease-out,
+    background-color 180ms ease-out,
+    color 180ms ease-out,
+    opacity 180ms ease-out;
+}
+
+/* Generic clickable surfaces (rows, panels, nav items) */
+.interactive-lift:not(:disabled):not([disabled]):not([aria-disabled="true"]) {
+  cursor: pointer;
+}
+.interactive-lift:hover:not(:disabled):not([disabled]):not([aria-disabled="true"]) {
+  transform: translateY(-2px);
+  box-shadow: var(--elevation-2);
+  border-color: #cbd5e1;
+}
+.interactive-lift:active:not(:disabled):not([disabled]):not([aria-disabled="true"]) {
+  transform: translateY(1px);
+  box-shadow: var(--elevation-1);
+}
+
+/* Buttons: lift + glow edge */
+.interactive-button:not(:disabled):not([disabled]):not([aria-disabled="true"]) {
+  cursor: pointer;
+}
+.interactive-button:hover:not(:disabled):not([disabled]):not([aria-disabled="true"]) {
+  transform: translateY(-2px);
+}
+.interactive-button:active:not(:disabled):not([disabled]):not([aria-disabled="true"]) {
+  transform: translateY(1px);
+  box-shadow: var(--elevation-1);
+}
+.interactive-button:disabled,
+.interactive-button[disabled],
+.interactive-button[aria-disabled="true"] {
+  transform: none !important;
+  box-shadow: none;
+}
+
+/* Cards: soft elevation only — no scale */
+.interactive-card {
+  transition:
+    transform 180ms ease-out,
+    box-shadow 180ms ease-out,
+    border-color 180ms ease-out;
+}
+.interactive-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--elevation-2);
+  border-color: #cbd5e1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .interactive-motion,
+  .interactive-lift,
+  .interactive-button,
+  .interactive-card,
+  .hover-glow,
+  .hover-glow-accent {
+    transition: none !important;
+  }
+  .interactive-lift:hover,
+  .interactive-lift:active,
+  .interactive-button:hover,
+  .interactive-button:active,
+  .interactive-card:hover {
+    transform: none !important;
+  }
+}
+
+/* Accent border glow (180ms) */
 .hover-glow {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    transform 180ms ease-out,
+    box-shadow 180ms ease-out,
+    border-color 180ms ease-out;
 }
 .hover-glow:hover {
+  transform: translateY(-2px);
   border-color: rgba(0, 110, 181, 0.4);
-  box-shadow: 0 0 18px rgba(0, 110, 181, 0.18);
+  box-shadow: var(--elevation-2), 0 0 0 1px rgba(37, 99, 235, 0.12);
 }
 
 .hover-glow-accent {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    transform 180ms ease-out,
+    box-shadow 180ms ease-out,
+    border-color 180ms ease-out;
 }
 .hover-glow-accent:hover {
+  transform: translateY(-2px);
   border-color: rgba(212, 160, 23, 0.4);
-  box-shadow: 0 0 18px rgba(212, 160, 23, 0.15);
+  box-shadow: var(--elevation-2), 0 0 0 1px rgba(212, 160, 23, 0.12);
 }

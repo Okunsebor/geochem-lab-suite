@@ -31,7 +31,7 @@ export function DataTable<T>({
   filteredCount,
 }: DataTableProps<T>) {
   return (
-    <div className="rounded-xl border border-border bg-card">
+    <div className="rounded-xl border border-border bg-card shadow-[var(--elevation-1)]">
       {/* Search and Filters Bar */}
       {(onSearchChange !== undefined || filters || totalCount !== undefined) && (
         <div className="flex flex-wrap items-center gap-2 border-b border-border p-3">
@@ -92,7 +92,7 @@ export function DataTable<T>({
             <button
               onClick={() => pagination.onPageChange(Math.max(1, pagination.currentPage - 1))}
               disabled={pagination.currentPage === 1}
-              className="rounded border border-border px-2 py-1 hover:bg-muted disabled:opacity-50 disabled:pointer-events-none"
+              className="interactive-motion interactive-button rounded border border-border px-2 py-1 hover:bg-muted hover:border-slate-300 disabled:opacity-50 disabled:pointer-events-none disabled:transform-none"
             >
               Prev
             </button>
@@ -100,10 +100,10 @@ export function DataTable<T>({
               <button
                 key={i}
                 onClick={() => pagination.onPageChange(i + 1)}
-                className={`rounded border px-2 py-1 ${
+                className={`interactive-motion interactive-button rounded border px-2 py-1 ${
                   pagination.currentPage === i + 1
-                    ? "border-border bg-primary text-primary-foreground"
-                    : "border-border hover:bg-muted"
+                    ? "border-border bg-primary text-primary-foreground shadow-sm"
+                    : "border-border hover:bg-muted hover:border-slate-300"
                 }`}
               >
                 {i + 1}
@@ -114,7 +114,7 @@ export function DataTable<T>({
                 pagination.onPageChange(Math.min(pagination.totalPages, pagination.currentPage + 1))
               }
               disabled={pagination.currentPage === pagination.totalPages}
-              className="rounded border border-border px-2 py-1 hover:bg-muted disabled:opacity-50 disabled:pointer-events-none"
+              className="interactive-motion interactive-button rounded border border-border px-2 py-1 hover:bg-muted hover:border-slate-300 disabled:opacity-50 disabled:pointer-events-none disabled:transform-none"
             >
               Next
             </button>

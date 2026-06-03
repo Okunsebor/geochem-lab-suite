@@ -362,15 +362,20 @@
     }
   }
 
-  /* Micro scale interaction springs */
+  /* Legacy alias — use lift pattern (no scale) */
   .active-scale-spring {
-    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition:
+      transform 180ms ease-out,
+      box-shadow 180ms ease-out,
+      border-color 180ms ease-out;
   }
-  .active-scale-spring:active {
-    transform: scale(0.96);
+  .active-scale-spring:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: var(--elevation-2);
   }
-  .active-scale-spring:hover {
-    transform: scale(1.015);
+  .active-scale-spring:active:not(:disabled) {
+    transform: translateY(1px);
+    box-shadow: var(--elevation-1);
   }
 
   /* Video player simulated sweeps */
@@ -454,21 +459,17 @@
   .portal-3d-card {
     transform-style: preserve-3d;
     transition:
-      box-shadow 0.25s ease,
-      transform 0.25s ease;
+      transform 180ms ease-out,
+      box-shadow 180ms ease-out,
+      border-color 180ms ease-out;
   }
   .portal-3d-card:hover {
     box-shadow:
-      0 24px 48px rgba(0, 174, 239, 0.12),
+      var(--elevation-2),
       0 0 0 1px rgba(0, 174, 239, 0.08);
   }
 
-  /* Interaction System - Shared */
-  .interactive-base {
-    transition: transform 180ms ease-out, box-shadow 180ms ease-out, border-color 180ms ease-out, background-color 180ms ease-out, color 180ms ease-out;
-  }
-
-  /* Landing page — theme buttons */
+  /* Landing page — theme buttons (see utilities.css .interactive-button) */
   .btn-theme-cyan {
     @apply rounded-full font-semibold text-sm px-6 py-3;
     transition: transform 180ms ease-out, box-shadow 180ms ease-out, background-color 180ms ease-out, border-color 180ms ease-out;
@@ -546,14 +547,17 @@
     perspective: 1200px;
   }
   
-  /* Interaction System - Cards */
+  /* Interaction System - Cards (elevation only, no scale) */
   .landing-3d-card {
-    transition: transform 180ms ease-out, box-shadow 180ms ease-out, border-color 180ms ease-out;
+    transition:
+      transform 180ms ease-out,
+      box-shadow 180ms ease-out,
+      border-color 180ms ease-out;
   }
   .landing-3d-card:hover {
+    transform: translateY(-2px);
     box-shadow: var(--elevation-2);
-    border-color: #CBD5E1; /* brightened border */
-    transform: translateY(-2px) scale(1.01); /* soft elevation, max 1.02 scale */
+    border-color: #cbd5e1;
   }
 
   .landing-grid-fine {
@@ -567,12 +571,14 @@
     @apply rounded-2xl border border-border bg-card px-8 py-6 text-center min-w-[140px] shadow-sm;
     transform-style: preserve-3d;
     transition:
-      box-shadow 0.3s ease,
-      border-color 0.3s ease;
+      transform 180ms ease-out,
+      box-shadow 180ms ease-out,
+      border-color 180ms ease-out;
   }
   .landing-tech-badge:hover {
     border-color: rgba(0, 174, 239, 0.45);
-    box-shadow: 0 16px 40px rgba(0, 174, 239, 0.12);
+    transform: translateY(-2px);
+    box-shadow: var(--elevation-2);
   }
 
   .landing-marquee-mask {
