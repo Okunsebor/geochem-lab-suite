@@ -83,7 +83,7 @@ export default function HeroSection() {
         style={{
           maskImage,
           WebkitMaskImage: maskImage,
-          backgroundImage: `url(${BRAND_ASSETS.entrance})`,
+          backgroundImage: `url(${BRAND_ASSETS.labInterior})`,
         }}
       />
 
