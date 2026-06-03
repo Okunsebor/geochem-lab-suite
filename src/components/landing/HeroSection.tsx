@@ -99,7 +99,7 @@ export default function HeroSection() {
           width: 700,
           height: 700,
           background:
-            "radial-gradient(circle, rgba(37, 99, 235, 0.28) 0%, rgba(14, 165, 233, 0.14) 45%, transparent 75%)",
+            "radial-gradient(circle, rgba(37, 100, 235, 0.4) 0%, rgba(14, 164, 233, 0.38) 45%, transparent 75%)",
         }}
       />
 

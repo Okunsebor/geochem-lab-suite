@@ -124,10 +124,13 @@ export function formatAuthError(error: unknown): string {
       return "This email cannot receive messages from the default Supabase mailer. Configure custom SMTP in your Supabase project.";
     }
     if (msg.includes("otp_expired") || msg.includes("expired")) {
-      return "This verification code has expired. Request a new code.";
+      return "This verification link has expired. Please request a new verification email.";
+    }
+    if (msg.includes("otp_disabled")) {
+      return "Email verification is not enabled. Please contact support.";
     }
     if (msg.includes("invalid") && (msg.includes("token") || msg.includes("otp"))) {
-      return "This verification code is invalid. Check the code or request a new one.";
+      return "The verification link is invalid. Please request a new verification email.";
     }
     if (msg.includes("Error sending confirmation email")) {
       return "Supabase could not send the confirmation email. Check Auth email/SMTP settings in your Supabase dashboard.";

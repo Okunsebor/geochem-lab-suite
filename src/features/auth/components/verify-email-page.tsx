@@ -9,8 +9,8 @@ import {
   RefreshCw,
   ShieldCheck,
   AlertCircle,
+  ExternalLink,
 } from "lucide-react";
-import { REGEXP_ONLY_DIGITS_AND_CHARS, OTPInput, OTPInputContext } from "input-otp";
 import { useAuth, formatAuthError } from "@/hooks/use-auth";
 import { supabase } from "@/lib/supabase";
 import { UniPodLogo } from "@/components/branding/UniPodLogo";
@@ -22,51 +22,25 @@ import {
   isSupabaseConfigured,
   parseEmailVerificationCallback,
 } from "@/lib/auth-email-verification";
-import { cn } from "@/lib/utils";
 import type { User } from "@/types";
 
-type VerifyStatus = "pending" | "verifying" | "success" | "expired" | "invalid" | "error";
-
-function OtpSlot(props: React.ComponentProps<"div"> & { index: number }) {
-  const inputOTPContext = React.useContext(OTPInputContext);
-  const { char, hasFakeCaret, isActive } = inputOTPContext?.slots[props.index] ?? {};
-
-  return (
-    <div
-      className={cn(
-        "relative flex h-12 w-10 items-center justify-center rounded-lg border border-border bg-background text-lg font-semibold transition-all",
-        isActive && "border-primary ring-2 ring-primary/20 z-10",
-        char && "border-primary/50 bg-primary/5"
-      )}
-    >
-      {char}
-      {hasFakeCaret && (
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <div className="h-5 w-px animate-pulse bg-primary" />
-        </div>
-      )}
-    </div>
-  );
-}
+type VerifyStatus = "pending" | "verifying" | "success" | "error";
 
 export function VerifyEmailPage({ initialEmail }: { initialEmail?: string }) {
   const {
     resendVerificationEmail,
     getResendCooldown,
-    verifyEmailOtp,
     refreshProfile,
     currentUser,
     emailVerified,
   } = useAuth();
   const navigate = useNavigate();
 
-  const [email, setEmail] = useState(initialEmail ?? "");
-  const [otp, setOtp] = useState("");
+  const [email] = useState(initialEmail ?? "");
   const [status, setStatus] = useState<VerifyStatus>("pending");
   const [message, setMessage] = useState("");
   const [resending, setResending] = useState(false);
   const [cooldown, setCooldown] = useState(0);
-  const [submittingOtp, setSubmittingOtp] = useState(false);
   const [handlingEmailLink, setHandlingEmailLink] = useState(false);
   const supabaseReady = isSupabaseConfigured();
 
@@ -88,12 +62,8 @@ export function VerifyEmailPage({ initialEmail }: { initialEmail?: string }) {
 
     window.setTimeout(() => {
       void navigate({ to: getPortalPathForRole(role) });
-    }, 2200);
+    }, 2500);
   }, [navigate, refreshProfile]);
-
-  useEffect(() => {
-    if (initialEmail) setEmail(initialEmail);
-  }, [initialEmail]);
 
   useEffect(() => {
     if (!email) return;
@@ -110,7 +80,7 @@ export function VerifyEmailPage({ initialEmail }: { initialEmail?: string }) {
     }
   }, [emailVerified, currentUser, handleVerifiedRedirect]);
 
-  // User clicked "Confirm" in email — complete verification from URL params (PKCE / token_hash).
+  // User clicked the verification link in email — complete from URL params (PKCE / token_hash)
   useEffect(() => {
     const callback = parseEmailVerificationCallback();
     if (callback.kind === "none") return;
@@ -118,7 +88,7 @@ export function VerifyEmailPage({ initialEmail }: { initialEmail?: string }) {
     let cancelled = false;
     setHandlingEmailLink(true);
     setStatus("verifying");
-    setMessage("Confirming your email from the verification link…");
+    setMessage("Confirming your email…");
 
     completeEmailVerificationFromUrl()
       .then(async (ok) => {
@@ -127,7 +97,7 @@ export function VerifyEmailPage({ initialEmail }: { initialEmail?: string }) {
           await handleVerifiedRedirect();
         } else {
           setStatus("error");
-          setMessage("Could not confirm your email from this link. Request a new code below.");
+          setMessage("Could not confirm your email from this link. Please request a new verification email.");
         }
       })
       .catch((err) => {
@@ -146,48 +116,26 @@ export function VerifyEmailPage({ initialEmail }: { initialEmail?: string }) {
 
   const handleResend = async () => {
     if (!email.trim()) {
-      setMessage("Enter your email address to resend verification.");
+      setMessage("No email address available. Please register again.");
+      setStatus("error");
       return;
     }
     setResending(true);
     setMessage("");
+    setStatus("pending");
     try {
       await resendVerificationEmail(email);
       setCooldown(getResendCooldown(email));
     } catch (err) {
+      setStatus("error");
       setMessage(formatAuthError(err));
     } finally {
       setResending(false);
     }
   };
 
-  const handleOtpSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email.trim() || otp.length < 6) return;
-
-    setSubmittingOtp(true);
-    setStatus("verifying");
-    setMessage("");
-    try {
-      await verifyEmailOtp(email, otp);
-      await handleVerifiedRedirect();
-    } catch (err) {
-      const msg = formatAuthError(err);
-      if (msg.toLowerCase().includes("expired")) {
-        setStatus("expired");
-      } else if (msg.toLowerCase().includes("invalid")) {
-        setStatus("invalid");
-      } else {
-        setStatus("error");
-      }
-      setMessage(msg);
-    } finally {
-      setSubmittingOtp(false);
-    }
-  };
-
   const isSuccess = status === "success";
-  const isFailure = status === "expired" || status === "invalid" || status === "error";
+  const isFailure = status === "error";
 
   return (
     <div className="w-full max-w-lg">
@@ -224,10 +172,10 @@ export function VerifyEmailPage({ initialEmail }: { initialEmail?: string }) {
                   <CheckCircle2 className="size-10 text-success" />
                 </motion.div>
                 <h1 className="text-2xl font-bold font-display text-foreground tracking-tight">
-                  Email verified
+                  Email verified!
                 </h1>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  Your account is active. Redirecting to your customer dashboard?
+                  Your account is now active. Redirecting to your dashboard…
                 </p>
                 <motion.div
                   className="mt-6 h-1 rounded-full bg-muted overflow-hidden"
@@ -239,7 +187,7 @@ export function VerifyEmailPage({ initialEmail }: { initialEmail?: string }) {
                     style={{ background: UNIPOD_BRAND.primary }}
                     initial={{ width: "0%" }}
                     animate={{ width: "100%" }}
-                    transition={{ duration: 2, ease: "easeInOut" }}
+                    transition={{ duration: 2.5, ease: "easeInOut" }}
                   />
                 </motion.div>
               </motion.div>
@@ -259,14 +207,30 @@ export function VerifyEmailPage({ initialEmail }: { initialEmail?: string }) {
                       Verify your email
                     </h1>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      UniPod GeoChem Suite ? Secure onboarding
+                      UniPod GeoChem Suite — Secure onboarding
                     </p>
                   </div>
                 </div>
 
+                {/* Email display — visible but NOT editable */}
+                {email && (
+                  <div className="mt-5 flex items-center gap-3 rounded-lg border border-border bg-muted/30 px-4 py-3">
+                    <Mail className="size-4 text-primary shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        Verification sent to
+                      </p>
+                      <p className="text-sm font-semibold text-foreground truncate">
+                        {email}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
                 <p className="mt-5 text-sm text-muted-foreground leading-relaxed">
-                  We sent a verification email to your inbox. Enter the 6-digit code below
-                  to activate your account.
+                  We sent a verification link to your email. Open your inbox and{" "}
+                  <strong className="text-foreground">click the link</strong> to activate your
+                  account.
                 </p>
 
                 {!supabaseReady && (
@@ -288,7 +252,7 @@ export function VerifyEmailPage({ initialEmail }: { initialEmail?: string }) {
                     className="mt-4 flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-primary"
                   >
                     <Loader2 className="size-4 animate-spin shrink-0" />
-                    {message || "Verifying?"}
+                    {message || "Verifying…"}
                   </motion.div>
                 )}
 
@@ -303,60 +267,23 @@ export function VerifyEmailPage({ initialEmail }: { initialEmail?: string }) {
                   </motion.div>
                 )}
 
-                <form className="mt-6 space-y-4" onSubmit={handleOtpSubmit}>
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                      <Mail className="size-3.5 text-muted-foreground" />
-                      Email address
-                    </label>
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="you@company.com"
-                      required
-                      className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:border-primary"
-                    />
+                {/* Helpful steps */}
+                <div className="mt-6 space-y-3">
+                  <div className="flex items-start gap-3 text-sm text-muted-foreground">
+                    <span className="grid size-6 shrink-0 place-items-center rounded-full bg-primary/10 text-primary text-xs font-bold">1</span>
+                    <span>Open your email inbox (check spam/junk too)</span>
                   </div>
-
-                  <div className="space-y-2">
-                    <label className="text-xs font-semibold text-foreground">
-                      Verification code
-                    </label>
-                    <OTPInput
-                      maxLength={6}
-                      pattern={REGEXP_ONLY_DIGITS_AND_CHARS}
-                      value={otp}
-                      onChange={setOtp}
-                      containerClassName="flex justify-center gap-2"
-                      disabled={submittingOtp || handlingEmailLink}
-                    >
-                      <div className="flex gap-2">
-                        {Array.from({ length: 6 }).map((_, i) => (
-                          <OtpSlot key={i} index={i} />
-                        ))}
-                      </div>
-                    </OTPInput>
+                  <div className="flex items-start gap-3 text-sm text-muted-foreground">
+                    <span className="grid size-6 shrink-0 place-items-center rounded-full bg-primary/10 text-primary text-xs font-bold">2</span>
+                    <span>Click the <strong className="text-foreground">"Confirm your email"</strong> link</span>
                   </div>
+                  <div className="flex items-start gap-3 text-sm text-muted-foreground">
+                    <span className="grid size-6 shrink-0 place-items-center rounded-full bg-primary/10 text-primary text-xs font-bold">3</span>
+                    <span>You&apos;ll be verified and redirected to your portal</span>
+                  </div>
+                </div>
 
-                  <button
-                    type="submit"
-                    disabled={submittingOtp || handlingEmailLink || otp.length < 6 || !email.trim()}
-                    className="w-full inline-flex items-center justify-center gap-2 rounded-lg gradient-primary px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
-                  >
-                    {submittingOtp ? (
-                      <>
-                        <Loader2 className="size-4 animate-spin" />
-                        Verifying code?
-                      </>
-                    ) : (
-                      <>
-                        Verify & continue <ArrowRight className="size-4" />
-                      </>
-                    )}
-                  </button>
-                </form>
-
+                {/* Resend */}
                 <div className="mt-6 pt-6 border-t border-border">
                   <p className="text-xs text-muted-foreground text-center mb-3">
                     Didn&apos;t receive the email?
@@ -370,14 +297,14 @@ export function VerifyEmailPage({ initialEmail }: { initialEmail?: string }) {
                     {resending ? (
                       <>
                         <Loader2 className="size-4 animate-spin" />
-                        Sending?
+                        Sending…
                       </>
                     ) : cooldown > 0 ? (
                       <>Resend available in {cooldown}s</>
                     ) : (
                       <>
                         <RefreshCw className="size-4" />
-                        Resend verification code
+                        Resend verification email
                       </>
                     )}
                   </button>
@@ -388,7 +315,7 @@ export function VerifyEmailPage({ initialEmail }: { initialEmail?: string }) {
                   <Link to="/register" className="text-primary font-semibold hover:underline">
                     Register again
                   </Link>
-                  {" ? "}
+                  {" · "}
                   <Link to="/login" search={{ intent: "portal" }} className="text-primary font-semibold hover:underline">
                     Sign in
                   </Link>

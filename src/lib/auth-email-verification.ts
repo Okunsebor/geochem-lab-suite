@@ -81,29 +81,6 @@ export function getSignupEmailOptions() {
   };
 }
 
-/** Verify a 6-digit code from the confirmation email (tries signup, then email OTP types). */
-export async function verifySignupOtpCode(email: string, token: string) {
-  const normalizedEmail = email.trim();
-  const normalizedToken = token.trim();
-  const types: EmailOtpType[] = ["signup", "email"];
-
-  let lastError: Error | null = null;
-  for (const type of types) {
-    const { data, error } = await supabase.auth.verifyOtp({
-      email: normalizedEmail,
-      token: normalizedToken,
-      type,
-    });
-    if (!error) return data;
-    lastError = error;
-    // Only retry on type mismatch style errors
-    const msg = error.message.toLowerCase();
-    if (!msg.includes("invalid") && !msg.includes("otp")) {
-      throw error;
-    }
-  }
-  throw lastError ?? new Error("Invalid verification code.");
-}
 
 export function isSupabaseConfigured(): boolean {
   const url =

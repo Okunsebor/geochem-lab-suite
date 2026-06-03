@@ -91,7 +91,7 @@ export function LoginForm({ portalIntent = false }: { portalIntent?: boolean }) 
       <p className="mt-1 text-sm text-muted-foreground">
         {portalIntent
           ? "Access your verified customer workspace."
-          : "Admin, lab coordinator, or registered customer accounts."}
+          : "Sign in as Admin, Lab Coordinator, or Customer."}
       </p>
 
       <form className="mt-6 space-y-4" onSubmit={handleSubmit}>

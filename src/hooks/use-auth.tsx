@@ -13,7 +13,7 @@ import {
   recordVerificationResend,
   getVerificationResendCooldown,
 } from "@/lib/auth-utils";
-import { getSignupEmailOptions, verifySignupOtpCode } from "@/lib/auth-email-verification";
+import { getSignupEmailOptions } from "@/lib/auth-email-verification";
 import { getPortalPathForRole } from "@/lib/auth-routes";
 
 export interface RegisterUserInput {
@@ -40,7 +40,7 @@ interface AuthContextType {
   resetPassword: (password: string) => Promise<void>;
   resendVerificationEmail: (email: string) => Promise<void>;
   getResendCooldown: (email: string) => number;
-  verifyEmailOtp: (email: string, token: string) => Promise<void>;
+
   switchUserRole: (role: User["role"]) => void;
   inviteUser: (name: string, email: string, role: User["role"]) => Promise<void>;
   refreshProfile: () => Promise<void>;
@@ -322,12 +322,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await sendVerificationEmail(email);
   };
 
-  const verifyEmailOtp = async (email: string, token: string) => {
-    const data = await verifySignupOtpCode(email, token);
-    if (data.session?.user) {
-      await syncProfile(data.session.user);
-    }
-  };
+
 
   const logout = async () => {
     setLoading(true);
@@ -425,7 +420,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         resetPassword,
         resendVerificationEmail,
         getResendCooldown: getVerificationResendCooldown,
-        verifyEmailOtp,
+
         switchUserRole,
         inviteUser,
         refreshProfile,
