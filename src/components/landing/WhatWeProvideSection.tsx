@@ -1,46 +1,46 @@
 import { motion } from "framer-motion";
 import {
-  ScanBarcode, Beaker, ShieldCheck, Users, ClipboardList, BarChart3, ArrowRight,
+  ShieldCheck, Beaker, Lock, Database, Globe, Target, ArrowRight,
 } from "lucide-react";
 import { LandingSectionHeader } from "./shared/LandingSectionHeader";
 
 
 const PROVIDE_CARDS = [
   {
-    icon: ScanBarcode,
-    title: "Laboratory Information Management",
-    description: "Automate workflows, integrate instruments, and manage specimens with full traceability from reception to release.",
-    tag: "Core LIMS",
-  },
-  {
-    icon: Beaker,
-    title: "Analytical Operations",
-    description: "Preparation boards, instrument queues, raw data capture, and QA/QC validation aligned with assay-lab realities.",
-    tag: "Operations",
-  },
-  {
-    icon: Users,
-    title: "Customer Portal",
-    description: "Registered clients submit batches, track custody in real time, and download branded certificates securely.",
-    tag: "Portal",
-  },
-  {
     icon: ShieldCheck,
-    title: "Compliance & Audit",
-    description: "Role-based access, immutable logs, and ISO 17025-ready checkpoints built for accreditation-minded labs.",
+    title: "Institutional Trust & Governance",
+    description: "Operating under strict ISO-compliant frameworks with complete role-based clearance protocols.",
     tag: "Governance",
   },
   {
-    icon: ClipboardList,
-    title: "Lab Coordinator Workspace",
-    description: "Dedicated coordinator portal for intake verification, preparation dispatch, and escalation management.",
-    tag: "Coordinator",
+    icon: Beaker,
+    title: "Advanced Research Infrastructure",
+    description: "State-of-the-art analytical apparatus housed in Nasarawa State University's UniPod Innovation Hub.",
+    tag: "Infrastructure",
   },
   {
-    icon: BarChart3,
-    title: "Analytics & Reporting",
-    description: "Turnaround metrics, QA performance dashboards, and professional PDF analytical reports.",
-    tag: "Insights",
+    icon: Lock,
+    title: "Confidential Analytical Intelligence",
+    description: "Restricted data pathways designed to protect proprietary institutional and mineralogical findings.",
+    tag: "Exclusivity",
+  },
+  {
+    icon: Database,
+    title: "Sovereign Data Security",
+    description: "Immutable ledger tracking and secure verification controls ensuring absolute cryptographic data integrity.",
+    tag: "Security",
+  },
+  {
+    icon: Globe,
+    title: "Academic & Industrial Collaboration",
+    description: "Accelerating the R&D ecosystem through active co-creation with international development partners.",
+    tag: "Synergy",
+  },
+  {
+    icon: Target,
+    title: "Precision-Engineered Outcomes",
+    description: "Rigorous standards delivering high-fidelity certified reports for national and global decision-makers.",
+    tag: "Precision",
   },
 ];
 
@@ -51,9 +51,9 @@ export default function WhatWeProvideSection() {
 
       <div className="relative mx-auto max-w-7xl px-6 py-20 lg:py-28">
         <LandingSectionHeader
-          eyebrow="What we provide"
-          title="Data-driven, specimen-centric laboratory services"
-          subtitle="GeoChem Suite at UniPod Nsuk unifies LIMS operations, client access, and compliance in one premium platform."
+          eyebrow="Capabilities"
+          title="World-Class Geochemistry Infrastructure"
+          subtitle="GeoChem Suite at UniPod Nsuk operates under strict institutional controls, serving top-tier agencies and enterprise research partners."
         />
         {/* Service cards grid */}
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -80,7 +80,7 @@ export default function WhatWeProvideSection() {
               </h3>
               <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{card.description}</p>
               <span className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-primary opacity-0 group-hover:opacity-100 transition-opacity">
-                Read details <ArrowRight className="size-3" />
+                Request Access <ArrowRight className="size-3" />
               </span>
             </motion.article>
           ))}

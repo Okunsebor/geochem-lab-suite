@@ -4,9 +4,9 @@ import { ArrowRight, Menu, X } from "lucide-react";
 import { UniPodLogo } from "@/components/branding/UniPodLogo";
 
 const NAV_LINKS = [
-  { label: "Services", href: "#provide" },
+  { label: "Capabilities", href: "#provide" },
   { label: "Technology", href: "#technology" },
-  { label: "Why us", href: "#reasons" },
+  { label: "Trust", href: "#reasons" },
   { label: "Partners", href: "#trusted" },
 ];
 
@@ -45,7 +45,7 @@ export default function HeaderNav() {
             to="/register"
             className="inline-flex items-center gap-1.5 rounded-md gradient-primary px-4 py-2 text-sm font-semibold text-white shadow-sm hover:opacity-95 transition-all hover:shadow-md hover:shadow-primary/15"
           >
-            Register <ArrowRight className="size-3.5" />
+            Request Access <ArrowRight className="size-3.5" />
           </Link>
         </div>
 
@@ -87,7 +87,7 @@ export default function HeaderNav() {
                 onClick={closeMobile}
                 className="inline-flex items-center justify-center gap-1.5 rounded-md gradient-primary py-2.5 text-sm font-semibold text-white"
               >
-                Register <ArrowRight className="size-3.5" />
+                Request Access <ArrowRight className="size-3.5" />
               </Link>
             </div>
           </nav>

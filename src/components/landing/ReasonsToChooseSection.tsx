@@ -8,48 +8,48 @@ import { OptimizedImage } from "@/components/shared/OptimizedImage";
 const REASONS = [
   {
     id: "expertise",
-    label: "Expertise & experience",
-    title: "Expertise and experience",
+    label: "Academic Excellence",
+    title: "Academic excellence & research",
     bullets: [
-      "Paperless workflows for a digital-first laboratory",
-      "Technologically advanced geochemical operations",
-      "UniPod Innovation Hub at NSUK",
+      "State-of-the-art geochemical apparatus at UniPod Hub",
+      "High-performance compute clusters and database infrastructure",
+      "Synergistic research programs with federal and state agencies",
     ],
     image: BRAND_ASSETS.labInterior,
     imageAlt: "UniPod geochemistry laboratory",
   },
   {
     id: "quality",
-    label: "Quality & integrity",
-    title: "Quality & integrity",
+    label: "Accredited Frameworks",
+    title: "Accredited frameworks & standards",
     bullets: [
-      "ISO 17025-ready QA/QC checkpoints",
-      "Chain-of-custody and audit trails",
-      "Regulatory-minded report approval flows",
+      "ISO 17025-ready quality systems and data validation",
+      "Immutable audit ledgers verifying specimen data custody",
+      "Multi-signatory approval processes for verified academic output",
     ],
     image: BRAND_ASSETS.entrance,
     imageAlt: "UniPod Nsuk facility",
   },
   {
     id: "reliability",
-    label: "Reliability",
-    title: "Reliability and consistency",
+    label: "Restricted Access",
+    title: "Restricted enterprise access control",
     bullets: [
-      "360 LIMS and customer portal coverage",
-      "Role-based access for every stakeholder",
-      "Real-time specimen status visibility",
+      "Role-based verification for accredited researchers",
+      "Isolated internal data storage protecting proprietary assets",
+      "Multi-factor cryptographic authentication protocols",
     ],
     image: BRAND_ASSETS.labInterior,
     imageAlt: "Laboratory operations",
   },
   {
     id: "commitment",
-    label: "Commitment",
-    title: "Commitment & excellence",
+    label: "Global Innovation",
+    title: "Global innovation standards",
     bullets: [
-      "Result-driven turnaround improvements",
-      "Premium certificates and client experience",
-      "Dedicated coordinator and admin portals",
+      "Outcome-driven precision engineered for national growth",
+      "Backed by development partners (UNDP, GIZ, and GFG)",
+      "Pioneering the public university research ecosystem",
     ],
     image: BRAND_ASSETS.entrance,
     imageAlt: "UniPod commitment",
@@ -71,9 +71,9 @@ export default function ReasonsToChooseSection() {
     <section id="reasons" className="border-t border-border bg-background relative overflow-hidden">
       <div className="mx-auto max-w-7xl px-6 py-20 lg:py-28">
         <LandingSectionHeader
-          eyebrow="Reasons to choose"
-          title="Why labs & brands love to choose us, recurrently"
-          />
+          eyebrow="Trust & Standards"
+          title="Rigorous Standards. Certified Infrastructure."
+        />
 
         {/* Value proposition ring  inspired by UniPod slide */}
         <motion.div

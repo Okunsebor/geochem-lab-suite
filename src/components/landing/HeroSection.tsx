@@ -1,119 +1,172 @@
+import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { motion, useReducedMotion } from "framer-motion";
-import { ArrowRight, ShieldCheck } from "lucide-react";
+import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
+import { ShieldCheck, Lock, ArrowRight, Server, Shield } from "lucide-react";
 import { BRAND_ASSETS } from "@/lib/branding";
-import { OptimizedImage } from "@/components/shared/OptimizedImage";
-import { AnimatedWorkflowText } from "./AnimatedWorkflowText";
-
-const container = {
-  hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { staggerChildren: 0.12, delayChildren: 0.1 } },
-};
-
-const item = {
-  hidden: { opacity: 0, y: 24 },
-  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 70, damping: 16 } },
-};
+import PartnershipModal from "./shared/PartnershipModal";
 
 export default function HeroSection() {
-  const reduceMotion = useReducedMotion();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+
+  // Mouse / Touch positions relative to the hero section container
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  // Smooth springs for high performance 60fps tracking
+  const spotlightX = useSpring(mouseX, { damping: 35, stiffness: 220, mass: 0.6 });
+  const spotlightY = useSpring(mouseY, { damping: 35, stiffness: 220, mass: 0.6 });
+  const spotlightOpacity = useSpring(isHovered ? 1 : 0, { damping: 20, stiffness: 120 });
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    mouseX.set(e.clientX - rect.left);
+    mouseY.set(e.clientY - rect.top);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (e.touches.length > 0) {
+      const rect = e.currentTarget.getBoundingClientRect();
+      mouseX.set(e.touches[0].clientX - rect.left);
+      mouseY.set(e.touches[0].clientY - rect.top);
+    }
+  };
+
+  // Build the radial gradient mask dynamically as a motion transform
+  const maskImage = useTransform(
+    [spotlightX, spotlightY, spotlightOpacity],
+    ([x, y, op]: any[]) =>
+      `radial-gradient(circle 250px at ${x}px ${y}px, rgba(0,0,0,${op}) 0%, rgba(0,0,0,${(op as number) * 0.4}) 50%, rgba(0,0,0,0) 100%)`
+  );
 
   return (
-    <section className="relative overflow-hidden border-b border-border/20 bg-background min-h-[calc(100vh-64px)] lg:min-h-[calc(85vh-64px)] flex items-center">
-      {/* Enterprise background grids and meshes */}
-      <div className="absolute inset-0 landing-grid-fine opacity-60 pointer-events-none" />
-      <div className="absolute inset-0 gradient-mesh opacity-40 pointer-events-none" />
+    <section
+      className="relative overflow-hidden bg-[#07111B] min-h-[calc(100vh-64px)] flex items-center justify-center py-20 px-4 md:px-8 cursor-crosshair select-none"
+      onMouseMove={handleMouseMove}
+      onTouchMove={handleTouchMove}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      onTouchStart={() => setIsHovered(true)}
+      onTouchEnd={() => setIsHovered(false)}
+    >
+      {/* LAYER 1: Deep Navy Base Background & Fine Grid lines */}
+      <div className="absolute inset-0 z-0 pointer-events-none" />
+      <div className="absolute inset-0 landing-grid-fine opacity-20 z-0 pointer-events-none" />
+
+      {/* Premium ambient mesh gradients (Soft cyan/blue/gold) */}
       <div
-        className="absolute inset-0 pointer-events-none"
+        className="absolute inset-0 z-0 pointer-events-none"
         style={{
           background:
-            "radial-gradient(circle at 15% 30%, rgba(0, 110, 181, 0.08) 0%, transparent 60%), radial-gradient(circle at 85% 60%, rgba(212, 160, 23, 0.05) 0%, transparent 50%)",
+            "radial-gradient(circle at 10% 20%, rgba(0, 110, 181, 0.15) 0%, transparent 50%), radial-gradient(circle at 90% 80%, rgba(212, 160, 23, 0.08) 0%, transparent 50%)",
         }}
       />
 
-      <div className="relative z-10 mx-auto max-w-7xl px-6 py-12 md:py-16 lg:py-20 w-full grid lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+      {/* LAYER 2: Hidden Facility Image revealed inside the cursor spotlight */}
+      <motion.div
+        className="absolute inset-0 z-10 pointer-events-none select-none bg-no-repeat bg-cover bg-center"
+        style={{
+          maskImage,
+          WebkitMaskImage: maskImage,
+          backgroundImage: `url(${BRAND_ASSETS.entrance})`,
+        }}
+      />
+
+      {/* LAYER 3: Cinematic Cursor glow highlighting the spotlight edges */}
+      <motion.div
+        style={{
+          left: spotlightX,
+          top: spotlightY,
+          opacity: useTransform(spotlightOpacity, (op: number) => op * 0.2),
+          transform: "translate(-50%, -50%)",
+          background: "radial-gradient(circle, rgba(0, 174, 239, 0.4) 0%, transparent 70%)",
+        }}
+        className="absolute size-[600px] rounded-full pointer-events-none blur-2xl z-12"
+      />
+
+      {/* LAYER 4: Centered Content and Typography Console (always visible and crisp) */}
+      <div className="relative z-20 max-w-4xl mx-auto w-full text-center space-y-8">
+        
+        {/* Security badge and controlled access indicator */}
         <motion.div
-          className="lg:col-span-6 flex flex-col space-y-8"
-          variants={container}
-          initial="hidden"
-          animate="show"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary/20 bg-primary/5 backdrop-blur-md text-xs font-mono text-primary tracking-wider"
         >
-          <motion.div variants={item} className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 backdrop-blur-sm w-fit">
-            <span className="flex h-2 w-2 rounded-full bg-primary animate-pulse"></span>
-            <span className="text-xs font-semibold text-primary uppercase tracking-widest">Enterprise Platform</span>
-          </motion.div>
+          <Lock className="size-3.5 text-accent animate-pulse" />
+          <span>CONTROLLED ACCESS</span>
+          <span className="h-3 w-px bg-primary/20" />
+          <span className="text-[#7D92A8]">SECURE SYSTEM</span>
+        </motion.div>
 
-          <motion.h1
-            variants={item}
-            className="text-5xl font-extrabold tracking-tight sm:text-6xl xl:text-[4.5rem] text-foreground leading-[1.08] font-display"
-          >
-            <span className="block text-2xl sm:text-3xl font-semibold text-muted-foreground mb-4 uppercase tracking-[0.2em]">
-              Geochemical Intelligence
+        {/* Centralised Title Container - Luxury Glass Box Console */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.97 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="p-8 md:p-12 rounded-3xl border border-white/5 bg-[#0B2B4A]/10 backdrop-blur-md shadow-2xl space-y-6"
+        >
+          <h1 className="text-4xl md:text-6xl xl:text-7xl font-extrabold tracking-tight text-white leading-none font-display font-bold">
+            Scientific Infrastructure.
+            <span className="block mt-2 text-transparent bg-clip-text bg-gradient-to-r from-[#00AEEF] to-[#0090C8]">
+              Reimagined.
             </span>
-            <span className="block mb-1">Built for</span>
-            <span className="block">
-              <AnimatedWorkflowText />
-            </span>
-          </motion.h1>
+          </h1>
 
-          <motion.p variants={item} className="text-lg sm:text-xl leading-relaxed max-w-xl text-muted-foreground">
-            A secure, ISO-compliant laboratory information management system designed for precision tracking from intake to analytical reporting.
-          </motion.p>
+          <div className="h-px w-24 bg-gradient-to-r from-transparent via-primary/50 to-transparent mx-auto my-6" />
 
-          <motion.div variants={item} className="flex flex-col sm:flex-row flex-wrap gap-4 pt-4">
+          {/* Centralized outcome messages */}
+          <div className="space-y-3 max-w-2xl mx-auto">
+            <p className="text-xl md:text-2xl font-bold text-white/90">
+              Trusted Analytical Intelligence.
+            </p>
+            <p className="text-md md:text-lg font-bold text-muted-foreground">
+              Built for Institutions. Designed for Precision.
+            </p>
+          </div>
+
+          {/* CTA Buttons in a centered row */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-8">
             <Link
               to="/register"
-              className="btn-theme-cyan inline-flex items-center justify-center gap-2"
+              className="btn-theme-cyan inline-flex items-center justify-center gap-2 min-w-[200px] text-base py-3.5 !rounded-xl shadow-lg"
             >
               Request Access <ArrowRight className="size-4" />
             </Link>
-            <Link
-              to="/login"
-              search={{}}
-              className="btn-theme-outline inline-flex items-center justify-center gap-2"
+            
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="btn-theme-outline inline-flex items-center justify-center gap-2 min-w-[200px] text-base py-3.5 !rounded-xl backdrop-blur-sm border-white/20 text-white hover:bg-white hover:text-black hover:border-transparent transition-all"
             >
-              Sign In to Portal
-            </Link>
-          </motion.div>
+              Institutional Partnership
+            </button>
+          </div>
         </motion.div>
 
+        {/* Footer info showing institutional credentials */}
         <motion.div
-          className="lg:col-span-6 relative"
-          initial={reduceMotion ? false : { opacity: 0, x: 40 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.3, duration: 0.9, type: "spring", stiffness: 50, damping: 20 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5, duration: 0.6 }}
+          className="flex flex-wrap items-center justify-center gap-6 text-xs text-muted-foreground/80 font-mono tracking-wider pt-4"
         >
-          {/* Polished enterprise visual */}
-          <div className="relative rounded-2xl overflow-hidden border border-border/50 shadow-2xl shadow-primary/5 bg-card/40 backdrop-blur-3xl ring-1 ring-white/10 p-2">
-            <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 to-transparent z-0 pointer-events-none rounded-2xl" />
-            
-            <div className="relative z-10 rounded-xl overflow-hidden border border-border/40 shadow-inner">
-               <OptimizedImage
-                src={BRAND_ASSETS.entrance}
-                alt="Laboratory Intelligence Workflow"
-                className="w-full aspect-[4/3] object-cover scale-105 hover:scale-100 transition-transform duration-1000 ease-out"
-                width={1200}
-                height={900}
-                priority
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#041C32]/90 via-[#041C32]/20 to-transparent pointer-events-none" />
-              
-              <div className="absolute bottom-0 left-0 right-0 z-20 p-6 sm:p-8 flex items-end justify-between">
-                <div>
-                  <p className="text-white/90 text-sm font-medium drop-shadow-md flex items-center gap-2">
-                    <ShieldCheck className="size-5 text-primary" />
-                    Trusted by Scientific Institutions
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          {/* Decorative enterprise nodes */}
-          <div className="absolute -top-6 -right-6 w-24 h-24 bg-accent/10 rounded-full blur-2xl z-0" />
-          <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-primary/10 rounded-full blur-3xl z-0" />
+          <span className="flex items-center gap-1.5">
+            <Server className="size-3.5 text-primary" />
+            POWERED BY UNIPOD
+          </span>
+          <span className="hidden sm:inline">·</span>
+          <span className="flex items-center gap-1.5">
+            <Shield className="size-3.5 text-accent" />
+            ENCRYPTED SESSION
+          </span>
+          <span className="hidden sm:inline">·</span>
+          <span>ESTABLISHED 2026</span>
         </motion.div>
       </div>
+
+      {/* Secure Partnership Modal */}
+      <PartnershipModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </section>
   );
 }
