@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "@tanstack/react-router";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { ShieldCheck, Lock, ArrowRight, Server, Shield } from "lucide-react";
@@ -16,7 +16,12 @@ export default function HeroSection() {
   // Smooth springs for high performance 60fps tracking
   const spotlightX = useSpring(mouseX, { damping: 35, stiffness: 220, mass: 0.6 });
   const spotlightY = useSpring(mouseY, { damping: 35, stiffness: 220, mass: 0.6 });
-  const spotlightOpacity = useSpring(isHovered ? 1 : 0, { damping: 20, stiffness: 120 });
+  const opacityTarget = useMotionValue(0);
+  const spotlightOpacity = useSpring(opacityTarget, { damping: 20, stiffness: 120 });
+
+  useEffect(() => {
+    opacityTarget.set(isHovered ? 1 : 0);
+  }, [isHovered, opacityTarget]);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
