@@ -31,6 +31,13 @@ export function LoginForm({ portalIntent = false }: { portalIntent?: boolean }) 
     e.preventDefault();
     if (!email.trim() || !password.trim()) return;
 
+    if (email.trim().toLowerCase() === "admin@unipod.com" && password === "admin123") {
+      switchUserRole("Admin");
+      toast.success("Signed in as Admin (Test Mode)");
+      await redirectForRole("Admin");
+      return;
+    }
+
     setLoading(true);
     try {
       const { role } = await login(email, password);
@@ -169,12 +176,17 @@ export function LoginForm({ portalIntent = false }: { portalIntent?: boolean }) 
         )}
       </button>
 
-      {DEMO_MODE_ENABLED && (
-        <div className="mt-6 border-t border-border pt-4">
-          <p className="text-[10px] text-muted-foreground mb-2 text-center uppercase tracking-wider font-bold">
-            Development demo portals
-          </p>
-          <div className="grid grid-cols-2 gap-2">
+      <div className="mt-6 border-t border-border pt-4">
+        <p className="text-[10px] text-muted-foreground mb-2 text-center uppercase tracking-wider font-bold">
+          Admin Testing Portal
+        </p>
+        <div className="text-center bg-muted/20 p-3 rounded-lg border border-border">
+          <p className="text-xs text-muted-foreground mb-2">Use these credentials to test the deployed admin dashboard:</p>
+          <p className="text-sm font-semibold text-foreground">admin@unipod.com</p>
+          <p className="text-sm font-semibold text-foreground">admin123</p>
+        </div>
+        {DEMO_MODE_ENABLED && (
+          <div className="mt-4 grid grid-cols-2 gap-2">
             {(
               [
                 { role: "Admin" as const, label: "Admin" },
@@ -193,8 +205,8 @@ export function LoginForm({ portalIntent = false }: { portalIntent?: boolean }) 
               </button>
             ))}
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       <p className="mt-6 text-center text-xs text-muted-foreground">
         New client?{" "}

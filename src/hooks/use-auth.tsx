@@ -383,7 +383,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const switchUserRole = (role: User["role"]) => {
-    if (!DEMO_MODE_ENABLED) return;
     localStorage.setItem("gcs_demo_role", role);
     const names: Record<User["role"], string> = {
       Admin: "Adaeze Nwosu",

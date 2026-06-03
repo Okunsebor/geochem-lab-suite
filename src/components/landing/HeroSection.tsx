@@ -158,7 +158,7 @@ export default function HeroSection() {
               to="/register"
               className="btn-theme-cyan inline-flex items-center justify-center gap-2 min-w-[200px] text-base py-3.5 !rounded-xl shadow-md"
             >
-              Request Access <ArrowRight className="size-4" />
+              Get Started <ArrowRight className="size-4" />
             </Link>
 
             <button
