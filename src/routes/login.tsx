@@ -26,7 +26,7 @@ function Login() {
           loading="lazy"
           decoding="async"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0B1F33]/90 via-[#0B1F33]/40 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
         <div className="relative flex flex-col justify-between p-10 min-h-full text-white">
           <UniPodLogo height={36} linkToHome showTagline />
           <blockquote className="text-xl leading-snug max-w-md">

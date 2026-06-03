@@ -11,11 +11,6 @@ import { mapDbRoleToUi, isEmailConfirmed } from "@/lib/auth-utils";
 
 export const Route = createFileRoute("/app")({
   beforeLoad: async () => {
-    if (typeof window !== "undefined") {
-      const demoRole = localStorage.getItem("gcs_demo_role");
-      if (demoRole === "Admin") return;
-    }
-
     const { data: { session }, error } = await supabase.auth.getSession();
     if (error || !session?.user) {
       throw redirect({ to: "/login" });

@@ -120,7 +120,7 @@ export function BrandingSettingsFields() {
         <div className="space-y-1">
           <label className="text-xs font-semibold text-foreground">Primary color</label>
           <div className="mt-1 flex gap-2">
-            {["#2563eb", "#059669", "#9333ea", "#f59e0b", "#ef4444"].map((c) => (
+            {["#00AEEF", "#059669", "#9333ea", "#f59e0b", "#ef4444"].map((c) => (
               <button
                 key={c}
                 type="button"

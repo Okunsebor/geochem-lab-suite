@@ -7,7 +7,7 @@ export default function CtaSection() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
-    <section id="register-cta" className="border-t border-border bg-gradient-to-b from-[#0B1F33] via-[#0B1F33]/95 to-[#0090C8]/20 text-white">
+    <section id="register-cta" className="border-t border-border bg-gradient-to-b from-black via-black/95 to-[#0090C8]/20 text-white">
       <div className="mx-auto max-w-7xl px-6 py-20 lg:py-28 text-center space-y-8">
         <p className="text-[10px] font-bold font-mono uppercase tracking-[0.2em] text-accent">Secure Intake Gateway</p>
         <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-5xl font-display max-w-3xl mx-auto">
@@ -22,7 +22,7 @@ export default function CtaSection() {
           </ThemeLink>
           <button
             onClick={() => setIsModalOpen(true)}
-            className="px-8 py-4 text-base rounded-full font-semibold border-2 border-white/30 text-white bg-transparent hover:bg-white hover:text-[#0B1F33] hover:border-transparent transition-all duration-[180ms] ease-out hover:-translate-y-[2px] active:translate-y-[1px] hover:shadow-lg hover:shadow-white/20 !rounded-xl cursor-pointer"
+            className="px-8 py-4 text-base rounded-full font-semibold border-2 border-white/30 text-white bg-transparent hover:bg-white hover:text-black hover:border-transparent transition-all duration-[180ms] ease-out hover:-translate-y-[2px] active:translate-y-[1px] hover:shadow-lg hover:shadow-white/20 !rounded-xl cursor-pointer"
           >
             Institutional Partnership
           </button>

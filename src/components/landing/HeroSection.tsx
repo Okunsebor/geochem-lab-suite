@@ -15,8 +15,8 @@ export default function HeroSection() {
         style={{ backgroundImage: `url('/branding/unipod-full-image.png')` }}
       />
 
-      {/* OVERLAY: Dark blue gradient to make white text readable, matching reference */}
-      <div className="absolute inset-0 z-0 bg-gradient-to-r from-[#0B2B4A]/95 via-[#0B2B4A]/75 to-[#0B2B4A]/20 pointer-events-none" />
+      {/* OVERLAY: Pure black gradient to make white text readable, matching reference */}
+      <div className="absolute inset-0 z-0 bg-gradient-to-r from-black/95 via-black/75 to-black/20 pointer-events-none" />
       <div className="absolute inset-0 landing-grid-fine opacity-30 z-0 pointer-events-none" />
 
       {/* LAYER 3: Static content, left-aligned to match reference */}
@@ -33,7 +33,7 @@ export default function HeroSection() {
           transition={{ duration: 0.6 }}
           className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/20 bg-white/10 backdrop-blur-md text-xs font-mono text-white tracking-wider shadow-sm"
         >
-          <Lock className="size-3.5 text-[#38BDF8]" />
+          <Lock className="size-3.5 text-[#00AEEF]" />
           <span>CONTROLLED ACCESS</span>
           <span className="h-3 w-px bg-white/20" />
           <span className="text-white/80">SECURE SYSTEM</span>
@@ -48,12 +48,12 @@ export default function HeroSection() {
         >
           <h1 className="text-5xl md:text-7xl xl:text-8xl font-extrabold tracking-tight text-white leading-[1.05] font-display">
             Scientific Infrastructure.
-            <span className="block mt-2 text-[#38BDF8]">
+            <span className="block mt-2 text-[#00AEEF]">
               Reimagined.
             </span>
           </h1>
 
-          <div className="h-px w-24 bg-gradient-to-r from-[#38BDF8] to-transparent" />
+          <div className="h-px w-24 bg-gradient-to-r from-[#00AEEF] to-transparent" />
 
           {/* Subtext */}
           <div className="space-y-2 max-w-2xl">
@@ -91,7 +91,7 @@ export default function HeroSection() {
           className="flex flex-wrap items-center justify-start gap-6 text-xs text-white/60 font-mono tracking-wider pt-4"
         >
           <span className="flex items-center gap-1.5">
-            <Server className="size-3.5 text-[#38BDF8]" />
+            <Server className="size-3.5 text-[#00AEEF]" />
             POWERED BY UNIPOD
           </span>
           <span className="hidden sm:inline">·</span>

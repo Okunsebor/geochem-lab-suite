@@ -140,4 +140,4 @@ export function formatAuthError(error: unknown): string {
   return "An unexpected error occurred.";
 }
 
-export const DEMO_MODE_ENABLED = import.meta.env.DEV;
+export const DEMO_MODE_ENABLED = false;

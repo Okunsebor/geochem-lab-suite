@@ -12,11 +12,6 @@ const COORDINATOR_ROLES = ["Lab Coordinator"] as const;
 
 export const Route = createFileRoute("/coordinator")({
   beforeLoad: async () => {
-    if (typeof window !== "undefined") {
-      const demoRole = localStorage.getItem("gcs_demo_role");
-      if (demoRole === "Lab Coordinator") return;
-    }
-
     const { data: { session }, error } = await supabase.auth.getSession();
     if (error || !session?.user) {
       throw redirect({ to: "/login" });

@@ -31,7 +31,7 @@ export function useUsersCore(
       calInterval: "14 days",
       auditRetention: "7 years",
       matrixType: "Sulphide",
-      primaryColor: "#2563eb",
+      primaryColor: "#00AEEF",
       logo: "",
       reportFooter: "© GeoChem Labs Inc. · ISO 17025 Accredited · contact@geochem.io",
       triggers: ["Report awaiting approval", "QA anomaly raised", "Sample overdue", "Instrument calibration due", "New customer signup"],

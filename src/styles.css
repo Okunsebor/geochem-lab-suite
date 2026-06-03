@@ -55,44 +55,44 @@
 
 :root {
   --radius: 0.375rem;
-  --background: #F7F9FC; /* Base Background: pure off-white */
-  --foreground: #0F172A; /* Primary text: near-black */
-  --card: #FFFFFF;       /* Surface 1 (cards): white with subtle tint */
-  --card-foreground: #0F172A;
+  --background: #FFFFFF; /* Pure white background */
+  --foreground: #000000; /* Pure black text */
+  --card: #FFFFFF;       /* Pure white surface */
+  --card-foreground: #000000;
   --popover: #FFFFFF;
-  --popover-foreground: #0F172A;
-  --primary: #2563EB;    /* Primary accent: deep blue */
-  --primary-foreground: #FFFFFF;
-  --secondary: #F1F5F9;  /* Surface 2 (raised panels): slightly greyed white */
-  --secondary-foreground: #0F172A;
-  --muted: #F1F5F9;
-  --muted-foreground: #475569; /* Secondary text: muted slate */
-  --accent: #0EA5E9;     /* Deep cyan */
-  --accent-foreground: #FFFFFF;
-  --destructive: #EF4444; /* Danger: soft red */
+  --popover-foreground: #000000;
+  --primary: #00AEEF;    /* UniPod brand primary: Cyan */
+  --primary-foreground: #000000; /* High contrast black text on Cyan */
+  --secondary: #F8F9FA;  /* Neutral light grey */
+  --secondary-foreground: #000000;
+  --muted: #F8F9FA;
+  --muted-foreground: #555555;
+  --accent: #F5B800;     /* UniPod brand accent: Gold */
+  --accent-foreground: #000000; /* High contrast black text on Gold */
+  --destructive: #EF4444;
   --destructive-foreground: #FFFFFF;
-  --success: #22C55E;     /* Success: muted green */
+  --success: #22C55E;
   --success-foreground: #FFFFFF;
-  --warning: #C68A1E;
-  --warning-foreground: #0F172A;
-  --info: #0EA5E9;
-  --info-foreground: #FFFFFF;
-  --border: #E2E8F0;      /* Borders: very light grey */
-  --input: #E2E8F0;
-  --ring: #2563EB;
-  --chart-1: #2563EB;
-  --chart-2: #0EA5E9;
+  --warning: #F5B800;
+  --warning-foreground: #000000;
+  --info: #00AEEF;
+  --info-foreground: #000000;
+  --border: #E5E5E5;      /* Neutral border */
+  --input: #E5E5E5;
+  --ring: #00AEEF;
+  --chart-1: #00AEEF;
+  --chart-2: #F5B800;
   --chart-3: #22C55E;
-  --chart-4: #475569;
-  --chart-5: #94A3B8;
-  --sidebar: #F7F9FC;
-  --sidebar-foreground: #0F172A;
-  --sidebar-primary: #2563EB;
-  --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #F1F5F9;
-  --sidebar-accent-foreground: #0F172A;
-  --sidebar-border: #E2E8F0;
-  --sidebar-ring: #2563EB;
+  --chart-4: #000000;
+  --chart-5: #555555;
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #000000;
+  --sidebar-primary: #00AEEF;
+  --sidebar-primary-foreground: #000000;
+  --sidebar-accent: #F8F9FA;
+  --sidebar-accent-foreground: #000000;
+  --sidebar-border: #E5E5E5;
+  --sidebar-ring: #00AEEF;
 
   /* Spacing System */
   --space-0: 0px;
@@ -104,59 +104,60 @@
   --space-6: 2rem;
   --space-8: 3rem;
   /* Opacity Layers */
-  --opacity-primary-05: rgba(37, 99, 235, 0.05);
-  --opacity-primary-08: rgba(37, 99, 235, 0.08);
-  --opacity-primary-18: rgba(37, 99, 235, 0.18);
+  --opacity-primary-05: rgba(0, 174, 239, 0.05);
+  --opacity-primary-08: rgba(0, 174, 239, 0.08);
+  --opacity-primary-18: rgba(0, 174, 239, 0.18);
   --opacity-white-03: rgba(255, 255, 255, 0.03);
 
   /* Elevation Shadows */
-  --elevation-1: 0 1px 2px rgba(15, 23, 42, 0.04);
-  --elevation-2: 0 4px 12px rgba(15, 23, 42, 0.06);
-  --elevation-3: 0 12px 32px rgba(15, 23, 42, 0.14);
+  --elevation-1: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --elevation-2: 0 4px 12px rgba(0, 0, 0, 0.06);
+  --elevation-3: 0 12px 32px rgba(0, 0, 0, 0.14);
 }
 
 /* Force light theme only - duplicate variables to override dark selector */
 .dark {
   --radius: 0.375rem;
-  --background: #F7F9FC;
-  --foreground: #0F172A;
+  --background: #FFFFFF;
+  --foreground: #000000;
   --card: #FFFFFF;
-  --card-foreground: #0F172A;
+  --card-foreground: #000000;
   --popover: #FFFFFF;
-  --popover-foreground: #0F172A;
-  --primary: #2563EB;
-  --primary-foreground: #FFFFFF;
-  --secondary: #F1F5F9;
-  --secondary-foreground: #0F172A;
-  --muted: #F1F5F9;
-  --muted-foreground: #475569;
-  --accent: #0EA5E9;
-  --accent-foreground: #FFFFFF;
+  --popover-foreground: #000000;
+  --primary: #00AEEF;
+  --primary-foreground: #000000;
+  --secondary: #F8F9FA;
+  --secondary-foreground: #000000;
+  --muted: #F8F9FA;
+  --muted-foreground: #555555;
+  --accent: #F5B800;
+  --accent-foreground: #000000;
   --destructive: #EF4444;
   --destructive-foreground: #FFFFFF;
   --success: #22C55E;
   --success-foreground: #FFFFFF;
-  --warning: #C68A1E;
-  --warning-foreground: #0F172A;
-  --info: #0EA5E9;
-  --info-foreground: #FFFFFF;
-  --border: #E2E8F0;
-  --input: #E2E8F0;
-  --ring: #2563EB;
-  --chart-1: #2563EB;
-  --chart-2: #0EA5E9;
+  --warning: #F5B800;
+  --warning-foreground: #000000;
+  --info: #00AEEF;
+  --info-foreground: #000000;
+  --border: #E5E5E5;
+  --input: #E5E5E5;
+  --ring: #00AEEF;
+  --chart-1: #00AEEF;
+  --chart-2: #F5B800;
   --chart-3: #22C55E;
-  --chart-4: #475569;
-  --chart-5: #94A3B8;
-  --sidebar: #F7F9FC;
-  --sidebar-foreground: #0F172A;
-  --sidebar-primary: #2563EB;
-  --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #F1F5F9;
-  --sidebar-accent-foreground: #0F172A;
-  --sidebar-border: #E2E8F0;
-  --sidebar-ring: #2563EB;
+  --chart-4: #000000;
+  --chart-5: #555555;
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #000000;
+  --sidebar-primary: #00AEEF;
+  --sidebar-primary-foreground: #000000;
+  --sidebar-accent: #F8F9FA;
+  --sidebar-accent-foreground: #000000;
+  --sidebar-border: #E5E5E5;
+  --sidebar-ring: #00AEEF;
 }
+
 
 
 @layer base {
@@ -193,19 +194,19 @@
 
 @layer utilities {
   .gradient-primary {
-    background: linear-gradient(135deg, #006EB5 0%, #0B2B4A 100%);
+    background: linear-gradient(135deg, #00AEEF 0%, #000000 100%);
   }
   .gradient-accent {
-    background: linear-gradient(135deg, #D4A017 0%, #F4D77A 100%);
+    background: linear-gradient(135deg, #F5B800 0%, #000000 100%);
   }
   .gradient-mesh {
     background:
-      radial-gradient(at 18% 22%, rgba(0, 110, 181, 0.18) 0, transparent 55%),
-      radial-gradient(at 82% 28%, rgba(0, 110, 181, 0.10) 0, transparent 55%),
-      radial-gradient(at 50% 92%, rgba(212, 160, 23, 0.06) 0, transparent 55%);
+      radial-gradient(at 18% 22%, rgba(0, 174, 239, 0.18) 0, transparent 55%),
+      radial-gradient(at 82% 28%, rgba(0, 174, 239, 0.10) 0, transparent 55%),
+      radial-gradient(at 50% 92%, rgba(245, 184, 0, 0.06) 0, transparent 55%);
   }
   .text-gradient {
-    background: linear-gradient(135deg, #006EB5, #4A9BD4);
+    background: linear-gradient(135deg, #00AEEF, #F5B800);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -241,12 +242,12 @@
   }
   .lims-orbit-ring:nth-child(2) {
     right: 0; top: 0;
-    border-right: 2.5px solid rgba(0, 110, 181, 0.55);
+    border-right: 2.5px solid rgba(0, 174, 239, 0.55);
     animation: lims-orbit-two 1.2s linear infinite;
   }
   .lims-orbit-ring:nth-child(3) {
     right: 0; bottom: 0;
-    border-bottom: 2.5px solid #D4A017;
+    border-bottom: 2.5px solid #F5B800;
     animation: lims-orbit-three 1.2s linear infinite;
   }
 
@@ -291,10 +292,10 @@
     animation: dna-helix-wave 1.4s ease-in-out infinite;
   }
   .dna-helix-node:nth-child(even) {
-    background-color: rgba(0, 110, 181, 0.55);
+    background-color: rgba(0, 174, 239, 0.55);
   }
   .dna-helix-node:nth-child(3n) {
-    background-color: #D4A017;
+    background-color: #F5B800;
   }
   .dna-helix-node:nth-child(1) {
     animation-delay: -1.2s;
@@ -348,7 +349,7 @@
     background: linear-gradient(
       90deg,
       transparent,
-      rgba(0, 110, 181, 0.18),
+      rgba(0, 174, 239, 0.18),
       transparent
     );
     animation: laser-slide 3s infinite linear;
@@ -473,20 +474,20 @@
   .btn-theme-cyan {
     @apply rounded-full font-semibold text-sm px-6 py-3;
     transition: transform 180ms ease-out, box-shadow 180ms ease-out, background-color 180ms ease-out, border-color 180ms ease-out;
-    background: #2563EB; /* Primary accent: deep blue */
-    color: #fff;
+    background: #00AEEF; /* Primary brand: Cyan */
+    color: #000000; /* Elite black text on Cyan background for contrast */
     border: 1px solid transparent;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
   }
   .btn-theme-cyan:hover:not(:disabled) {
-    background: #3B82F6; /* Hover accent: slightly brighter */
-    color: #fff;
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4); /* Glow edge */
-    transform: translateY(-2px); /* lift */
+    background: #0090C8; /* Hover brand: slightly darker primary */
+    color: #000000;
+    box-shadow: 0 4px 12px rgba(0, 174, 239, 0.45); /* Cyan glow */
+    transform: translateY(-2px);
   }
   .btn-theme-cyan:active:not(:disabled) {
-    transform: translateY(1px); /* press down */
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    transform: translateY(1px);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
   }
   .btn-theme-cyan:disabled {
     transform: none;
@@ -498,20 +499,20 @@
   .btn-theme-gold {
     @apply rounded-full font-semibold text-sm px-6 py-3;
     transition: transform 180ms ease-out, box-shadow 180ms ease-out, background-color 180ms ease-out, border-color 180ms ease-out;
-    background: #0EA5E9; /* Secondary accent: deep cyan */
-    color: #fff;
+    background: #F5B800; /* Accent brand: Gold */
+    color: #000000; /* Elite black text on Gold background for contrast */
     border: 1px solid transparent;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
   }
   .btn-theme-gold:hover:not(:disabled) {
-    background: #38BDF8; /* Hover accent: slightly brighter */
-    color: #fff;
-    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.4);
+    background: #FFD54F; /* Hover accent: lighter gold */
+    color: #000000;
+    box-shadow: 0 4px 12px rgba(245, 184, 0, 0.45); /* Gold glow */
     transform: translateY(-2px);
   }
   .btn-theme-gold:active:not(:disabled) {
     transform: translateY(1px);
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
   }
   .btn-theme-gold:disabled {
     transform: none;
@@ -562,8 +563,8 @@
 
   .landing-grid-fine {
     background-image:
-      linear-gradient(rgba(37, 99, 235, 0.04) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(37, 99, 235, 0.04) 1px, transparent 1px);
+      linear-gradient(rgba(0, 174, 239, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 174, 239, 0.04) 1px, transparent 1px);
     background-size: 24px 24px;
   }
 
