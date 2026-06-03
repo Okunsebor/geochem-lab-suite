@@ -63,14 +63,13 @@ export default function WhatWeProvideSection() {
                   <motion.img 
                     src={card.imgSrc} 
                     alt={card.title}
-                    className="size-9 object-contain drop-shadow-md brightness-0 invert opacity-80 group-hover:opacity-100 group-hover:brightness-100 group-hover:invert-0 transition-all duration-300"
+                    className="size-10 object-contain drop-shadow-md brightness-0 dark:invert opacity-85 group-hover:opacity-100 transition-all duration-300"
                     variants={{
                       hover: {
-                        rotateX: 20,
-                        rotateY: -20,
+                        rotateY: 180,
                         scale: 1.25,
                         y: -5,
-                        transition: { type: "spring", stiffness: 300, damping: 15 }
+                        transition: { type: "spring", stiffness: 180, damping: 12 }
                       }
                     }}
                   />
