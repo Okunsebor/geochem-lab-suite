@@ -5,7 +5,7 @@ import { UniPodLogo } from "@/components/branding/UniPodLogo";
 
 const NAV_LINKS = [
   { label: "Capabilities", href: "#provide" },
-  { label: "Technology", href: "#technology" },
+  { label: "Infrastructure", href: "#infrastructure" },
   { label: "Trust", href: "#reasons" },
   { label: "Partners", href: "#trusted" },
 ];
@@ -43,10 +43,11 @@ export default function HeaderNav() {
           </Link>
           <Link
             to="/register"
-            className="inline-flex items-center gap-1.5 rounded-md gradient-primary px-4 py-2 text-sm font-semibold text-white shadow-sm hover:opacity-95 transition-all hover:shadow-md hover:shadow-primary/15"
+            className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:shadow-[0_0_15px_rgba(255,215,0,0.6)]"
           >
             Request Access <ArrowRight className="size-3.5" />
           </Link>
+
         </div>
 
         <button

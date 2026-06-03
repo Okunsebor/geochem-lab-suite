@@ -1,7 +1,7 @@
 import { lazy, Suspense } from "react";
 
 const WhatWeProvideSection = lazy(() => import("./WhatWeProvideSection"));
-const TechnologyStackSection = lazy(() => import("./TechnologyStackSection"));
+const AnalyticalInfrastructureSection = lazy(() => import("./AnalyticalInfrastructureSection"));
 const ReasonsToChooseSection = lazy(() => import("./ReasonsToChooseSection"));
 const TrustedBySection = lazy(() => import("./TrustedBySection"));
 const CtaSection = lazy(() => import("./CtaSection"));
@@ -15,7 +15,7 @@ export default function LandingDeferred() {
   return (
     <Suspense fallback={<SectionFallback />}>
       <WhatWeProvideSection />
-      <TechnologyStackSection />
+      <AnalyticalInfrastructureSection />
       <ReasonsToChooseSection />
       <TrustedBySection />
       <CtaSection />
