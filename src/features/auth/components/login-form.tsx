@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Link } from "@tanstack/react-router";
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
 import { useAuth, formatAuthError, getPortalPathForRole } from "../../../hooks/use-auth";
 import { InputField } from "../../../components/shared/form-controls";
@@ -10,14 +10,22 @@ import { UniPodLogo } from "@/components/branding/UniPodLogo";
 import { DEMO_MODE_ENABLED } from "@/lib/auth-utils";
 
 export function LoginForm({ portalIntent = false }: { portalIntent?: boolean }) {
-  const { login, switchUserRole } = useAuth();
+  const { login, loginWithGoogle, switchUserRole, currentUser, emailVerified } = useAuth();
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
-  const redirectForRole = (role: User["role"]) => {
-    window.location.href = getPortalPathForRole(role);
+  const redirectForRole = async (role: User["role"]) => {
+    await navigate({ to: getPortalPathForRole(role) });
   };
+
+  useEffect(() => {
+    if (currentUser && emailVerified) {
+      void redirectForRole(currentUser.role);
+    }
+  }, [currentUser, emailVerified]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,12 +35,12 @@ export function LoginForm({ portalIntent = false }: { portalIntent?: boolean }) 
     try {
       const { role } = await login(email, password);
       toast.success("Signed in securely.");
-      redirectForRole(role);
+      await redirectForRole(role);
     } catch (err: unknown) {
       const message = formatAuthError(err);
       if (message.includes("verify your email")) {
         toast.error(message);
-        window.location.href = getVerifyEmailPath(email);
+        await navigate({ to: getVerifyEmailPath(email) });
         return;
       }
       toast.error(message);
@@ -53,13 +61,23 @@ export function LoginForm({ portalIntent = false }: { portalIntent?: boolean }) 
     try {
       const { role: resolvedRole } = await login(roleEmails[role], "password123");
       toast.success(`Signed in as ${resolvedRole}`);
-      redirectForRole(resolvedRole);
+      await redirectForRole(resolvedRole);
     } catch {
       switchUserRole(role);
       toast.info(`Development sandbox: ${role}`);
-      redirectForRole(role);
+      await redirectForRole(role);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setGoogleLoading(true);
+    try {
+      await loginWithGoogle();
+    } catch (err) {
+      toast.error(formatAuthError(err));
+      setGoogleLoading(false);
     }
   };
 
@@ -122,6 +140,34 @@ export function LoginForm({ portalIntent = false }: { portalIntent?: boolean }) 
           )}
         </button>
       </form>
+
+      <div className="my-5 flex items-center gap-3">
+        <div className="h-px flex-1 bg-border" />
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+          or
+        </span>
+        <div className="h-px flex-1 bg-border" />
+      </div>
+
+      <button
+        type="button"
+        onClick={handleGoogleSignIn}
+        disabled={loading || googleLoading}
+        className="w-full inline-flex items-center justify-center gap-2 rounded-md border border-border bg-card px-3 py-2.5 text-sm font-semibold text-foreground cursor-pointer hover:bg-muted/60 transition disabled:opacity-50"
+      >
+        {googleLoading ? (
+          <>
+            <Loader2 className="size-4 animate-spin" /> Connecting...
+          </>
+        ) : (
+          <>
+            <span className="grid size-4 place-items-center rounded-full bg-white text-[11px] font-bold text-[#4285F4]">
+              G
+            </span>
+            Sign in with Google
+          </>
+        )}
+      </button>
 
       {DEMO_MODE_ENABLED && (
         <div className="mt-6 border-t border-border pt-4">

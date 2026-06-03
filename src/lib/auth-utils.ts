@@ -1,7 +1,7 @@
 import type { User } from "@/types";
 
 const RESEND_STORAGE_KEY = "gcs_verification_resend";
-export const RESEND_COOLDOWN_SECONDS = 60;
+export const RESEND_COOLDOWN_SECONDS = 5 * 60;
 export const MAX_RESENDS_PER_HOUR = 5;
 
 interface ResendRecord {

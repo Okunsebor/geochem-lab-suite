@@ -1,8 +1,9 @@
 import { 
   Menu, X, FlaskConical, LayoutDashboard, Workflow, Activity, Settings, 
   ScanBarcode, Beaker, ShieldCheck, Boxes, ClipboardList, BarChart3, 
-  Users2, HardDrive, LifeBuoy, Bell, FileText
+  Users2, HardDrive, LifeBuoy, Bell, FileText, Mail
 } from "lucide-react";
+import type { ComponentType } from "react";
 import { useState } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useLimsState } from "@/hooks/use-lims-state";
@@ -13,7 +14,15 @@ import { TopbarUserMenu } from "./TopbarUserMenu";
 import { TopbarNotifications } from "./TopbarNotifications";
 
 // Hierarchical LIMS sidebar menus
-const nav = [
+const nav: Array<{
+  label: string;
+  items: Array<{
+    to: string;
+    label: string;
+    icon: ComponentType<{ className?: string }>;
+    exact?: boolean;
+  }>;
+}> = [
   {
     label: "Workspace",
     items: [

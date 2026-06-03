@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowRight,
@@ -58,6 +58,7 @@ export function VerifyEmailPage({ initialEmail }: { initialEmail?: string }) {
     currentUser,
     emailVerified,
   } = useAuth();
+  const navigate = useNavigate();
 
   const [email, setEmail] = useState(initialEmail ?? "");
   const [otp, setOtp] = useState("");
@@ -85,10 +86,10 @@ export function VerifyEmailPage({ initialEmail }: { initialEmail?: string }) {
       else if (active.user.user_metadata?.role) role = active.user.user_metadata.role;
     }
 
-    setTimeout(() => {
-      window.location.href = getPortalPathForRole(role);
+    window.setTimeout(() => {
+      void navigate({ to: getPortalPathForRole(role) });
     }, 2200);
-  }, [refreshProfile]);
+  }, [navigate, refreshProfile]);
 
   useEffect(() => {
     if (initialEmail) setEmail(initialEmail);
@@ -264,8 +265,8 @@ export function VerifyEmailPage({ initialEmail }: { initialEmail?: string }) {
                 </div>
 
                 <p className="mt-5 text-sm text-muted-foreground leading-relaxed">
-                  We sent a verification email to your inbox. You can enter the 6-digit code
-                  below, or open the email and click the confirmation link (both work).
+                  We sent a verification email to your inbox. Enter the 6-digit code below
+                  to activate your account.
                 </p>
 
                 {!supabaseReady && (

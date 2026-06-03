@@ -1,98 +1,117 @@
 import { Link } from "@tanstack/react-router";
 import { motion, useReducedMotion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ShieldCheck } from "lucide-react";
 import { BRAND_ASSETS } from "@/lib/branding";
 import { OptimizedImage } from "@/components/shared/OptimizedImage";
+import { AnimatedWorkflowText } from "./AnimatedWorkflowText";
 
 const container = {
   hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { staggerChildren: 0.09, delayChildren: 0.06 } },
-} as const;
+  show: { opacity: 1, transition: { staggerChildren: 0.12, delayChildren: 0.1 } },
+};
 
 const item = {
-  hidden: { opacity: 0, y: 18 },
-  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 88, damping: 14 } },
-} as const;
-
-
+  hidden: { opacity: 0, y: 24 },
+  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 70, damping: 16 } },
+};
 
 export default function HeroSection() {
   const reduceMotion = useReducedMotion();
 
   return (
     <section className="relative overflow-hidden border-b border-border/20 bg-background min-h-[calc(100vh-64px)] lg:min-h-[calc(85vh-64px)] flex items-center">
+      {/* Enterprise background grids and meshes */}
+      <div className="absolute inset-0 landing-grid-fine opacity-60 pointer-events-none" />
       <div className="absolute inset-0 gradient-mesh opacity-40 pointer-events-none" />
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            "radial-gradient(ellipse 70% 50% at 20% 20%, rgba(0,174,239,0.14) 0%, transparent 55%), radial-gradient(ellipse 50% 40% at 90% 80%, rgba(245,184,0,0.08) 0%, transparent 50%)",
+            "radial-gradient(circle at 15% 30%, rgba(0, 110, 181, 0.08) 0%, transparent 60%), radial-gradient(circle at 85% 60%, rgba(212, 160, 23, 0.05) 0%, transparent 50%)",
         }}
       />
 
-      <div className="relative z-10 mx-auto max-w-7xl px-6 py-12 md:py-16 lg:py-20 w-full grid lg:grid-cols-12 gap-10 lg:gap-14 items-center">
+      <div className="relative z-10 mx-auto max-w-7xl px-6 py-12 md:py-16 lg:py-20 w-full grid lg:grid-cols-12 gap-12 lg:gap-16 items-center">
         <motion.div
-          className="lg:col-span-5 flex flex-col space-y-7"
+          className="lg:col-span-6 flex flex-col space-y-8"
           variants={container}
           initial="hidden"
           animate="show"
         >
+          <motion.div variants={item} className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 backdrop-blur-sm w-fit">
+            <span className="flex h-2 w-2 rounded-full bg-primary animate-pulse"></span>
+            <span className="text-xs font-semibold text-primary uppercase tracking-widest">Enterprise Platform</span>
+          </motion.div>
 
           <motion.h1
             variants={item}
-            className="text-4xl font-extrabold tracking-tight sm:text-5xl xl:text-6xl text-foreground leading-[1.06] font-display max-w-xl"
+            className="text-5xl font-extrabold tracking-tight sm:text-6xl xl:text-[4.5rem] text-foreground leading-[1.08] font-display"
           >
-            Welcome to the{" "}
-            <span className="text-gradient font-black">UniPod Geochemistry Laboratory</span>
+            <span className="block text-2xl sm:text-3xl font-semibold text-muted-foreground mb-4 uppercase tracking-[0.2em]">
+              Geochemical Intelligence
+            </span>
+            <span className="block mb-1">Built for</span>
+            <span className="block">
+              <AnimatedWorkflowText />
+            </span>
           </motion.h1>
 
           <motion.p variants={item} className="text-lg sm:text-xl leading-relaxed max-w-xl text-muted-foreground">
-            Register to submit samples, track analytical progress, and receive certified geochemical
-            reports through your secure customer portal.
+            A secure, ISO-compliant laboratory information management system designed for precision tracking from intake to analytical reporting.
           </motion.p>
 
-          <motion.div variants={item} className="flex flex-col sm:flex-row flex-wrap gap-3">
+          <motion.div variants={item} className="flex flex-col sm:flex-row flex-wrap gap-4 pt-4">
             <Link
               to="/register"
-              className="inline-flex items-center justify-center gap-2 rounded-lg gradient-primary px-8 py-4 text-sm font-semibold text-white shadow-lg shadow-primary/30 hover:shadow-primary/45 transition-all hover:-translate-y-0.5 font-display"
+              className="btn-theme-cyan inline-flex items-center justify-center gap-2"
             >
-              Register for access <ArrowRight className="size-4" />
+              Request Access <ArrowRight className="size-4" />
             </Link>
             <Link
               to="/login"
               search={{}}
-              className="inline-flex items-center justify-center gap-2 rounded-lg border-2 border-primary/30 bg-card/60 backdrop-blur-md px-8 py-4 text-sm font-semibold text-foreground hover:bg-primary/5 transition-all"
+              className="btn-theme-outline inline-flex items-center justify-center gap-2"
             >
-              Already registered? Sign in
+              Sign In to Portal
             </Link>
           </motion.div>
-
-
         </motion.div>
 
         <motion.div
-          className="lg:col-span-7"
-          initial={reduceMotion ? false : { opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
+          className="lg:col-span-6 relative"
+          initial={reduceMotion ? false : { opacity: 0, x: 40 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.3, duration: 0.9, type: "spring", stiffness: 50, damping: 20 }}
         >
-          <div className="relative rounded-2xl overflow-hidden border border-border/60 shadow-2xl shadow-primary/10 ring-1 ring-primary/10">
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0B1F33]/80 via-transparent to-transparent z-10 pointer-events-none" />
-            <OptimizedImage
-              src={BRAND_ASSETS.entrance}
-              alt="UniPod Nsuk laboratory entrance"
-              className="w-full aspect-[4/3] object-cover"
-              width={1200}
-              height={900}
-              priority
-            />
-            <div className="absolute bottom-0 left-0 right-0 z-20 p-6 sm:p-8">
-              <p className="text-white/90 text-sm font-medium max-w-md drop-shadow-md">
-                UniPod Innovation Hub · Nasarawa State University — your gateway to precision
-                geochemical analysis.
-              </p>
+          {/* Polished enterprise visual */}
+          <div className="relative rounded-2xl overflow-hidden border border-border/50 shadow-2xl shadow-primary/5 bg-card/40 backdrop-blur-3xl ring-1 ring-white/10 p-2">
+            <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 to-transparent z-0 pointer-events-none rounded-2xl" />
+            
+            <div className="relative z-10 rounded-xl overflow-hidden border border-border/40 shadow-inner">
+               <OptimizedImage
+                src={BRAND_ASSETS.entrance}
+                alt="Laboratory Intelligence Workflow"
+                className="w-full aspect-[4/3] object-cover scale-105 hover:scale-100 transition-transform duration-1000 ease-out"
+                width={1200}
+                height={900}
+                priority
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#041C32]/90 via-[#041C32]/20 to-transparent pointer-events-none" />
+              
+              <div className="absolute bottom-0 left-0 right-0 z-20 p-6 sm:p-8 flex items-end justify-between">
+                <div>
+                  <p className="text-white/90 text-sm font-medium drop-shadow-md flex items-center gap-2">
+                    <ShieldCheck className="size-5 text-primary" />
+                    Trusted by Scientific Institutions
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
+          
+          {/* Decorative enterprise nodes */}
+          <div className="absolute -top-6 -right-6 w-24 h-24 bg-accent/10 rounded-full blur-2xl z-0" />
+          <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-primary/10 rounded-full blur-3xl z-0" />
         </motion.div>
       </div>
     </section>

@@ -147,12 +147,16 @@ export function useNotificationsCore(currentRole?: "Admin" | "Lab Coordinator" |
       localStorage.setItem("gcs_notifications", JSON.stringify(updated));
       return updated;
     });
-    supabase
-      .from("notifications" as any)
-      .update({ is_read: true, read_at: new Date().toISOString() })
-      .eq("target_user_id", sessionUserId as any)
-      .then(() => null)
-      .catch(() => null);
+    void (async () => {
+      try {
+        await supabase
+          .from("notifications" as any)
+          .update({ is_read: true, read_at: new Date().toISOString() })
+          .eq("target_user_id", sessionUserId as any);
+      } catch {
+        // local fallback only
+      }
+    })();
   };
 
   const clearNotifications = () => {

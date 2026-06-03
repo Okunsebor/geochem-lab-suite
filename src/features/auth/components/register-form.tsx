@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
 import { useAuth, formatAuthError } from "../../../hooks/use-auth";
 import { InputField } from "../../../components/shared/form-controls";
@@ -43,6 +43,7 @@ function validateForm(data: FormState): FormErrors {
 
 export function RegisterForm() {
   const { registerUser } = useAuth();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState<FormState>({
     firstName: "",
     lastName: "",
@@ -81,12 +82,14 @@ export function RegisterForm() {
       });
       if (result.needsVerification) {
         toast.success(
-          "Account created. Check your inbox (and spam) for a 6-digit code or confirmation link."
+          result.verificationEmailSent
+            ? "Verification code sent. Check your inbox and spam folder."
+            : "Continue verification with the latest code we sent you."
         );
-        window.location.href = getVerifyEmailPath(result.email);
+        await navigate({ to: getVerifyEmailPath(result.email) });
       } else {
         toast.success("Account created. You can sign in now.");
-        window.location.href = "/login?intent=portal";
+        await navigate({ to: "/login", search: { intent: "portal" } });
       }
     } catch (err: unknown) {
       toast.error(formatAuthError(err));

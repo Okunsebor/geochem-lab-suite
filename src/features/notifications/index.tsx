@@ -1,4 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
+import type { ComponentType } from "react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { useLimsState } from "@/hooks/use-lims-state";
 import { Bell, CheckCheck, Mail, MessageSquare, ShieldAlert, Workflow } from "lucide-react";
@@ -167,7 +168,11 @@ export default function NotificationsFeature() {
               { Icon: Bell, label: "In-app" },
               { Icon: Mail, label: "Email" },
               { Icon: MessageSquare, label: "Workflow Alerts" },
-            ]).map(({ Icon, label, disabled }, i) => {
+            ] as Array<{
+              Icon: ComponentType<{ className?: string }>;
+              label: string;
+              disabled?: boolean;
+            }>).map(({ Icon, label, disabled }, i) => {
               const channels = settings?.channels || ["In-app", "Email", "Workflow Alerts"];
               const checked = channels.includes(label);
               return (

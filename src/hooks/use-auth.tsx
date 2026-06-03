@@ -31,7 +31,10 @@ interface AuthContextType {
   loading: boolean;
   emailVerified: boolean;
   login: (email: string, password: string) => Promise<{ role: User["role"]; emailVerified: boolean }>;
-  registerUser: (input: RegisterUserInput) => Promise<{ needsVerification: boolean; email: string }>;
+  loginWithGoogle: () => Promise<void>;
+  registerUser: (
+    input: RegisterUserInput
+  ) => Promise<{ needsVerification: boolean; email: string; verificationEmailSent: boolean }>;
   logout: () => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
   resetPassword: (password: string) => Promise<void>;
@@ -227,6 +230,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const loginWithGoogle = async () => {
+    setLoading(true);
+    localStorage.removeItem("gcs_demo_role");
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo:
+            typeof window !== "undefined"
+              ? `${window.location.origin}/login?intent=portal`
+              : undefined,
+        },
+      });
+      if (error) throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const sendVerificationEmail = async (
+    email: string,
+    options: { showToast?: boolean } = {}
+  ) => {
+    const { showToast = true } = options;
+    assertCanResendVerification(email);
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email: email.trim(),
+      options: getSignupEmailOptions(),
+    });
+    if (error) throw error;
+    recordVerificationResend(email);
+    if (showToast) toast.success("Verification code sent. Check your inbox.");
+  };
+
   const registerUser = async (input: RegisterUserInput) => {
     setLoading(true);
     localStorage.removeItem("gcs_demo_role");
@@ -251,7 +289,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // Supabase returns an empty identities array when the email is already registered
       if (data.user?.identities && data.user.identities.length === 0) {
-        throw new Error("User already registered");
+        let verificationEmailSent = true;
+        try {
+          await sendVerificationEmail(input.email, { showToast: false });
+        } catch (err) {
+          const msg = err instanceof Error ? err.message.toLowerCase() : "";
+          if (msg.includes("already") && msg.includes("confirm")) {
+            throw new Error("User already registered");
+          }
+          if (msg.includes("wait") || msg.includes("too many")) {
+            verificationEmailSent = false;
+          } else {
+            throw err;
+          }
+        }
+        return { needsVerification: true, email: input.email.trim(), verificationEmailSent };
       }
 
       // Profile is provisioned by DB trigger; sign out so portal stays locked until verified
@@ -260,22 +312,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       const needsVerification = !data.user?.email_confirmed_at;
-      return { needsVerification, email: input.email.trim() };
+      return { needsVerification, email: input.email.trim(), verificationEmailSent: needsVerification };
     } finally {
       setLoading(false);
     }
   };
 
   const resendVerificationEmail = async (email: string) => {
-    assertCanResendVerification(email);
-    const { error } = await supabase.auth.resend({
-      type: "signup",
-      email: email.trim(),
-      options: getSignupEmailOptions(),
-    });
-    if (error) throw error;
-    recordVerificationResend(email);
-    toast.success("Verification code sent. Check your inbox.");
+    await sendVerificationEmail(email);
   };
 
   const verifyEmailOtp = async (email: string, token: string) => {
@@ -315,7 +359,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setEmailVerified(false);
       localStorage.removeItem("gcs_samples");
       setLoading(false);
-      window.location.href = "/login";
+      window.location.assign("/login");
     }
   };
 
@@ -374,6 +418,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         loading,
         emailVerified,
         login,
+        loginWithGoogle,
         registerUser,
         logout,
         forgotPassword,
