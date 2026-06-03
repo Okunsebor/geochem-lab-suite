@@ -137,7 +137,7 @@ export default function HeroSection() {
             
             <button
               onClick={() => setIsModalOpen(true)}
-              className="btn-theme-outline inline-flex items-center justify-center gap-2 min-w-[200px] text-base py-3.5 !rounded-xl border-[#E2E8F0] text-[#475569] hover:bg-[#F1F5F9] hover:text-[#0F172A] hover:border-[#E2E8F0] transition-all"
+              className="btn-theme-outline inline-flex items-center justify-center gap-2 min-w-[200px] text-base py-3.5 !rounded-xl"
             >
               Institutional Partnership
             </button>

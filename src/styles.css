@@ -463,51 +463,97 @@
       0 0 0 1px rgba(0, 174, 239, 0.08);
   }
 
+  /* Interaction System - Shared */
+  .interactive-base {
+    transition: transform 180ms ease-out, box-shadow 180ms ease-out, border-color 180ms ease-out, background-color 180ms ease-out, color 180ms ease-out;
+  }
+
   /* Landing page — theme buttons */
   .btn-theme-cyan {
-    @apply rounded-full font-semibold text-sm px-6 py-3 transition-all duration-300 ease-out;
+    @apply rounded-full font-semibold text-sm px-6 py-3;
+    transition: transform 180ms ease-out, box-shadow 180ms ease-out, background-color 180ms ease-out, border-color 180ms ease-out;
     background: #2563EB; /* Primary accent: deep blue */
     color: #fff;
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+    border: 1px solid transparent;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
   }
-  .btn-theme-cyan:hover {
-    background: #1D4ED8; /* Hover accent: slightly brighter deep blue */
+  .btn-theme-cyan:hover:not(:disabled) {
+    background: #3B82F6; /* Hover accent: slightly brighter */
     color: #fff;
-    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.25);
-    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4); /* Glow edge */
+    transform: translateY(-2px); /* lift */
+  }
+  .btn-theme-cyan:active:not(:disabled) {
+    transform: translateY(1px); /* press down */
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  }
+  .btn-theme-cyan:disabled {
+    transform: none;
+    box-shadow: none;
+    opacity: 0.6;
+    cursor: not-allowed;
   }
 
   .btn-theme-gold {
-    @apply rounded-full font-semibold text-sm px-6 py-3 transition-all duration-300 ease-out;
+    @apply rounded-full font-semibold text-sm px-6 py-3;
+    transition: transform 180ms ease-out, box-shadow 180ms ease-out, background-color 180ms ease-out, border-color 180ms ease-out;
     background: #0EA5E9; /* Secondary accent: deep cyan */
     color: #fff;
-    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.15);
+    border: 1px solid transparent;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
   }
-  .btn-theme-gold:hover {
-    background: #0284C7; /* Hover accent: slightly brighter deep cyan */
+  .btn-theme-gold:hover:not(:disabled) {
+    background: #38BDF8; /* Hover accent: slightly brighter */
     color: #fff;
-    box-shadow: 0 6px 16px rgba(14, 165, 233, 0.25);
-    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.4);
+    transform: translateY(-2px);
+  }
+  .btn-theme-gold:active:not(:disabled) {
+    transform: translateY(1px);
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  }
+  .btn-theme-gold:disabled {
+    transform: none;
+    box-shadow: none;
+    opacity: 0.6;
+    cursor: not-allowed;
   }
 
   .btn-theme-outline {
-    @apply rounded-full font-semibold text-sm px-6 py-3 border border-border text-muted-foreground bg-transparent transition-all duration-300;
+    @apply rounded-full font-semibold text-sm px-6 py-3 border border-border text-muted-foreground bg-transparent;
+    transition: transform 180ms ease-out, box-shadow 180ms ease-out, background-color 180ms ease-out, border-color 180ms ease-out;
   }
-  .btn-theme-outline:hover {
+  .btn-theme-outline:hover:not(:disabled) {
     background: #F1F5F9; /* Surface 2 */
-    border-color: #E2E8F0;
+    border-color: #CBD5E1; /* Slight border brightening */
     color: #0F172A; /* Primary text */
+    box-shadow: var(--elevation-2);
+    transform: translateY(-2px);
+  }
+  .btn-theme-outline:active:not(:disabled) {
+    transform: translateY(1px);
+    box-shadow: none;
+  }
+  .btn-theme-outline:disabled {
+    transform: none;
+    box-shadow: none;
+    opacity: 0.6;
+    cursor: not-allowed;
   }
 
   .landing-3d-panel {
     transform-style: preserve-3d;
     perspective: 1200px;
   }
+  
+  /* Interaction System - Cards */
   .landing-3d-card {
-    transform-style: preserve-3d;
-    transition:
-      transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-      box-shadow 0.35s ease;
+    transition: transform 180ms ease-out, box-shadow 180ms ease-out, border-color 180ms ease-out;
+  }
+  .landing-3d-card:hover {
+    box-shadow: var(--elevation-2);
+    border-color: #CBD5E1; /* brightened border */
+    transform: translateY(-2px) scale(1.01); /* soft elevation, max 1.02 scale */
   }
 
   .landing-grid-fine {

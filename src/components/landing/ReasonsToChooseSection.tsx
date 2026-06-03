@@ -116,10 +116,10 @@ export default function ReasonsToChooseSection() {
                 key={r.id}
                 type="button"
                 onClick={() => setActive(i)}
-                className={`shrink-0 text-left rounded-xl px-5 py-4 text-sm font-bold transition-all duration-300 border ${
+                className={`shrink-0 text-left rounded-xl px-5 py-4 text-sm font-bold transition-all duration-[180ms] ease-out border ${
                   active === i
                     ? "gradient-primary text-white border-transparent shadow-lg shadow-primary/25"
-                    : "bg-card border-border text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                    : "bg-card border-border text-muted-foreground hover:-translate-y-[2px] hover:shadow-md hover:border-slate-300 hover:text-foreground active:translate-y-[1px]"
                 }`}
               >
                 {r.label}

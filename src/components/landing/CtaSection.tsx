@@ -22,7 +22,7 @@ export default function CtaSection() {
           </ThemeLink>
           <button
             onClick={() => setIsModalOpen(true)}
-            className="px-8 py-4 text-base rounded-full font-semibold border-2 border-white/30 text-white bg-transparent hover:bg-white hover:text-[#0B1F33] hover:border-transparent transition-all duration-300 !rounded-xl cursor-pointer"
+            className="px-8 py-4 text-base rounded-full font-semibold border-2 border-white/30 text-white bg-transparent hover:bg-white hover:text-[#0B1F33] hover:border-transparent transition-all duration-[180ms] ease-out hover:-translate-y-[2px] active:translate-y-[1px] hover:shadow-lg hover:shadow-white/20 !rounded-xl cursor-pointer"
           >
             Institutional Partnership
           </button>

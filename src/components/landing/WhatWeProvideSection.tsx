@@ -64,8 +64,7 @@ export default function WhatWeProvideSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-40px" }}
               transition={{ delay: idx * 0.06, duration: 0.45 }}
-              whileHover={{ y: -6, rotateX: 2, rotateY: -2 }}
-              className="landing-3d-card group rounded-2xl border border-border/80 bg-card/80 backdrop-blur-sm p-6 hover:border-primary/40"
+              className="landing-3d-card group rounded-2xl border border-border/80 bg-card/80 backdrop-blur-sm p-6"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="grid size-11 place-items-center rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-colors duration-300">
