@@ -10,9 +10,9 @@ export default function HeroSection() {
   return (
     <section className="relative overflow-hidden min-h-[calc(100vh-64px)] flex items-center justify-start py-20 px-4 md:px-12 lg:px-24 select-none">
       {/* BACKGROUND LAYER: Full visibility image */}
-      <div 
+      <div
         className="absolute inset-0 z-0 bg-no-repeat bg-cover bg-center pointer-events-none"
-        style={{ backgroundImage: `url('/branding/hero-bg-subtle.png')` }}
+        style={{ backgroundImage: `url('/branding/unipod-full-image.png')` }}
       />
 
       {/* OVERLAY: Dark blue gradient to make white text readable, matching reference */}
