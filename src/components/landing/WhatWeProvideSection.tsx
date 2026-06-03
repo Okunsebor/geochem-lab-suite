@@ -56,7 +56,7 @@ export default function WhatWeProvideSection() {
               whileHover="hover"
               viewport={{ once: true, margin: "-40px" }}
               transition={{ delay: idx * 0.06, duration: 0.45 }}
-              className="landing-3d-card group rounded-2xl border border-border/80 bg-card/80 backdrop-blur-sm p-6"
+              className="landing-3d-card group rounded-2xl border border-white/50 dark:border-white/10 bg-white/40 dark:bg-neutral-900/40 backdrop-blur-md p-6 shadow-lg shadow-black/[0.02] dark:shadow-black/30 shadow-[inset_0_1px_1px_rgba(255,255,255,0.6)] dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] hover:shadow-2xl hover:shadow-black/[0.08] dark:hover:shadow-black/50 hover:border-primary/30 transition-all duration-300"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="grid size-14 place-items-center rounded-xl bg-primary/5 group-hover:bg-primary/15 transition-colors duration-300" style={{ perspective: 1000 }}>
