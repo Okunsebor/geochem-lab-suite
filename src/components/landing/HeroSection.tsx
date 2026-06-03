@@ -1,132 +1,45 @@
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { motion, useMotionValue, useSpring, useTransform, animate } from "framer-motion";
+import { motion } from "framer-motion";
 import { Lock, ArrowRight, Server, Shield } from "lucide-react";
-import { BRAND_ASSETS } from "@/lib/branding";
 import PartnershipModal from "./shared/PartnershipModal";
 
 export default function HeroSection() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
-  const sectionRef = useRef<HTMLElement>(null);
-
-  // Mouse / Touch positions relative to the hero section container
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-
-  // Smooth springs for high-performance 60fps tracking — tighter for 3D feel
-  const spotlightX = useSpring(mouseX, { damping: 28, stiffness: 280, mass: 0.5 });
-  const spotlightY = useSpring(mouseY, { damping: 28, stiffness: 280, mass: 0.5 });
-
-  // Separate spring for opacity fade in/out
-  const opacityTarget = useMotionValue(0);
-  const spotlightOpacity = useSpring(opacityTarget, { damping: 22, stiffness: 130 });
-
-  // 3D parallax tilt values derived from mouse position
-  const tiltX = useSpring(useTransform(mouseY, [0, 800], [6, -6]), { damping: 30, stiffness: 200 });
-  const tiltY = useSpring(useTransform(mouseX, [0, 1400], [-6, 6]), { damping: 30, stiffness: 200 });
-
-  useEffect(() => {
-    opacityTarget.set(isHovered ? 1 : 0);
-  }, [isHovered, opacityTarget]);
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    mouseX.set(e.clientX - rect.left);
-    mouseY.set(e.clientY - rect.top);
-  };
-
-  const handleTouchMove = (e: React.TouchEvent<HTMLElement>) => {
-    if (e.touches.length > 0) {
-      const rect = e.currentTarget.getBoundingClientRect();
-      mouseX.set(e.touches[0].clientX - rect.left);
-      mouseY.set(e.touches[0].clientY - rect.top);
-    }
-  };
-
-  // Large spotlight mask — 520px radius for an immersive 3D feel
-  const maskImage = useTransform(
-    [spotlightX, spotlightY, spotlightOpacity],
-    ([x, y, op]: any[]) =>
-      `radial-gradient(circle 520px at ${x}px ${y}px, rgba(0,0,0,${op}) 0%, rgba(0,0,0,${(op as number) * 0.55}) 40%, rgba(0,0,0,${(op as number) * 0.12}) 70%, rgba(0,0,0,0) 100%)`
-  );
-
-  // Outer ambient glow ring follows cursor
-  const glowOpacity = useTransform(spotlightOpacity, (op: number) => op * 0.22);
 
   return (
-    <section
-      ref={sectionRef}
-      className="relative overflow-hidden bg-[#F7F9FC] min-h-[calc(100vh-64px)] flex items-center justify-center py-20 px-4 md:px-8 cursor-crosshair select-none"
-      onMouseMove={handleMouseMove}
-      onTouchMove={handleTouchMove}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      onTouchStart={() => setIsHovered(true)}
-      onTouchEnd={() => setIsHovered(false)}
-    >
-      {/* LAYER 0: Fine grid base */}
+    <section className="relative overflow-hidden min-h-[calc(100vh-64px)] flex items-center justify-center py-20 px-4 md:px-8 select-none">
+      {/* BACKGROUND LAYER: The new subtle image */}
+      <div 
+        className="absolute inset-0 z-0 bg-no-repeat bg-cover bg-center opacity-[0.07] grayscale pointer-events-none"
+        style={{ backgroundImage: `url('/branding/hero-bg-subtle.png')` }}
+      />
+
+      {/* OVERLAY: Soft ambient background gradient to maintain text contrast */}
+      <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#F7F9FC]/80 via-[#F7F9FC]/95 to-[#F7F9FC] pointer-events-none" />
       <div className="absolute inset-0 landing-grid-fine opacity-50 z-0 pointer-events-none" />
 
-      {/* LAYER 0b: Soft ambient gradient */}
-      <div
-        className="absolute inset-0 z-0 pointer-events-none"
-        style={{
-          background:
-            "radial-gradient(circle at 15% 25%, rgba(37, 99, 235, 0.06) 0%, transparent 55%), radial-gradient(circle at 85% 75%, rgba(14, 165, 233, 0.04) 0%, transparent 55%)",
-        }}
-      />
-
-      {/* LAYER 1: UniPod facility image — always covers the full hero, revealed by cursor spotlight mask */}
-      <motion.div
-        className="absolute inset-0 z-10 pointer-events-none select-none bg-no-repeat bg-cover bg-center"
-        style={{
-          maskImage,
-          WebkitMaskImage: maskImage,
-          backgroundImage: `url(${BRAND_ASSETS.labInterior})`,
-        }}
-      />
-
-      {/* LAYER 2: Cinematic 3D glow ring — tracks cursor with a large soft bloom */}
-      <motion.div
-        className="absolute pointer-events-none rounded-full blur-3xl z-[11]"
-        style={{
-          left: spotlightX,
-          top: spotlightY,
-          opacity: glowOpacity,
-          x: "-50%",
-          y: "-50%",
-          width: 700,
-          height: 700,
-          background:
-            "radial-gradient(circle, rgba(37, 100, 235, 0.4) 0%, rgba(14, 164, 233, 0.38) 45%, transparent 75%)",
-        }}
-      />
-
-      {/* LAYER 3: 3D parallax content — tilts with mouse to give depth */}
+      {/* LAYER 3: Static content */}
       <motion.div
         className="relative z-20 max-w-4xl mx-auto w-full text-center space-y-8"
-        style={{
-          rotateX: tiltX,
-          rotateY: tiltY,
-          transformPerspective: 1200,
-          transformStyle: "preserve-3d",
-        }}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
       >
         {/* Security badge */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#E2E8F0] bg-[#F1F5F9]/80 backdrop-blur-md text-xs font-mono text-[#2563EB] tracking-wider"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#E2E8F0] bg-[#FFFFFF]/80 backdrop-blur-md text-xs font-mono text-[#2563EB] tracking-wider shadow-sm"
         >
-          <Lock className="size-3.5 text-[#2563EB] animate-pulse" />
+          <Lock className="size-3.5 text-[#2563EB]" />
           <span>CONTROLLED ACCESS</span>
           <span className="h-3 w-px bg-[#E2E8F0]" />
           <span className="text-[#475569]">SECURE SYSTEM</span>
         </motion.div>
 
-        {/* Hero headline — bare text, no white card */}
+        {/* Hero headline */}
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
@@ -163,7 +76,7 @@ export default function HeroSection() {
 
             <button
               onClick={() => setIsModalOpen(true)}
-              className="btn-theme-outline inline-flex items-center justify-center gap-2 min-w-[200px] text-base py-3.5 !rounded-xl"
+              className="btn-theme-outline inline-flex items-center justify-center gap-2 min-w-[200px] text-base py-3.5 !rounded-xl bg-white shadow-sm"
             >
               Institutional Partnership
             </button>
