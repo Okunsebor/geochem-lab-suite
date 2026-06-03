@@ -8,20 +8,20 @@ export default function HeroSection() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
-    <section className="relative overflow-hidden min-h-[calc(100vh-64px)] flex items-center justify-center py-20 px-4 md:px-8 select-none">
-      {/* BACKGROUND LAYER: The new subtle image */}
+    <section className="relative overflow-hidden min-h-[calc(100vh-64px)] flex items-center justify-start py-20 px-4 md:px-12 lg:px-24 select-none">
+      {/* BACKGROUND LAYER: Full visibility image */}
       <div 
-        className="absolute inset-0 z-0 bg-no-repeat bg-cover bg-center opacity-[0.07] grayscale pointer-events-none"
+        className="absolute inset-0 z-0 bg-no-repeat bg-cover bg-center pointer-events-none"
         style={{ backgroundImage: `url('/branding/hero-bg-subtle.png')` }}
       />
 
-      {/* OVERLAY: Soft ambient background gradient to maintain text contrast */}
-      <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#F7F9FC]/80 via-[#F7F9FC]/95 to-[#F7F9FC] pointer-events-none" />
-      <div className="absolute inset-0 landing-grid-fine opacity-50 z-0 pointer-events-none" />
+      {/* OVERLAY: Dark blue gradient to make white text readable, matching reference */}
+      <div className="absolute inset-0 z-0 bg-gradient-to-r from-[#0B2B4A]/95 via-[#0B2B4A]/75 to-[#0B2B4A]/20 pointer-events-none" />
+      <div className="absolute inset-0 landing-grid-fine opacity-30 z-0 pointer-events-none" />
 
-      {/* LAYER 3: Static content */}
+      {/* LAYER 3: Static content, left-aligned to match reference */}
       <motion.div
-        className="relative z-20 max-w-4xl mx-auto w-full text-center space-y-8"
+        className="relative z-20 max-w-4xl w-full text-left space-y-8"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
@@ -31,12 +31,12 @@ export default function HeroSection() {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#E2E8F0] bg-[#FFFFFF]/80 backdrop-blur-md text-xs font-mono text-[#2563EB] tracking-wider shadow-sm"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/20 bg-white/10 backdrop-blur-md text-xs font-mono text-white tracking-wider shadow-sm"
         >
-          <Lock className="size-3.5 text-[#2563EB]" />
+          <Lock className="size-3.5 text-[#38BDF8]" />
           <span>CONTROLLED ACCESS</span>
-          <span className="h-3 w-px bg-[#E2E8F0]" />
-          <span className="text-[#475569]">SECURE SYSTEM</span>
+          <span className="h-3 w-px bg-white/20" />
+          <span className="text-white/80">SECURE SYSTEM</span>
         </motion.div>
 
         {/* Hero headline */}
@@ -46,37 +46,37 @@ export default function HeroSection() {
           transition={{ duration: 0.8, ease: "easeOut", delay: 0.1 }}
           className="space-y-6"
         >
-          <h1 className="text-5xl md:text-7xl xl:text-8xl font-extrabold tracking-tight text-[#0F172A] leading-[1.05] font-display">
+          <h1 className="text-5xl md:text-7xl xl:text-8xl font-extrabold tracking-tight text-white leading-[1.05] font-display">
             Scientific Infrastructure.
-            <span className="block mt-2 text-transparent bg-clip-text bg-gradient-to-r from-[#2563EB] to-[#0EA5E9]">
+            <span className="block mt-2 text-[#38BDF8]">
               Reimagined.
             </span>
           </h1>
 
-          <div className="h-px w-24 bg-gradient-to-r from-transparent via-[#CBD5E1] to-transparent mx-auto" />
+          <div className="h-px w-24 bg-gradient-to-r from-[#38BDF8] to-transparent" />
 
           {/* Subtext */}
-          <div className="space-y-2 max-w-2xl mx-auto">
-            <p className="text-xl md:text-2xl font-bold text-[#0F172A]">
+          <div className="space-y-2 max-w-2xl">
+            <p className="text-xl md:text-2xl font-bold text-white">
               Trusted Analytical Intelligence.
             </p>
-            <p className="text-base md:text-lg font-semibold text-[#475569]">
+            <p className="text-base md:text-lg font-semibold text-white/80">
               Built for Institutions. Designed for Precision.
             </p>
           </div>
 
           {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+          <div className="flex flex-col sm:flex-row items-center justify-start gap-4 pt-4">
             <Link
               to="/register"
-              className="btn-theme-cyan inline-flex items-center justify-center gap-2 min-w-[200px] text-base py-3.5 !rounded-xl shadow-md"
+              className="btn-theme-cyan inline-flex items-center justify-center gap-2 min-w-[200px] text-base py-3.5 !rounded-xl shadow-md border-none"
             >
               Get Started <ArrowRight className="size-4" />
             </Link>
 
             <button
               onClick={() => setIsModalOpen(true)}
-              className="btn-theme-outline inline-flex items-center justify-center gap-2 min-w-[200px] text-base py-3.5 !rounded-xl bg-white shadow-sm"
+              className="inline-flex items-center justify-center gap-2 min-w-[200px] text-base py-3.5 rounded-xl bg-white/10 text-white font-semibold border border-white/20 hover:bg-white/20 transition backdrop-blur-sm"
             >
               Institutional Partnership
             </button>
@@ -88,15 +88,15 @@ export default function HeroSection() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6, duration: 0.6 }}
-          className="flex flex-wrap items-center justify-center gap-6 text-xs text-[#475569]/70 font-mono tracking-wider pt-2"
+          className="flex flex-wrap items-center justify-start gap-6 text-xs text-white/60 font-mono tracking-wider pt-4"
         >
           <span className="flex items-center gap-1.5">
-            <Server className="size-3.5 text-[#2563EB]" />
+            <Server className="size-3.5 text-[#38BDF8]" />
             POWERED BY UNIPOD
           </span>
           <span className="hidden sm:inline">·</span>
           <span className="flex items-center gap-1.5">
-            <Shield className="size-3.5 text-[#0EA5E9]" />
+            <Shield className="size-3.5 text-[#22C55E]" />
             ENCRYPTED SESSION
           </span>
           <span className="hidden sm:inline">·</span>
