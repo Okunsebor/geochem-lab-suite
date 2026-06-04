@@ -19,7 +19,10 @@ export function StorageMap() {
       />
       <div className="grid gap-4 lg:grid-cols-3">
         {racks.map((r) => (
-          <div key={r} className="rounded-xl border border-border bg-card p-5 hover:border-primary/20 transition">
+          <div
+            key={r}
+            className="rounded-xl border border-border bg-card p-5 hover:border-primary/20 transition"
+          >
             <div className="flex items-center justify-between border-b border-border pb-3 mb-3">
               <h3 className="font-semibold inline-flex items-center gap-2 text-foreground">
                 <Boxes className="size-4 text-primary" /> Rack {r}
@@ -28,7 +31,7 @@ export function StorageMap() {
                 {8 + (r.charCodeAt(0) % 5)} / 12 slots filled
               </span>
             </div>
-            
+
             <div className="grid grid-cols-4 gap-1.5">
               {Array.from({ length: 12 }).map((_, i) => {
                 const filled = (i + r.charCodeAt(0)) % 3 !== 0;

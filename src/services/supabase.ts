@@ -12,20 +12,20 @@ import {
 } from "../types";
 
 // 1. Isomorphic credentials load (supports client-side Vite and server-side SSR/Node)
-const SUPABASE_URL = 
-  (typeof import.meta !== "undefined" && import.meta.env?.VITE_SUPABASE_URL) || 
-  process.env.SUPABASE_URL || 
+const SUPABASE_URL =
+  (typeof import.meta !== "undefined" && import.meta.env?.VITE_SUPABASE_URL) ||
+  process.env.SUPABASE_URL ||
   "";
 
-const SUPABASE_ANON_KEY = 
-  (typeof import.meta !== "undefined" && import.meta.env?.VITE_SUPABASE_ANON_KEY) || 
-  process.env.SUPABASE_ANON_KEY || 
+const SUPABASE_ANON_KEY =
+  (typeof import.meta !== "undefined" && import.meta.env?.VITE_SUPABASE_ANON_KEY) ||
+  process.env.SUPABASE_ANON_KEY ||
   "";
 
 if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
   if (typeof window !== "undefined") {
     console.warn(
-      "Supabase environment variables are missing! Ensure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set in your local .env file."
+      "Supabase environment variables are missing! Ensure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set in your local .env file.",
     );
   }
 }
@@ -118,7 +118,10 @@ export interface Database {
           qa_status: "Pass" | "Flag" | "Pending Approval";
           analyzed_at: string;
         };
-        Insert: Omit<Database["public"]["Tables"]["analytical_results"]["Row"], "id" | "analyzed_at">;
+        Insert: Omit<
+          Database["public"]["Tables"]["analytical_results"]["Row"],
+          "id" | "analyzed_at"
+        >;
         Update: Partial<Database["public"]["Tables"]["analytical_results"]["Insert"]>;
       };
       instruments: {
@@ -170,10 +173,12 @@ export interface Database {
           uploaded_by: string;
           created_at: string;
         };
-        Insert: Omit<Database["public"]["Tables"]["sample_attachments"]["Row"], "id" | "created_at">;
+        Insert: Omit<
+          Database["public"]["Tables"]["sample_attachments"]["Row"],
+          "id" | "created_at"
+        >;
         Update: Partial<Database["public"]["Tables"]["sample_attachments"]["Insert"]>;
       };
-
     };
     Views: {
       [_ in never]: never;
@@ -205,7 +210,7 @@ export const supabaseHelpers = {
     if (error) throw error;
     return data.session;
   },
-  
+
   signOut: async () => {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
@@ -215,34 +220,34 @@ export const supabaseHelpers = {
   uploadReportPdf: async (reportId: string, file: File) => {
     const fileExt = file.name.split(".").pop();
     const filePath = `reports/${reportId}-${Date.now()}.${fileExt}`;
-    
+
     const { data, error } = await supabase.storage
       .from("reports")
       .upload(filePath, file, { cacheControl: "3600", upsert: true });
 
     if (error) throw error;
-    
+
     // Retrieve public download link
-    const { data: { publicUrl } } = supabase.storage
-      .from("reports")
-      .getPublicUrl(filePath);
-      
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from("reports").getPublicUrl(filePath);
+
     return publicUrl;
   },
 
   uploadBarcodeSvg: async (sampleId: string, svgBlob: Blob) => {
     const filePath = `barcodes/${sampleId}.svg`;
-    
+
     const { data, error } = await supabase.storage
       .from("barcodes")
       .upload(filePath, svgBlob, { cacheControl: "31536000", upsert: true });
 
     if (error) throw error;
-    
-    const { data: { publicUrl } } = supabase.storage
-      .from("barcodes")
-      .getPublicUrl(filePath);
-      
+
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from("barcodes").getPublicUrl(filePath);
+
     return publicUrl;
   },
 
@@ -258,26 +263,35 @@ export const supabaseHelpers = {
 
     try {
       // 1. Verify Env
-      const hasUrl = !!SUPABASE_URL && SUPABASE_URL !== "https://your-project-id.supabase.co" && SUPABASE_URL.trim() !== "";
-      const hasKey = !!SUPABASE_ANON_KEY && SUPABASE_ANON_KEY.length > 50 && SUPABASE_ANON_KEY.trim() !== "";
+      const hasUrl =
+        !!SUPABASE_URL &&
+        SUPABASE_URL !== "https://your-project-id.supabase.co" &&
+        SUPABASE_URL.trim() !== "";
+      const hasKey =
+        !!SUPABASE_ANON_KEY && SUPABASE_ANON_KEY.length > 50 && SUPABASE_ANON_KEY.trim() !== "";
       results.envLoaded = hasUrl && hasKey;
-      console.log("1. Environment variables loaded:", results.envLoaded ? "✓ SUCCESS" : "✗ FAILED (Placeholders or missing config)");
+      console.log(
+        "1. Environment variables loaded:",
+        results.envLoaded ? "✓ SUCCESS" : "✗ FAILED (Placeholders or missing config)",
+      );
 
       if (!results.envLoaded) {
-        throw new Error("Missing or placeholder Supabase credentials in local environment configuration.");
+        throw new Error(
+          "Missing or placeholder Supabase credentials in local environment configuration.",
+        );
       }
 
       // 2. Verify Init
       const client = supabase;
       results.clientInit = !!client;
-      console.log("2. Client initialized successfully:", results.clientInit ? "✓ SUCCESS" : "✗ FAILED");
+      console.log(
+        "2. Client initialized successfully:",
+        results.clientInit ? "✓ SUCCESS" : "✗ FAILED",
+      );
 
       // 3. Verify Database/API connection
       console.log("3. Probing Database endpoint connection...");
-      const { error, status } = await supabase
-        .from("instruments")
-        .select("*")
-        .limit(1);
+      const { error, status } = await supabase.from("instruments").select("*").limit(1);
 
       // Status codes in 2xx represent successful connection
       // Status 404 represents fully reached API but table does not exist (schema not created yet), which still proves postgres connection works!
@@ -286,10 +300,14 @@ export const supabaseHelpers = {
         results.dbConnected = true;
         console.log(`✓ DATABASE CONNECTION ESTABLISHED (Gateway Status Code: ${status})`);
         if (error) {
-          console.log(`   Notice: API returned message "${error.message}" (Code: ${error.code}). This is expected if the instruments table has not been migrated yet.`);
+          console.log(
+            `   Notice: API returned message "${error.message}" (Code: ${error.code}). This is expected if the instruments table has not been migrated yet.`,
+          );
         }
       } else {
-        throw new Error(error?.message || `Database gateway returned connection error status ${status}`);
+        throw new Error(
+          error?.message || `Database gateway returned connection error status ${status}`,
+        );
       }
     } catch (err: any) {
       results.error = err.message || String(err);

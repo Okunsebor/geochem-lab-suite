@@ -26,7 +26,7 @@ export const Timeline = React.forwardRef<HTMLDivElement, TimelineProps>(
         className={cn(
           "flex w-full font-sans select-none",
           isHorizontal ? "flex-row items-center justify-between gap-4" : "flex-col gap-6",
-          className
+          className,
         )}
         {...props}
       >
@@ -41,7 +41,7 @@ export const Timeline = React.forwardRef<HTMLDivElement, TimelineProps>(
                 onClick={() => onStepClick && onStepClick(step)}
                 className={cn(
                   "flex items-start gap-3 group relative cursor-pointer active-scale-spring",
-                  isHorizontal ? "flex-col items-center text-center flex-1" : "flex-row text-left"
+                  isHorizontal ? "flex-col items-center text-center flex-1" : "flex-row text-left",
                 )}
               >
                 {/* Node Container */}
@@ -51,8 +51,8 @@ export const Timeline = React.forwardRef<HTMLDivElement, TimelineProps>(
                     isCompleted
                       ? "border-primary bg-primary text-white shadow-md shadow-primary/20"
                       : isActive
-                      ? "border-accent bg-accent/10 text-accent animate-pulse"
-                      : "border-border bg-card text-muted-foreground group-hover:border-primary/50"
+                        ? "border-accent bg-accent/10 text-accent animate-pulse"
+                        : "border-border bg-card text-muted-foreground group-hover:border-primary/50",
                   )}
                 >
                   {step.icon ? (
@@ -69,7 +69,7 @@ export const Timeline = React.forwardRef<HTMLDivElement, TimelineProps>(
                   <div
                     className={cn(
                       "text-xs font-bold font-display tracking-tight transition-colors",
-                      isActive ? "text-accent" : "text-foreground group-hover:text-primary"
+                      isActive ? "text-accent" : "text-foreground group-hover:text-primary",
                     )}
                   >
                     {step.label}
@@ -88,7 +88,7 @@ export const Timeline = React.forwardRef<HTMLDivElement, TimelineProps>(
                   className={cn(
                     "flex-1 transition-colors duration-300",
                     isHorizontal ? "h-0.5" : "w-0.5 min-h-[24px] ml-[17px] -my-2",
-                    isCompleted ? "bg-primary" : "bg-border"
+                    isCompleted ? "bg-primary" : "bg-border",
                   )}
                 />
               )}
@@ -97,7 +97,7 @@ export const Timeline = React.forwardRef<HTMLDivElement, TimelineProps>(
         })}
       </div>
     );
-  }
+  },
 );
 
 Timeline.displayName = "Timeline";

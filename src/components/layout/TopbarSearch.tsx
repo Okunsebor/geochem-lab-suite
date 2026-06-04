@@ -1,7 +1,25 @@
-import { 
-  Search, Command, X, FlaskConical, FileText, ChevronRight, Users, Loader2,
-  LayoutDashboard, Workflow, Activity, Settings, ScanBarcode, Beaker, 
-  ShieldCheck, Boxes, ClipboardList, BarChart3, Users2, HardDrive, LifeBuoy
+import {
+  Search,
+  Command,
+  X,
+  FlaskConical,
+  FileText,
+  ChevronRight,
+  Users,
+  Loader2,
+  LayoutDashboard,
+  Workflow,
+  Activity,
+  Settings,
+  ScanBarcode,
+  Beaker,
+  ShieldCheck,
+  Boxes,
+  ClipboardList,
+  BarChart3,
+  Users2,
+  HardDrive,
+  LifeBuoy,
 } from "lucide-react";
 import { useEffect, useState, useRef, useMemo } from "react";
 import { useNavigate } from "@tanstack/react-router";
@@ -11,21 +29,57 @@ import { Sample, AnalyticalReport, User } from "@/types";
 
 // Standard LIMS navigation workflows
 const WORKFLOW_LINKS = [
-  { label: "Operational Dashboard", to: "/app", description: "Real-time KPIs, throughput plots, and QA metrics" },
-  { label: "Intake Registry", to: "/app/intake", description: "Register inbound geological splits and container bags" },
-  { label: "Samples Directory", to: "/app/samples", description: "Active inventories, storage racks, and data grids" },
-  { label: "Sample Preparation", to: "/app/preparation", description: "Crushing, pulverizing, split testing, and matrix prep" },
-  { label: "Analytical Runs", to: "/app/analysis", description: "ICP-MS, ICP-OES, Fire Assay instrumental workflows" },
-  { label: "QA/QC Audits", to: "/app/qa-qc", description: "Standard deviations, CRM reference checks, and flags" },
-  { label: "Reports Sign-off", to: "/app/reports", description: "Approve, sign, and deliver certified analytical PDFs" },
-  { label: "System Administration", to: "/app/settings", description: "Accreditation configs, webhooks, branding, and billing" },
-  { label: "Customer Portal", to: "/portal", description: "External client shipping pre-registration and downloads" },
+  {
+    label: "Operational Dashboard",
+    to: "/app",
+    description: "Real-time KPIs, throughput plots, and QA metrics",
+  },
+  {
+    label: "Intake Registry",
+    to: "/app/intake",
+    description: "Register inbound geological splits and container bags",
+  },
+  {
+    label: "Samples Directory",
+    to: "/app/samples",
+    description: "Active inventories, storage racks, and data grids",
+  },
+  {
+    label: "Sample Preparation",
+    to: "/app/preparation",
+    description: "Crushing, pulverizing, split testing, and matrix prep",
+  },
+  {
+    label: "Analytical Runs",
+    to: "/app/analysis",
+    description: "ICP-MS, ICP-OES, Fire Assay instrumental workflows",
+  },
+  {
+    label: "QA/QC Audits",
+    to: "/app/qa-qc",
+    description: "Standard deviations, CRM reference checks, and flags",
+  },
+  {
+    label: "Reports Sign-off",
+    to: "/app/reports",
+    description: "Approve, sign, and deliver certified analytical PDFs",
+  },
+  {
+    label: "System Administration",
+    to: "/app/settings",
+    description: "Accreditation configs, webhooks, branding, and billing",
+  },
+  {
+    label: "Customer Portal",
+    to: "/portal",
+    description: "External client shipping pre-registration and downloads",
+  },
 ];
 
 export function TopbarSearch() {
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  
+
   // Database search query results
   const [dbSamples, setDbSamples] = useState<Sample[]>([]);
   const [dbReports, setDbReports] = useState<AnalyticalReport[]>([]);
@@ -62,13 +116,15 @@ export function TopbarSearch() {
         if (qTrim.startsWith("*") && qTrim.endsWith("*") && qTrim.length > 2) {
           qTrim = qTrim.slice(1, -1);
         }
-        
+
         // Perform parallel queries to Supabase
         const [samplesQuery, reportsQuery, usersQuery] = await Promise.all([
           supabase
             .from("samples" as any)
             .select("*")
-            .or(`id.ilike.%${qTrim}%,project_name.ilike.%${qTrim}%,client_org_id.ilike.%${qTrim}%,matrix.ilike.%${qTrim}%`)
+            .or(
+              `id.ilike.%${qTrim}%,project_name.ilike.%${qTrim}%,client_org_id.ilike.%${qTrim}%,matrix.ilike.%${qTrim}%`,
+            )
             .limit(5),
           supabase
             .from("reports" as any)
@@ -79,14 +135,17 @@ export function TopbarSearch() {
             .from("users" as any)
             .select("*")
             .or(`full_name.ilike.%${qTrim}%,email.ilike.%${qTrim}%`)
-            .limit(5)
+            .limit(5),
         ]);
 
         // Process samples matches
         if (samplesQuery.data && samplesQuery.data.length > 0) {
           const mapped: Sample[] = samplesQuery.data.map((s: any) => ({
             id: s.id,
-            client: s.client_name || s.client || (s.client_org_id === "org-barrick" ? "Barrick Gold" : "Auric Mining"),
+            client:
+              s.client_name ||
+              s.client ||
+              (s.client_org_id === "org-barrick" ? "Barrick Gold" : "Auric Mining"),
             project: s.project_name || s.project || "Exploration",
             type: s.sample_type || s.type || "Core Split",
             status: s.status || "Received",
@@ -99,12 +158,15 @@ export function TopbarSearch() {
           setDbSamples(mapped);
         } else {
           // Fallback to local state if Supabase has no hits
-          const localFiltered = samples.filter((s: Sample) =>
-            s.id.toLowerCase().includes(qTrim) ||
-            s.client.toLowerCase().includes(qTrim) ||
-            s.project.toLowerCase().includes(qTrim) ||
-            (s.matrix && s.matrix.toLowerCase().includes(qTrim))
-          ).slice(0, 5);
+          const localFiltered = samples
+            .filter(
+              (s: Sample) =>
+                s.id.toLowerCase().includes(qTrim) ||
+                s.client.toLowerCase().includes(qTrim) ||
+                s.project.toLowerCase().includes(qTrim) ||
+                (s.matrix && s.matrix.toLowerCase().includes(qTrim)),
+            )
+            .slice(0, 5);
           setDbSamples(localFiltered);
         }
 
@@ -121,11 +183,14 @@ export function TopbarSearch() {
           }));
           setDbReports(mapped);
         } else {
-          const localFiltered = reports.filter((r: AnalyticalReport) =>
-            r.id.toLowerCase().includes(qTrim) ||
-            r.sample.toLowerCase().includes(qTrim) ||
-            r.client.toLowerCase().includes(qTrim)
-          ).slice(0, 5);
+          const localFiltered = reports
+            .filter(
+              (r: AnalyticalReport) =>
+                r.id.toLowerCase().includes(qTrim) ||
+                r.sample.toLowerCase().includes(qTrim) ||
+                r.client.toLowerCase().includes(qTrim),
+            )
+            .slice(0, 5);
           setDbReports(localFiltered);
         }
 
@@ -141,30 +206,45 @@ export function TopbarSearch() {
           }));
           setDbUsers(mapped);
         } else {
-          const localFiltered = users.filter((u: User) =>
-            u.name.toLowerCase().includes(qTrim) ||
-            u.email.toLowerCase().includes(qTrim)
-          ).slice(0, 5);
+          const localFiltered = users
+            .filter(
+              (u: User) =>
+                u.name.toLowerCase().includes(qTrim) || u.email.toLowerCase().includes(qTrim),
+            )
+            .slice(0, 5);
           setDbUsers(localFiltered);
         }
-
       } catch (err) {
         console.warn("Supabase Search index query offline, fallback to LIMS Cache:", err);
         const qTrim = searchQuery.trim().toLowerCase();
-        setDbSamples(samples.filter((s: Sample) =>
-          s.id.toLowerCase().includes(qTrim) ||
-          s.client.toLowerCase().includes(qTrim) ||
-          s.project.toLowerCase().includes(qTrim)
-        ).slice(0, 5));
-        setDbReports(reports.filter((r: AnalyticalReport) =>
-          r.id.toLowerCase().includes(qTrim) ||
-          r.sample.toLowerCase().includes(qTrim) ||
-          r.client.toLowerCase().includes(qTrim)
-        ).slice(0, 5));
-        setDbUsers(users.filter((u: User) =>
-          u.name.toLowerCase().includes(qTrim) ||
-          u.email.toLowerCase().includes(qTrim)
-        ).slice(0, 5));
+        setDbSamples(
+          samples
+            .filter(
+              (s: Sample) =>
+                s.id.toLowerCase().includes(qTrim) ||
+                s.client.toLowerCase().includes(qTrim) ||
+                s.project.toLowerCase().includes(qTrim),
+            )
+            .slice(0, 5),
+        );
+        setDbReports(
+          reports
+            .filter(
+              (r: AnalyticalReport) =>
+                r.id.toLowerCase().includes(qTrim) ||
+                r.sample.toLowerCase().includes(qTrim) ||
+                r.client.toLowerCase().includes(qTrim),
+            )
+            .slice(0, 5),
+        );
+        setDbUsers(
+          users
+            .filter(
+              (u: User) =>
+                u.name.toLowerCase().includes(qTrim) || u.email.toLowerCase().includes(qTrim),
+            )
+            .slice(0, 5),
+        );
       } finally {
         setIsLoadingDb(false);
       }
@@ -175,19 +255,42 @@ export function TopbarSearch() {
 
   // Filter workflows
   const filteredWorkflows = useMemo(() => {
-    return searchQuery.trim() === "" ? [] : WORKFLOW_LINKS.filter(w =>
-      w.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      w.description.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    return searchQuery.trim() === ""
+      ? []
+      : WORKFLOW_LINKS.filter(
+          (w) =>
+            w.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            w.description.toLowerCase().includes(searchQuery.toLowerCase()),
+        );
   }, [searchQuery]);
 
   // Flatten active results for clean index selection
   const flatResults = useMemo(() => {
     return [
-      ...filteredWorkflows.map(w => ({ type: "workflow" as const, label: w.label, to: w.to, subtitle: w.description })),
-      ...dbSamples.map(s => ({ type: "sample" as const, label: s.id, to: `/app/samples/${s.id}`, subtitle: `${s.client} (${s.project}) · ${s.status}` })),
-      ...dbReports.map(r => ({ type: "report" as const, label: r.id, to: `/app/reports`, subtitle: `Certificate for ${r.client} · ${r.status}` })),
-      ...dbUsers.map(u => ({ type: "user" as const, label: u.name, to: `/app/settings`, subtitle: `${u.role} · ${u.email}` }))
+      ...filteredWorkflows.map((w) => ({
+        type: "workflow" as const,
+        label: w.label,
+        to: w.to,
+        subtitle: w.description,
+      })),
+      ...dbSamples.map((s) => ({
+        type: "sample" as const,
+        label: s.id,
+        to: `/app/samples/${s.id}`,
+        subtitle: `${s.client} (${s.project}) · ${s.status}`,
+      })),
+      ...dbReports.map((r) => ({
+        type: "report" as const,
+        label: r.id,
+        to: `/app/reports`,
+        subtitle: `Certificate for ${r.client} · ${r.status}`,
+      })),
+      ...dbUsers.map((u) => ({
+        type: "user" as const,
+        label: u.name,
+        to: `/app/settings`,
+        subtitle: `${u.role} · ${u.email}`,
+      })),
     ];
   }, [filteredWorkflows, dbSamples, dbReports, dbUsers]);
 
@@ -230,7 +333,7 @@ export function TopbarSearch() {
 
   return (
     <>
-      <button 
+      <button
         onClick={() => setShowSearch(true)}
         className="group interactive-lift interactive-motion flex w-full max-w-md items-center gap-2 rounded-lg border border-border bg-card px-3 py-1.5 text-sm text-muted-foreground hover:border-primary/40"
       >
@@ -244,7 +347,10 @@ export function TopbarSearch() {
       {/* Command Search Palette Dialog Modal */}
       {showSearch && (
         <div className="fixed inset-0 z-50 flex items-start justify-center pt-[15vh] px-4">
-          <div className="absolute inset-0 bg-background/85 backdrop-blur-sm" onClick={() => setShowSearch(false)} />
+          <div
+            className="absolute inset-0 bg-background/85 backdrop-blur-sm"
+            onClick={() => setShowSearch(false)}
+          />
           <div className="relative z-10 w-full max-w-lg shadow-2xl p-4 overflow-hidden animate-in fade-in zoom-in-95 duration-150 glass">
             <div className="flex items-center gap-2.5 border-b border-border pb-3">
               <Search className="size-4 text-primary" />
@@ -256,10 +362,8 @@ export function TopbarSearch() {
                 placeholder="Search IDs, clients, reports, workflows..."
                 className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none border-none"
               />
-              {isLoadingDb && (
-                <Loader2 className="size-4 text-primary animate-spin shrink-0" />
-              )}
-              <button 
+              {isLoadingDb && <Loader2 className="size-4 text-primary animate-spin shrink-0" />}
+              <button
                 onClick={() => setShowSearch(false)}
                 className="p-1 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer transition shrink-0"
               >
@@ -273,18 +377,30 @@ export function TopbarSearch() {
                 <div className="py-8 text-center text-xs text-muted-foreground font-semibold flex flex-col items-center gap-1.5">
                   <Command className="size-6 text-muted-foreground/50" />
                   <span>Search GeoChem Suite Registry</span>
-                  <span className="text-[10px] text-muted-foreground/60 font-medium">Search Samples, Reports, LIMS Technicians, and Operations workflows instantly.</span>
+                  <span className="text-[10px] text-muted-foreground/60 font-medium">
+                    Search Samples, Reports, LIMS Technicians, and Operations workflows instantly.
+                  </span>
                 </div>
               ) : flatResults.length === 0 && !isLoadingDb ? (
                 <div className="py-8 text-center text-xs text-muted-foreground font-semibold flex flex-col items-center gap-1.5">
                   <span>No matching records found for "{searchQuery}"</span>
-                  <span className="text-[10px] text-muted-foreground/60 font-medium">Try searching for GCS serials, matrix types, client names, or LIMS technician profiles.</span>
+                  <span className="text-[10px] text-muted-foreground/60 font-medium">
+                    Try searching for GCS serials, matrix types, client names, or LIMS technician
+                    profiles.
+                  </span>
                 </div>
               ) : (
                 <div className="py-2 space-y-1.5">
                   {flatResults.map((item, idx) => {
                     const isFocused = idx === focusedIndex;
-                    const Icon = item.type === "workflow" ? Command : item.type === "sample" ? FlaskConical : item.type === "report" ? FileText : Users;
+                    const Icon =
+                      item.type === "workflow"
+                        ? Command
+                        : item.type === "sample"
+                          ? FlaskConical
+                          : item.type === "report"
+                            ? FileText
+                            : Users;
                     return (
                       <button
                         key={`${item.type}-${item.label}-${idx}`}
@@ -294,22 +410,35 @@ export function TopbarSearch() {
                         }`}
                       >
                         <div className="flex items-center gap-2.5 min-w-0">
-                          <Icon className={`size-4 shrink-0 ${isFocused ? "text-white" : "text-primary"}`} />
+                          <Icon
+                            className={`size-4 shrink-0 ${isFocused ? "text-white" : "text-primary"}`}
+                          />
                           <div className="min-w-0 flex flex-col">
-                            <span className="truncate font-semibold text-foreground/90 group-hover:text-foreground group-[.bg-primary]:text-white">{item.label}</span>
-                            <span className={`text-[10px] truncate ${isFocused ? "text-white/80" : "text-muted-foreground"}`}>{item.subtitle}</span>
+                            <span className="truncate font-semibold text-foreground/90 group-hover:text-foreground group-[.bg-primary]:text-white">
+                              {item.label}
+                            </span>
+                            <span
+                              className={`text-[10px] truncate ${isFocused ? "text-white/80" : "text-muted-foreground"}`}
+                            >
+                              {item.subtitle}
+                            </span>
                           </div>
                         </div>
-                        <ChevronRight className={`size-3 shrink-0 ${isFocused ? "text-white" : "text-muted-foreground group-hover:text-foreground"}`} />
+                        <ChevronRight
+                          className={`size-3 shrink-0 ${isFocused ? "text-white" : "text-muted-foreground group-hover:text-foreground"}`}
+                        />
                       </button>
                     );
                   })}
                 </div>
               )}
             </div>
-            
+
             <div className="border-t border-border mt-3 pt-2 text-[10px] text-muted-foreground font-semibold flex items-center justify-between">
-              <span className="flex items-center gap-1">Press <kbd className="bg-muted px-1 rounded">↑↓</kbd> to navigate, <kbd className="bg-muted px-1 rounded">Enter</kbd> to open</span>
+              <span className="flex items-center gap-1">
+                Press <kbd className="bg-muted px-1 rounded">↑↓</kbd> to navigate,{" "}
+                <kbd className="bg-muted px-1 rounded">Enter</kbd> to open
+              </span>
               <span>Cmd+K to toggle overlay</span>
             </div>
           </div>

@@ -1,20 +1,42 @@
 import { motion } from "framer-motion";
-import {
-  ScanBarcode, Workflow, Beaker, ShieldCheck, BarChart3, Building2
-} from "lucide-react";
+import { ScanBarcode, Workflow, Beaker, ShieldCheck, BarChart3, Building2 } from "lucide-react";
 
 const MODULES = [
-  { i: ScanBarcode, t: "Sample Intake", d: "Thermal labels, QR custody records, and shelf mapping from day one." },
-  { i: Workflow, t: "Preparation", d: "Moisture, pulverization, splitting, and core sawing — staged and traceable." },
+  {
+    i: ScanBarcode,
+    t: "Sample Intake",
+    d: "Thermal labels, QR custody records, and shelf mapping from day one.",
+  },
+  {
+    i: Workflow,
+    t: "Preparation",
+    d: "Moisture, pulverization, splitting, and core sawing — staged and traceable.",
+  },
   { i: Beaker, t: "Analysis", d: "ICP-MS/OES queues with automated raw assay hydration." },
-  { i: ShieldCheck, t: "QA / QC Engine", d: "Duplicate spreads, CRM controls, and analytical flag isolation." },
-  { i: BarChart3, t: "Reporting", d: "Branded PDF certificates with double-verification and dispatch." },
-  { i: Building2, t: "Customer Portal", d: "Client self-service tracking, downloads, and support desk." },
+  {
+    i: ShieldCheck,
+    t: "QA / QC Engine",
+    d: "Duplicate spreads, CRM controls, and analytical flag isolation.",
+  },
+  {
+    i: BarChart3,
+    t: "Reporting",
+    d: "Branded PDF certificates with double-verification and dispatch.",
+  },
+  {
+    i: Building2,
+    t: "Customer Portal",
+    d: "Client self-service tracking, downloads, and support desk.",
+  },
 ];
 
 export default function ModulesSection() {
   return (
-    <section id="modules" className="border-t border-border bg-card/25" aria-labelledby="modules-heading">
+    <section
+      id="modules"
+      className="border-t border-border bg-card/25"
+      aria-labelledby="modules-heading"
+    >
       <div className="mx-auto max-w-7xl px-6 py-12 md:py-16 lg:py-20">
         <div className="max-w-3xl text-center mx-auto">
           <h2

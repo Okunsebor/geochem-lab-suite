@@ -21,7 +21,10 @@ export default function HeaderNav() {
           <UniPodLogo height={32} />
         </div>
 
-        <nav className="hidden md:flex items-center gap-7 text-sm text-muted-foreground" aria-label="Main">
+        <nav
+          className="hidden md:flex items-center gap-7 text-sm text-muted-foreground"
+          aria-label="Main"
+        >
           {NAV_LINKS.map((n) => (
             <a
               key={n.label}
@@ -47,7 +50,6 @@ export default function HeaderNav() {
           >
             Request Access <ArrowRight className="size-3.5" />
           </Link>
-
         </div>
 
         <button
@@ -86,7 +88,7 @@ export default function HeaderNav() {
               <Link
                 to="/register"
                 onClick={closeMobile}
-              className="btn-theme-cyan inline-flex items-center justify-center gap-1.5 rounded-md text-sm"
+                className="btn-theme-cyan inline-flex items-center justify-center gap-1.5 rounded-md text-sm"
               >
                 Request Access <ArrowRight className="size-3.5" />
               </Link>

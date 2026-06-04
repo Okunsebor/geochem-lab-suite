@@ -1,8 +1,20 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
-  LayoutDashboard, FlaskConical, Workflow, Activity, FileText,
-  Users2, Bell, Settings, ScanBarcode, Beaker, ShieldCheck, MailCheck,
-  Boxes, ClipboardList, BarChart3,
+  LayoutDashboard,
+  FlaskConical,
+  Workflow,
+  Activity,
+  FileText,
+  Users2,
+  Bell,
+  Settings,
+  ScanBarcode,
+  Beaker,
+  ShieldCheck,
+  MailCheck,
+  Boxes,
+  ClipboardList,
+  BarChart3,
 } from "lucide-react";
 import { UniPodLogo } from "@/components/branding/UniPodLogo";
 import { cn } from "@/lib/utils";
@@ -45,21 +57,32 @@ import { useLimsState } from "@/hooks/use-lims-state";
 export function AppSidebar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { currentUser } = useLimsState();
-  const initials = currentUser?.name?.split(" ").map((x) => x[0]).join("").slice(0, 2) || "US";
+  const initials =
+    currentUser?.name
+      ?.split(" ")
+      .map((x) => x[0])
+      .join("")
+      .slice(0, 2) || "US";
 
   return (
     <aside className="hidden lg:flex w-64 shrink-0 flex-col text-sidebar-foreground border-y-0 border-l-0 rounded-none shadow-sm glass">
       <div className="flex h-14 items-center gap-2 px-4 border-b border-sidebar-border">
         <UniPodLogo height={28} linkToHome={false} />
         <div className="flex flex-col leading-tight min-w-0">
-          <span className="text-xs font-semibold text-sidebar-foreground truncate">Admin Portal</span>
-          <span className="text-[10px] uppercase tracking-wider text-accent font-bold">GeoChem Suite</span>
+          <span className="text-xs font-semibold text-sidebar-foreground truncate">
+            Admin Portal
+          </span>
+          <span className="text-[10px] uppercase tracking-wider text-accent font-bold">
+            GeoChem Suite
+          </span>
         </div>
       </div>
       <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-6">
         {nav.map((group) => (
           <div key={group.label}>
-            <p className="px-3 pb-1.5 text-[10px] font-semibold uppercase tracking-widest text-sidebar-foreground/40">{group.label}</p>
+            <p className="px-3 pb-1.5 text-[10px] font-semibold uppercase tracking-widest text-sidebar-foreground/40">
+              {group.label}
+            </p>
             <ul className="space-y-0.5">
               {group.items.map((item) => {
                 const active = item.exact ? pathname === item.to : pathname.startsWith(item.to);
@@ -75,7 +98,12 @@ export function AppSidebar() {
                           : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                       )}
                     >
-                      <Icon className={cn("size-4", active ? "text-primary" : "text-sidebar-foreground/60")} />
+                      <Icon
+                        className={cn(
+                          "size-4",
+                          active ? "text-primary" : "text-sidebar-foreground/60",
+                        )}
+                      />
                       {item.label}
                     </Link>
                   </li>
@@ -87,10 +115,16 @@ export function AppSidebar() {
       </nav>
       <div className="border-t border-sidebar-border p-3">
         <div className="flex items-center gap-2 rounded-lg bg-sidebar-accent/40 border border-sidebar-border/40 p-2.5">
-          <div className="grid size-8 place-items-center rounded-full bg-gradient-to-br from-primary to-info text-white text-xs font-semibold">{initials}</div>
+          <div className="grid size-8 place-items-center rounded-full bg-gradient-to-br from-primary to-info text-white text-xs font-semibold">
+            {initials}
+          </div>
           <div className="flex-1 min-w-0">
-            <p className="truncate text-sm font-semibold text-sidebar-foreground">{currentUser?.name || "Staff User"}</p>
-            <p className="truncate text-[11px] text-sidebar-foreground/60">{currentUser?.role || "LIMS Technician"}</p>
+            <p className="truncate text-sm font-semibold text-sidebar-foreground">
+              {currentUser?.name || "Staff User"}
+            </p>
+            <p className="truncate text-[11px] text-sidebar-foreground/60">
+              {currentUser?.role || "LIMS Technician"}
+            </p>
           </div>
         </div>
       </div>

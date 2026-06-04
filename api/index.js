@@ -30,10 +30,7 @@ async function getHandler() {
 // ─── Convert Node IncomingMessage → Web Request ──────────────────────────────
 async function toWebRequest(req) {
   const proto = req.headers["x-forwarded-proto"] ?? "https";
-  const host =
-    req.headers["x-forwarded-host"] ??
-    req.headers["host"] ??
-    "localhost";
+  const host = req.headers["x-forwarded-host"] ?? req.headers["host"] ?? "localhost";
   const url = new URL(req.url, `${proto}://${host}`);
 
   const headers = new Headers();

@@ -50,14 +50,35 @@ export function DashboardFeature() {
   const activeSamples = useMemo(() => {
     return samples.filter((s) => s.status !== "Completed" && s.status !== "Report Ready").length;
   }, [samples]);
-  
+
   // Static KPI structure synced to state
-  const kpis = useMemo(() => [
-    { label: "Active Samples", value: activeSamples.toString(), delta: "+12.4%", trend: "up" as const, icon: FlaskConical },
-    { label: "Avg. Turnaround", value: "3.2d", delta: "-0.4d", trend: "up" as const, icon: Clock },
-    { label: "QA/QC Pass Rate", value: "98.6%", delta: "+0.8%", trend: "up" as const, icon: ShieldCheck },
-    { label: "Overdue", value: "7", delta: "-3", trend: "up" as const, icon: AlertTriangle },
-  ], [activeSamples]);
+  const kpis = useMemo(
+    () => [
+      {
+        label: "Active Samples",
+        value: activeSamples.toString(),
+        delta: "+12.4%",
+        trend: "up" as const,
+        icon: FlaskConical,
+      },
+      {
+        label: "Avg. Turnaround",
+        value: "3.2d",
+        delta: "-0.4d",
+        trend: "up" as const,
+        icon: Clock,
+      },
+      {
+        label: "QA/QC Pass Rate",
+        value: "98.6%",
+        delta: "+0.8%",
+        trend: "up" as const,
+        icon: ShieldCheck,
+      },
+      { label: "Overdue", value: "7", delta: "-3", trend: "up" as const, icon: AlertTriangle },
+    ],
+    [activeSamples],
+  );
 
   const recent = useMemo(() => {
     return samples.slice(0, 6);
@@ -65,10 +86,12 @@ export function DashboardFeature() {
 
   // Compute actual workflow splits
   const workflowSplit = useMemo(() => {
-    const prepCount = samples.filter(s => s.status === "In Preparation" || s.status === "Verified").length;
-    const analysisCount = samples.filter(s => s.status === "In Analysis").length;
-    const qaCount = samples.filter(s => s.status === "Completed").length;
-    const reportingCount = samples.filter(s => s.status === "Report Ready").length;
+    const prepCount = samples.filter(
+      (s) => s.status === "In Preparation" || s.status === "Verified",
+    ).length;
+    const analysisCount = samples.filter((s) => s.status === "In Analysis").length;
+    const qaCount = samples.filter((s) => s.status === "Completed").length;
+    const reportingCount = samples.filter((s) => s.status === "Report Ready").length;
 
     return [
       { name: "Preparation", value: prepCount || 312 },
@@ -137,7 +160,9 @@ export function DashboardFeature() {
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-sm font-semibold">Throughput</h3>
-              <p className="text-xs text-muted-foreground">Samples received vs completed · {timeframe} days</p>
+              <p className="text-xs text-muted-foreground">
+                Samples received vs completed · {timeframe} days
+              </p>
             </div>
             <div className="flex gap-1 rounded-md border border-border bg-background p-0.5 text-xs">
               {([14, 30, 90] as const).map((daysNum) => (
@@ -179,8 +204,20 @@ export function DashboardFeature() {
                     fontSize: 12,
                   }}
                 />
-                <Area type="monotone" dataKey="received" stroke="var(--color-chart-1)" fill="url(#r)" strokeWidth={2} />
-                <Area type="monotone" dataKey="completed" stroke="var(--color-chart-2)" fill="url(#c)" strokeWidth={2} />
+                <Area
+                  type="monotone"
+                  dataKey="received"
+                  stroke="var(--color-chart-1)"
+                  fill="url(#r)"
+                  strokeWidth={2}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="completed"
+                  stroke="var(--color-chart-2)"
+                  fill="url(#c)"
+                  strokeWidth={2}
+                />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -241,7 +278,11 @@ export function DashboardFeature() {
                     className="[&>td]:px-5 [&>td]:py-2.5 border-b border-border last:border-0 hover:bg-muted/40 transition-colors"
                   >
                     <td className="font-mono text-xs">
-                      <Link to="/app/samples/$id" params={{ id: s.id }} className="text-primary hover:underline font-medium">
+                      <Link
+                        to="/app/samples/$id"
+                        params={{ id: s.id }}
+                        className="text-primary hover:underline font-medium"
+                      >
                         {s.id}
                       </Link>
                     </td>
@@ -262,10 +303,17 @@ export function DashboardFeature() {
           <h3 className="text-sm font-semibold">Alerts & Notifications</h3>
           <ul className="mt-3 space-y-2 max-h-[290px] overflow-y-auto">
             {notifications.slice(0, 5).map((n) => (
-              <li key={n.id} className="flex gap-2 rounded-lg border border-border p-2.5 text-xs bg-card">
+              <li
+                key={n.id}
+                className="flex gap-2 rounded-lg border border-border p-2.5 text-xs bg-card"
+              >
                 <span
                   className={`mt-0.5 size-1.5 shrink-0 rounded-full ${
-                    n.kind === "alert" ? "bg-destructive" : n.kind === "approval" ? "bg-warning" : "bg-info"
+                    n.kind === "alert"
+                      ? "bg-destructive"
+                      : n.kind === "approval"
+                        ? "bg-warning"
+                        : "bg-info"
                   }`}
                 />
                 <div className="flex-1">

@@ -1,7 +1,15 @@
 import React, { useMemo } from "react";
 import {
-  Line, LineChart, CartesianGrid, ResponsiveContainer,
-  XAxis, YAxis, Tooltip, ReferenceLine, Scatter, ScatterChart,
+  Line,
+  LineChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ReferenceLine,
+  Scatter,
+  ScatterChart,
 } from "recharts";
 import { QaFlag } from "../../../types";
 
@@ -64,32 +72,77 @@ export function CrmTrendChart({ qaFlags }: CrmTrendChartProps) {
         <ResponsiveContainer>
           <LineChart data={crmData}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-            <XAxis dataKey="idx" stroke="var(--color-muted-foreground)" fontSize={11} label={{ value: "Run", position: "insideBottomRight", offset: -5, fontSize: 11 }} />
+            <XAxis
+              dataKey="idx"
+              stroke="var(--color-muted-foreground)"
+              fontSize={11}
+              label={{ value: "Run", position: "insideBottomRight", offset: -5, fontSize: 11 }}
+            />
             <YAxis
               domain={[lowerLimit * 0.98, upperLimit * 1.02]}
-              stroke="var(--color-muted-foreground)" fontSize={11}
+              stroke="var(--color-muted-foreground)"
+              fontSize={11}
               tickFormatter={(v) => v.toFixed(2)}
             />
             <Tooltip
-              contentStyle={{ background: "var(--color-card)", border: "1px solid var(--color-border)", borderRadius: 8, fontSize: 12 }}
+              contentStyle={{
+                background: "var(--color-card)",
+                border: "1px solid var(--color-border)",
+                borderRadius: 8,
+                fontSize: 12,
+              }}
               formatter={(v: number) => [v.toFixed(3), "Au g/t"]}
             />
-            <ReferenceLine y={upperLimit} stroke="hsl(0 84% 60%)" strokeDasharray="4 3"
-              label={{ value: `+5% (${upperLimit.toFixed(3)})`, fill: "hsl(0 84% 60%)", fontSize: 10, position: "right" }} />
-            <ReferenceLine y={lowerLimit} stroke="hsl(0 84% 60%)" strokeDasharray="4 3"
-              label={{ value: `-5% (${lowerLimit.toFixed(3)})`, fill: "hsl(0 84% 60%)", fontSize: 10, position: "right" }} />
-            <ReferenceLine y={certified} stroke="hsl(158 64% 48%)"
-              label={{ value: `Cert. (${certified.toFixed(3)})`, fill: "hsl(158 64% 48%)", fontSize: 10, position: "left" }} />
+            <ReferenceLine
+              y={upperLimit}
+              stroke="hsl(0 84% 60%)"
+              strokeDasharray="4 3"
+              label={{
+                value: `+5% (${upperLimit.toFixed(3)})`,
+                fill: "hsl(0 84% 60%)",
+                fontSize: 10,
+                position: "right",
+              }}
+            />
+            <ReferenceLine
+              y={lowerLimit}
+              stroke="hsl(0 84% 60%)"
+              strokeDasharray="4 3"
+              label={{
+                value: `-5% (${lowerLimit.toFixed(3)})`,
+                fill: "hsl(0 84% 60%)",
+                fontSize: 10,
+                position: "right",
+              }}
+            />
+            <ReferenceLine
+              y={certified}
+              stroke="hsl(158 64% 48%)"
+              label={{
+                value: `Cert. (${certified.toFixed(3)})`,
+                fill: "hsl(158 64% 48%)",
+                fontSize: 10,
+                position: "left",
+              }}
+            />
             <Line
-              type="monotone" dataKey="value"
-              stroke="var(--color-chart-1)" strokeWidth={2}
+              type="monotone"
+              dataKey="value"
+              stroke="var(--color-chart-1)"
+              strokeWidth={2}
               dot={(props: any) => {
                 const { cx, cy, payload } = props;
                 const outOfSpec = payload.value > upperLimit || payload.value < lowerLimit;
                 return (
-                  <circle key={`dot-${props.index}`} cx={cx} cy={cy} r={outOfSpec ? 5 : 3}
+                  <circle
+                    key={`dot-${props.index}`}
+                    cx={cx}
+                    cy={cy}
+                    r={outOfSpec ? 5 : 3}
                     fill={outOfSpec ? "hsl(0 84% 60%)" : "var(--color-chart-1)"}
-                    stroke="var(--color-card)" strokeWidth={1.5} />
+                    stroke="var(--color-card)"
+                    strokeWidth={1.5}
+                  />
                 );
               }}
             />
@@ -122,7 +175,7 @@ export function DuplicateChart({ qaFlags, threshold = 10 }: DuplicateChartProps)
       return Array.from({ length: 12 }).map((_, i) => ({
         name: `GCS-${24000 + i}`,
         rpd: Math.abs(Math.sin(i / 1.5) * 15 + (Math.random() - 0.5) * 8),
-        element: ["Au","Cu","Zn","Pb","Ag"][i % 5],
+        element: ["Au", "Cu", "Zn", "Pb", "Ag"][i % 5],
         status: "Approved",
       }));
     }
@@ -145,23 +198,64 @@ export function DuplicateChart({ qaFlags, threshold = 10 }: DuplicateChartProps)
         <ResponsiveContainer>
           <ScatterChart>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-            <XAxis type="number" dataKey="index" name="Run" stroke="var(--color-muted-foreground)" fontSize={11} hide />
-            <YAxis type="number" dataKey="rpd" name="RPD %" stroke="var(--color-muted-foreground)" fontSize={11}
-              label={{ value: "RPD %", angle: -90, position: "insideLeft", offset: 10, fontSize: 11 }} />
+            <XAxis
+              type="number"
+              dataKey="index"
+              name="Run"
+              stroke="var(--color-muted-foreground)"
+              fontSize={11}
+              hide
+            />
+            <YAxis
+              type="number"
+              dataKey="rpd"
+              name="RPD %"
+              stroke="var(--color-muted-foreground)"
+              fontSize={11}
+              label={{
+                value: "RPD %",
+                angle: -90,
+                position: "insideLeft",
+                offset: 10,
+                fontSize: 11,
+              }}
+            />
             <Tooltip
               cursor={{ strokeDasharray: "3 3" }}
-              contentStyle={{ background: "var(--color-card)", border: "1px solid var(--color-border)", borderRadius: 8, fontSize: 12 }}
+              contentStyle={{
+                background: "var(--color-card)",
+                border: "1px solid var(--color-border)",
+                borderRadius: 8,
+                fontSize: 12,
+              }}
               formatter={(v: number, name: string) => [v.toFixed(1) + "%", name]}
             />
-            <ReferenceLine y={threshold} stroke="hsl(0 84% 60%)" strokeDasharray="4 3"
-              label={{ value: `${threshold}% limit`, fill: "hsl(0 84% 60%)", fontSize: 10, position: "right" }} />
+            <ReferenceLine
+              y={threshold}
+              stroke="hsl(0 84% 60%)"
+              strokeDasharray="4 3"
+              label={{
+                value: `${threshold}% limit`,
+                fill: "hsl(0 84% 60%)",
+                fontSize: 10,
+                position: "right",
+              }}
+            />
             <Scatter
               data={dupData.map((d, i) => ({ ...d, index: i }))}
               fill="var(--color-chart-1)"
               shape={(props: any) => {
                 const { cx, cy, payload } = props;
                 const over = payload.rpd > threshold;
-                return <circle cx={cx} cy={cy} r={5} fill={over ? "hsl(0 84% 60%)" : "var(--color-chart-1)"} fillOpacity={0.8} />;
+                return (
+                  <circle
+                    cx={cx}
+                    cy={cy}
+                    r={5}
+                    fill={over ? "hsl(0 84% 60%)" : "var(--color-chart-1)"}
+                    fillOpacity={0.8}
+                  />
+                );
               }}
             />
           </ScatterChart>

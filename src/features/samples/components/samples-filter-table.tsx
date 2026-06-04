@@ -1,13 +1,31 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Download, Filter, Plus, Upload, MoreHorizontal, ScanBarcode, ArrowUpDown, ChevronRight, X, CheckCircle, RefreshCw, Printer } from "lucide-react";
+import {
+  Download,
+  Filter,
+  Plus,
+  Upload,
+  MoreHorizontal,
+  ScanBarcode,
+  ArrowUpDown,
+  ChevronRight,
+  X,
+  CheckCircle,
+  RefreshCw,
+  Printer,
+} from "lucide-react";
 import { useLimsState } from "../../../hooks/use-lims-state";
 import { DataTable } from "../../../components/shared/data-table";
 import { StatusBadge } from "../../../components/shared/StatusBadge";
 import { PageHeader } from "../../../components/layout/PageHeader";
 import { SAMPLE_STATUSES, Priority, SampleStatus } from "../../../types";
 import { toast } from "sonner";
-import { generateSamplesCsv, generateSamplesExcel, generateSamplesPdf, downloadBlob } from "../../../lib/export-service";
+import {
+  generateSamplesCsv,
+  generateSamplesExcel,
+  generateSamplesPdf,
+  downloadBlob,
+} from "../../../lib/export-service";
 import { generateCode39Svg, generateQrCodeSvg } from "../../../lib/barcode-utils";
 
 interface SampleTableRowProps {
@@ -17,46 +35,51 @@ interface SampleTableRowProps {
   onQuickScanTrigger: (id: string) => void;
 }
 
-const SampleTableRow = React.memo(({ sample, isChecked, onSelectRow, onQuickScanTrigger }: SampleTableRowProps) => {
-  return (
-    <tr
-      className={`border-t border-border hover:bg-muted/30 [&>td]:px-4 [&>td]:py-2.5 transition-colors ${
-        isChecked ? "bg-primary/5" : ""
-      }`}
-    >
-      <td>
-        <input
-          type="checkbox"
-          checked={isChecked}
-          onChange={(e) => onSelectRow(sample.id, e.target.checked)}
-          className="rounded cursor-pointer text-primary focus:ring-primary"
-        />
-      </td>
-      <td className="font-mono text-xs">
-        <Link to="/app/samples/$id" params={{ id: sample.id }} className="text-primary hover:underline font-semibold">
-          {sample.id}
-        </Link>
-      </td>
-      <td className="font-semibold text-foreground">{sample.client}</td>
-      <td className="text-muted-foreground font-medium">{sample.project}</td>
-      <td className="font-medium text-foreground">{sample.type}</td>
-      <td>
-        <StatusBadge status={sample.priority} />
-      </td>
-      <td className="text-muted-foreground font-semibold text-xs">{sample.technician}</td>
-      <td className="font-mono text-xs">{sample.location}</td>
-      <td>
-        <StatusBadge status={sample.status} />
-      </td>
-      <td className="w-24">
-        <div className="flex items-center gap-1.5 opacity-60 hover:opacity-100 transition-opacity">
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              const printWindow = window.open("", "_blank");
-              if (printWindow) {
-                printWindow.document.write(`
+const SampleTableRow = React.memo(
+  ({ sample, isChecked, onSelectRow, onQuickScanTrigger }: SampleTableRowProps) => {
+    return (
+      <tr
+        className={`border-t border-border hover:bg-muted/30 [&>td]:px-4 [&>td]:py-2.5 transition-colors ${
+          isChecked ? "bg-primary/5" : ""
+        }`}
+      >
+        <td>
+          <input
+            type="checkbox"
+            checked={isChecked}
+            onChange={(e) => onSelectRow(sample.id, e.target.checked)}
+            className="rounded cursor-pointer text-primary focus:ring-primary"
+          />
+        </td>
+        <td className="font-mono text-xs">
+          <Link
+            to="/app/samples/$id"
+            params={{ id: sample.id }}
+            className="text-primary hover:underline font-semibold"
+          >
+            {sample.id}
+          </Link>
+        </td>
+        <td className="font-semibold text-foreground">{sample.client}</td>
+        <td className="text-muted-foreground font-medium">{sample.project}</td>
+        <td className="font-medium text-foreground">{sample.type}</td>
+        <td>
+          <StatusBadge status={sample.priority} />
+        </td>
+        <td className="text-muted-foreground font-semibold text-xs">{sample.technician}</td>
+        <td className="font-mono text-xs">{sample.location}</td>
+        <td>
+          <StatusBadge status={sample.status} />
+        </td>
+        <td className="w-24">
+          <div className="flex items-center gap-1.5 opacity-60 hover:opacity-100 transition-opacity">
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const printWindow = window.open("", "_blank");
+                if (printWindow) {
+                  printWindow.document.write(`
                   <html>
                     <head>
                       <title>Print Label ${sample.id}</title>
@@ -103,39 +126,40 @@ const SampleTableRow = React.memo(({ sample, isChecked, onSelectRow, onQuickScan
                     </body>
                   </html>
                 `);
-                printWindow.document.close();
-              }
-              toast.success(`Label print dispatched for ${sample.id}`);
-            }}
-            className="rounded p-1 hover:bg-muted text-muted-foreground hover:text-primary cursor-pointer transition inline-flex"
-            title="Instant print label"
-          >
-            <Printer className="size-3.5" />
-          </button>
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onQuickScanTrigger(sample.id);
-            }}
-            className="rounded p-1 hover:bg-muted text-muted-foreground hover:text-primary cursor-pointer transition inline-flex"
-            title="Contextual scanning actions"
-          >
-            <ScanBarcode className="size-3.5" />
-          </button>
-          <Link
-            to="/app/samples/$id"
-            params={{ id: sample.id }}
-            className="rounded p-1 hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer transition inline-flex"
-            title="Open specifications sheet"
-          >
-            <ChevronRight className="size-4" />
-          </Link>
-        </div>
-      </td>
-    </tr>
-  );
-});
+                  printWindow.document.close();
+                }
+                toast.success(`Label print dispatched for ${sample.id}`);
+              }}
+              className="rounded p-1 hover:bg-muted text-muted-foreground hover:text-primary cursor-pointer transition inline-flex"
+              title="Instant print label"
+            >
+              <Printer className="size-3.5" />
+            </button>
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onQuickScanTrigger(sample.id);
+              }}
+              className="rounded p-1 hover:bg-muted text-muted-foreground hover:text-primary cursor-pointer transition inline-flex"
+              title="Contextual scanning actions"
+            >
+              <ScanBarcode className="size-3.5" />
+            </button>
+            <Link
+              to="/app/samples/$id"
+              params={{ id: sample.id }}
+              className="rounded p-1 hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer transition inline-flex"
+              title="Open specifications sheet"
+            >
+              <ChevronRight className="size-4" />
+            </Link>
+          </div>
+        </td>
+      </tr>
+    );
+  },
+);
 
 SampleTableRow.displayName = "SampleTableRow";
 
@@ -180,7 +204,8 @@ export function SamplesFilterTable() {
   const [scanQuery, setScanQuery] = useState("");
   const [scanMode, setScanMode] = useState<"lookup" | "transit" | "transition">("lookup");
   const [transitLocation, setTransitLocation] = useState("Prep Bench");
-  const [targetTransitionStatus, setTargetTransitionStatus] = useState<SampleStatus>("In Preparation");
+  const [targetTransitionStatus, setTargetTransitionStatus] =
+    useState<SampleStatus>("In Preparation");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isImporting, setIsImporting] = useState(false);
 
@@ -307,7 +332,10 @@ export function SamplesFilterTable() {
       const filename = `LIMS_Samples_${exportScope}_${Date.now()}.${extension}`;
       downloadBlob(blob, filename);
 
-      toast.success(`${targetDataset.length} samples exported to ${exportFormat.toUpperCase()} successfully!`, { id: toastId });
+      toast.success(
+        `${targetDataset.length} samples exported to ${exportFormat.toUpperCase()} successfully!`,
+        { id: toastId },
+      );
       setShowExportModal(false);
     } catch (err: any) {
       toast.error(err.message || "Failed to generate file export.", { id: toastId });
@@ -428,7 +456,11 @@ export function SamplesFilterTable() {
     } else if (scanMode === "transition") {
       try {
         await updateSampleStatus(cleanId, targetTransitionStatus);
-        await logBarcodeScan(cleanId, sampleMatch.location, `Workflow scan: status moved to ${targetTransitionStatus}`);
+        await logBarcodeScan(
+          cleanId,
+          sampleMatch.location,
+          `Workflow scan: status moved to ${targetTransitionStatus}`,
+        );
         toast.success(`Workflow Transition: ${cleanId} moved to ${targetTransitionStatus}`);
         setScanQuery(""); // Keep open for rapid sequential scans
       } catch (err) {
@@ -446,28 +478,60 @@ export function SamplesFilterTable() {
       onChange={(e) => handleSelectAll(e.target.checked)}
       className="rounded cursor-pointer text-primary focus:ring-primary"
     />,
-    <button key="id" onClick={() => handleSort("id")} className="flex items-center gap-1 hover:text-white font-semibold cursor-pointer">
+    <button
+      key="id"
+      onClick={() => handleSort("id")}
+      className="flex items-center gap-1 hover:text-white font-semibold cursor-pointer"
+    >
       Sample ID <ArrowUpDown className="size-3" />
     </button>,
-    <button key="client" onClick={() => handleSort("client")} className="flex items-center gap-1 hover:text-white font-semibold cursor-pointer">
+    <button
+      key="client"
+      onClick={() => handleSort("client")}
+      className="flex items-center gap-1 hover:text-white font-semibold cursor-pointer"
+    >
       Client <ArrowUpDown className="size-3" />
     </button>,
-    <button key="project" onClick={() => handleSort("project")} className="flex items-center gap-1 hover:text-white font-semibold cursor-pointer">
+    <button
+      key="project"
+      onClick={() => handleSort("project")}
+      className="flex items-center gap-1 hover:text-white font-semibold cursor-pointer"
+    >
       Project <ArrowUpDown className="size-3" />
     </button>,
-    <button key="type" onClick={() => handleSort("type")} className="flex items-center gap-1 hover:text-white font-semibold cursor-pointer">
+    <button
+      key="type"
+      onClick={() => handleSort("type")}
+      className="flex items-center gap-1 hover:text-white font-semibold cursor-pointer"
+    >
       Type <ArrowUpDown className="size-3" />
     </button>,
-    <button key="priority" onClick={() => handleSort("priority")} className="flex items-center gap-1 hover:text-white font-semibold cursor-pointer">
+    <button
+      key="priority"
+      onClick={() => handleSort("priority")}
+      className="flex items-center gap-1 hover:text-white font-semibold cursor-pointer"
+    >
       Priority <ArrowUpDown className="size-3" />
     </button>,
-    <button key="technician" onClick={() => handleSort("technician")} className="flex items-center gap-1 hover:text-white font-semibold cursor-pointer">
+    <button
+      key="technician"
+      onClick={() => handleSort("technician")}
+      className="flex items-center gap-1 hover:text-white font-semibold cursor-pointer"
+    >
       Technician <ArrowUpDown className="size-3" />
     </button>,
-    <button key="location" onClick={() => handleSort("location")} className="flex items-center gap-1 hover:text-white font-semibold cursor-pointer">
+    <button
+      key="location"
+      onClick={() => handleSort("location")}
+      className="flex items-center gap-1 hover:text-white font-semibold cursor-pointer"
+    >
       Storage <ArrowUpDown className="size-3" />
     </button>,
-    <button key="status" onClick={() => handleSort("status")} className="flex items-center gap-1 hover:text-white font-semibold cursor-pointer">
+    <button
+      key="status"
+      onClick={() => handleSort("status")}
+      className="flex items-center gap-1 hover:text-white font-semibold cursor-pointer"
+    >
       Status <ArrowUpDown className="size-3" />
     </button>,
     "",
@@ -502,11 +566,13 @@ export function SamplesFilterTable() {
           </option>
         ))}
       </select>
-      
+
       <button
         onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
         className={`inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-sm cursor-pointer transition font-medium ${
-          showAdvancedFilters ? "border-primary bg-primary/10 text-primary" : "border-border bg-background hover:bg-muted"
+          showAdvancedFilters
+            ? "border-primary bg-primary/10 text-primary"
+            : "border-border bg-background hover:bg-muted"
         }`}
       >
         <Filter className="size-3.5" /> Filters
@@ -563,7 +629,9 @@ export function SamplesFilterTable() {
       {showAdvancedFilters && (
         <div className="rounded-xl border border-border bg-card p-5 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 animate-in slide-in-from-top duration-300">
           <div>
-            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Priority SLA</label>
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Priority SLA
+            </label>
             <select
               value={filterPriority}
               onChange={(e) => {
@@ -580,7 +648,9 @@ export function SamplesFilterTable() {
             </select>
           </div>
           <div>
-            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Sample Prep Matrix Type</label>
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Sample Prep Matrix Type
+            </label>
             <select
               value={filterType}
               onChange={(e) => {
@@ -660,7 +730,12 @@ export function SamplesFilterTable() {
               disabled={isBulkUpdating}
               className="inline-flex items-center gap-1 rounded-md gradient-primary px-3 py-1.5 text-xs text-white font-semibold cursor-pointer hover:opacity-90 shadow-sm transition disabled:opacity-55"
             >
-              {isBulkUpdating ? <RefreshCw className="size-3 animate-spin" /> : <CheckCircle className="size-3" />} Apply
+              {isBulkUpdating ? (
+                <RefreshCw className="size-3 animate-spin" />
+              ) : (
+                <CheckCircle className="size-3" />
+              )}{" "}
+              Apply
             </button>
           </form>
           <div className="h-4 w-px bg-border" />
@@ -671,7 +746,9 @@ export function SamplesFilterTable() {
 
               const printWindow = window.open("", "_blank");
               if (printWindow) {
-                const labelsHtml = selectedSamples.map((s) => `
+                const labelsHtml = selectedSamples
+                  .map(
+                    (s) => `
                   <div class="label-page">
                     <div class="label-container">
                       <h2 style="margin: 0 0 5px 0; font-size: 16px; letter-spacing: 1px;">GEOChem LIMS Tag</h2>
@@ -684,7 +761,9 @@ export function SamplesFilterTable() {
                       <p style="margin: 3px 0; font-size: 11px; font-family: monospace; color: #555;">Shelf: ${s.location}</p>
                     </div>
                   </div>
-                `).join("");
+                `,
+                  )
+                  .join("");
 
                 printWindow.document.write(`
                   <html>
@@ -806,7 +885,9 @@ export function SamplesFilterTable() {
 
             {/* Scan Mode Selection tabs */}
             <div className="space-y-1">
-              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">Scanning Mode Behavior</label>
+              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
+                Scanning Mode Behavior
+              </label>
               <div className="grid grid-cols-3 gap-1.5 p-1 rounded-lg bg-muted/60 border border-border/40">
                 {(["lookup", "transit", "transition"] as const).map((mode) => (
                   <button
@@ -819,7 +900,11 @@ export function SamplesFilterTable() {
                         : "text-muted-foreground hover:text-foreground"
                     }`}
                   >
-                    {mode === "lookup" ? "Quick Lookup" : mode === "transit" ? "Log Transit" : "Transition"}
+                    {mode === "lookup"
+                      ? "Quick Lookup"
+                      : mode === "transit"
+                        ? "Log Transit"
+                        : "Transition"}
                   </button>
                 ))}
               </div>
@@ -828,7 +913,9 @@ export function SamplesFilterTable() {
             {/* Context-Sensitive Mode Inputs */}
             {scanMode === "transit" && (
               <div className="space-y-1 animate-in slide-in-from-top-2 duration-200">
-                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">Assigned Station Location</label>
+                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
+                  Assigned Station Location
+                </label>
                 <select
                   value={transitLocation}
                   onChange={(e) => setTransitLocation(e.target.value)}
@@ -845,7 +932,9 @@ export function SamplesFilterTable() {
 
             {scanMode === "transition" && (
               <div className="space-y-1 animate-in slide-in-from-top-2 duration-200">
-                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">Transition to Workflow Step</label>
+                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
+                  Transition to Workflow Step
+                </label>
                 <select
                   value={targetTransitionStatus}
                   onChange={(e) => setTargetTransitionStatus(e.target.value as SampleStatus)}
@@ -859,11 +948,15 @@ export function SamplesFilterTable() {
                 </select>
               </div>
             )}
-            
+
             <div className="space-y-2">
               <div className="flex justify-between items-center">
-                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">Laser Reader Input Stream</label>
-                <span className="text-[10px] text-muted-foreground/60 italic font-medium">Hardware-sanitized wedge</span>
+                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
+                  Laser Reader Input Stream
+                </label>
+                <span className="text-[10px] text-muted-foreground/60 italic font-medium">
+                  Hardware-sanitized wedge
+                </span>
               </div>
               <input
                 type="text"
@@ -888,7 +981,11 @@ export function SamplesFilterTable() {
                 type="submit"
                 className="rounded-md gradient-primary text-white px-4 py-1.5 text-xs font-semibold hover:opacity-90 shadow-sm cursor-pointer transition"
               >
-                {scanMode === "lookup" ? "Open Record" : scanMode === "transit" ? "Log Custody Transit" : "Verify Transition"}
+                {scanMode === "lookup"
+                  ? "Open Record"
+                  : scanMode === "transit"
+                    ? "Log Custody Transit"
+                    : "Verify Transition"}
               </button>
             </div>
           </form>
@@ -916,7 +1013,9 @@ export function SamplesFilterTable() {
             <div className="space-y-4">
               {/* 1. Format Selection */}
               <div>
-                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">File Format</label>
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                  File Format
+                </label>
                 <div className="mt-2 grid grid-cols-3 gap-2">
                   {(["csv", "excel", "pdf"] as const).map((format) => (
                     <button
@@ -929,7 +1028,11 @@ export function SamplesFilterTable() {
                           : "border-border bg-card text-muted-foreground hover:bg-muted"
                       }`}
                     >
-                      {format === "csv" ? "CSV Table" : format === "excel" ? "MS Excel" : "PDF Report"}
+                      {format === "csv"
+                        ? "CSV Table"
+                        : format === "excel"
+                          ? "MS Excel"
+                          : "PDF Report"}
                     </button>
                   ))}
                 </div>
@@ -937,12 +1040,17 @@ export function SamplesFilterTable() {
 
               {/* 2. Scope Selection */}
               <div>
-                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Export Scope</label>
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                  Export Scope
+                </label>
                 <div className="mt-2 space-y-2">
                   <label
                     className={`flex items-center justify-between rounded-lg border p-3 text-xs cursor-pointer select-none font-medium transition ${
-                      selectedIds.length === 0 ? "opacity-45 cursor-not-allowed border-border" :
-                      exportScope === "selected" ? "border-primary bg-primary/5 text-primary" : "border-border hover:bg-muted/40"
+                      selectedIds.length === 0
+                        ? "opacity-45 cursor-not-allowed border-border"
+                        : exportScope === "selected"
+                          ? "border-primary bg-primary/5 text-primary"
+                          : "border-border hover:bg-muted/40"
                     }`}
                   >
                     <div className="flex items-center gap-2">
@@ -956,12 +1064,16 @@ export function SamplesFilterTable() {
                       />
                       <span>Selected Records</span>
                     </div>
-                    <span className="font-mono bg-muted px-2 py-0.5 rounded font-bold">{selectedIds.length} rows</span>
+                    <span className="font-mono bg-muted px-2 py-0.5 rounded font-bold">
+                      {selectedIds.length} rows
+                    </span>
                   </label>
 
                   <label
                     className={`flex items-center justify-between rounded-lg border p-3 text-xs cursor-pointer select-none font-medium transition ${
-                      exportScope === "filtered" ? "border-primary bg-primary/5 text-primary" : "border-border hover:bg-muted/40"
+                      exportScope === "filtered"
+                        ? "border-primary bg-primary/5 text-primary"
+                        : "border-border hover:bg-muted/40"
                     }`}
                   >
                     <div className="flex items-center gap-2">
@@ -974,12 +1086,16 @@ export function SamplesFilterTable() {
                       />
                       <span>Filtered Data Grid</span>
                     </div>
-                    <span className="font-mono bg-muted px-2 py-0.5 rounded font-bold">{filtered.length} rows</span>
+                    <span className="font-mono bg-muted px-2 py-0.5 rounded font-bold">
+                      {filtered.length} rows
+                    </span>
                   </label>
 
                   <label
                     className={`flex items-center justify-between rounded-lg border p-3 text-xs cursor-pointer select-none font-medium transition ${
-                      exportScope === "all" ? "border-primary bg-primary/5 text-primary" : "border-border hover:bg-muted/40"
+                      exportScope === "all"
+                        ? "border-primary bg-primary/5 text-primary"
+                        : "border-border hover:bg-muted/40"
                     }`}
                   >
                     <div className="flex items-center gap-2">
@@ -992,7 +1108,9 @@ export function SamplesFilterTable() {
                       />
                       <span>Entire LIMS Inventory</span>
                     </div>
-                    <span className="font-mono bg-muted px-2 py-0.5 rounded font-bold">{samples.length} rows</span>
+                    <span className="font-mono bg-muted px-2 py-0.5 rounded font-bold">
+                      {samples.length} rows
+                    </span>
                   </label>
                 </div>
               </div>
@@ -1013,7 +1131,12 @@ export function SamplesFilterTable() {
                 disabled={isExporting}
                 className="inline-flex items-center gap-1.5 rounded-md gradient-primary text-white px-4 py-2 text-xs font-semibold hover:opacity-90 shadow-sm cursor-pointer transition disabled:opacity-50"
               >
-                {isExporting ? <RefreshCw className="size-3.5 animate-spin" /> : <Download className="size-3.5" />} Compile Export
+                {isExporting ? (
+                  <RefreshCw className="size-3.5 animate-spin" />
+                ) : (
+                  <Download className="size-3.5" />
+                )}{" "}
+                Compile Export
               </button>
             </div>
           </div>

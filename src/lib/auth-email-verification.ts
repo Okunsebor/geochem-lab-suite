@@ -81,7 +81,6 @@ export function getSignupEmailOptions() {
   };
 }
 
-
 export function isSupabaseConfigured(): boolean {
   const url =
     (typeof import.meta !== "undefined" && import.meta.env?.VITE_SUPABASE_URL) ||

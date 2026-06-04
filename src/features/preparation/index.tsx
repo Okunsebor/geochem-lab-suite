@@ -35,7 +35,7 @@ export function PreparationFeature() {
     client: string,
     project: string,
     sampleType: string,
-    priority: Priority
+    priority: Priority,
   ) => {
     enrollSampleInPrep(sampleId, client, project, sampleType, priority);
     updateSampleStatus(sampleId, "In Preparation");
@@ -77,7 +77,7 @@ export function PreparationFeature() {
               onClick={() => {
                 // Quick-enroll first eligible verified sample
                 const eligible = samples.find(
-                  (s) => s.status === "Verified" && !enrolledIds.has(s.id)
+                  (s) => s.status === "Verified" && !enrolledIds.has(s.id),
                 );
                 if (!eligible) {
                   toast.info("No verified samples available to assign");
@@ -88,7 +88,7 @@ export function PreparationFeature() {
                   eligible.client,
                   eligible.project,
                   eligible.type,
-                  eligible.priority
+                  eligible.priority,
                 );
               }}
               className="inline-flex items-center gap-1.5 rounded-md gradient-primary px-3 py-1.5 text-sm text-white font-semibold cursor-pointer hover:opacity-90 shadow-sm transition"

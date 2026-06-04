@@ -11,7 +11,7 @@ interface PrepEnrollModalProps {
     client: string,
     project: string,
     sampleType: string,
-    priority: Priority
+    priority: Priority,
   ) => void;
   onClose: () => void;
 }
@@ -36,9 +36,9 @@ export function PrepEnrollModal({
           (search === "" ||
             s.id.toLowerCase().includes(search.toLowerCase()) ||
             s.client.toLowerCase().includes(search.toLowerCase()) ||
-            s.project.toLowerCase().includes(search.toLowerCase()))
+            s.project.toLowerCase().includes(search.toLowerCase())),
       ),
-    [samples, enrolledSampleIds, enrolled, search]
+    [samples, enrolledSampleIds, enrolled, search],
   );
 
   const handleEnroll = (s: Sample) => {
@@ -60,10 +60,17 @@ export function PrepEnrollModal({
         {/* Header */}
         <div className="flex items-center gap-3 border-b border-border px-5 py-4">
           <div>
-            <h3 className="text-base font-semibold text-foreground">Enroll Samples in Preparation</h3>
-            <p className="text-xs text-muted-foreground">Verified samples ready for the prep workflow</p>
+            <h3 className="text-base font-semibold text-foreground">
+              Enroll Samples in Preparation
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              Verified samples ready for the prep workflow
+            </p>
           </div>
-          <button onClick={onClose} className="ml-auto rounded-lg p-1.5 hover:bg-muted transition-colors">
+          <button
+            onClick={onClose}
+            className="ml-auto rounded-lg p-1.5 hover:bg-muted transition-colors"
+          >
             <X className="size-4 text-muted-foreground" />
           </button>
         </div>
@@ -95,14 +102,19 @@ export function PrepEnrollModal({
             </div>
           )}
           {eligible.map((s) => (
-            <div key={s.id} className="flex items-center gap-3 px-5 py-3 hover:bg-muted/20 transition-colors">
+            <div
+              key={s.id}
+              className="flex items-center gap-3 px-5 py-3 hover:bg-muted/20 transition-colors"
+            >
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="font-mono text-xs font-bold text-primary">{s.id}</span>
                   <StatusBadge status={s.priority} />
                 </div>
                 <p className="text-sm font-medium text-foreground truncate">{s.client}</p>
-                <p className="text-xs text-muted-foreground truncate">{s.project} · {s.type}</p>
+                <p className="text-xs text-muted-foreground truncate">
+                  {s.project} · {s.type}
+                </p>
               </div>
               <button
                 onClick={() => handleEnroll(s)}

@@ -146,7 +146,6 @@ export interface AnalyticalReport {
   history?: ReportLog[];
 }
 
-
 export interface AnomalyFlag {
   flagId: string;
   sample: string;

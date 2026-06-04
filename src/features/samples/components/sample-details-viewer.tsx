@@ -1,6 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft, Printer, MessageSquare, Edit3, FileText, QrCode, Check, ShieldCheck, XCircle, Upload, Loader2 } from "lucide-react";
+import {
+  ArrowLeft,
+  Printer,
+  MessageSquare,
+  Edit3,
+  FileText,
+  QrCode,
+  Check,
+  ShieldCheck,
+  XCircle,
+  Upload,
+  Loader2,
+} from "lucide-react";
 import { useLimsState } from "../../../hooks/use-lims-state";
 import { useSampleActions } from "../../../hooks/use-sample-actions";
 import { generateQrCodeSvg, generateCode39Svg } from "../../../lib/barcode-utils";
@@ -10,9 +22,10 @@ import { SAMPLE_STATUSES } from "../../../types";
 import { SampleStatus } from "../../../types";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
- 
+
 export function SampleDetailsViewer({ sampleId }: { sampleId: string }) {
-  const { samples, addSampleNote, updateSampleStatus, logBarcodeScan, fetchSampleDetails } = useLimsState();
+  const { samples, addSampleNote, updateSampleStatus, logBarcodeScan, fetchSampleDetails } =
+    useLimsState();
   const { verify, reject, uploadAttachment } = useSampleActions();
   const [noteText, setNoteText] = useState("");
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
@@ -23,14 +36,14 @@ export function SampleDetailsViewer({ sampleId }: { sampleId: string }) {
       fetchSampleDetails(sampleId);
     }
   }, [sampleId]);
-  
+
   // Verification states
   const [verificationNotes, setVerificationNotes] = useState("");
   const [rackLocation, setRackLocation] = useState("Rack A-1");
   const [checkWeight, setCheckWeight] = useState(true);
   const [checkContainer, setCheckContainer] = useState(true);
   const [checkManifest, setCheckManifest] = useState(true);
-  
+
   // Upload states
   const [uploadingDoc, setUploadingDoc] = useState(false);
 
@@ -62,8 +75,10 @@ export function SampleDetailsViewer({ sampleId }: { sampleId: string }) {
       checkWeight ? "✓ Weight verified" : "✗ Weight discrepancy",
       checkContainer ? "✓ Container intact" : "✗ Leaking container",
       checkManifest ? "✓ Manifest matches" : "✗ Manifest mismatch",
-      verificationNotes.trim()
-    ].filter(Boolean).join(" | ");
+      verificationNotes.trim(),
+    ]
+      .filter(Boolean)
+      .join(" | ");
 
     try {
       await verify(sample.id, notes, rackLocation);
@@ -106,11 +121,11 @@ export function SampleDetailsViewer({ sampleId }: { sampleId: string }) {
     { name: "Intake Form.pdf", filePath: "#", sizeBytes: 154000 },
     { name: "Field Notes.pdf", filePath: "#", sizeBytes: 89000 },
   ];
-  
-  const dynamicAttachments = (sample.attachments || []).map(a => ({
+
+  const dynamicAttachments = (sample.attachments || []).map((a) => ({
     name: a.name,
     filePath: a.filePath,
-    sizeBytes: a.sizeBytes
+    sizeBytes: a.sizeBytes,
   }));
 
   const allDocuments = [...staticDocs, ...dynamicAttachments];
@@ -219,7 +234,7 @@ export function SampleDetailsViewer({ sampleId }: { sampleId: string }) {
               >
                 <Edit3 className="size-3.5" /> Update status
               </button>
-              
+
               {isUpdatingStatus && (
                 <div className="absolute right-0 mt-2 w-48 rounded-md border border-border bg-popover shadow-md py-1 z-40">
                   {SAMPLE_STATUSES.map((st) => (
@@ -243,7 +258,9 @@ export function SampleDetailsViewer({ sampleId }: { sampleId: string }) {
       <div className="rounded-xl border border-border bg-card p-5">
         <div className="flex items-center justify-between mb-4 border-b border-border/50 pb-2.5">
           <h3 className="text-sm font-semibold">Workflow Progress</h3>
-          <span className="text-[10px] text-muted-foreground font-semibold tracking-wide bg-muted px-2.5 py-0.5 rounded-full select-none">Click nodes to transition</span>
+          <span className="text-[10px] text-muted-foreground font-semibold tracking-wide bg-muted px-2.5 py-0.5 rounded-full select-none">
+            Click nodes to transition
+          </span>
         </div>
         <ol className="flex flex-wrap md:flex-nowrap items-center w-full gap-y-4 md:gap-y-0 pt-2">
           {SAMPLE_STATUSES.map((st, i) => {
@@ -272,12 +289,15 @@ export function SampleDetailsViewer({ sampleId }: { sampleId: string }) {
                 >
                   <div
                     className={`grid size-7 shrink-0 place-items-center rounded-full text-[10px] font-bold transition-all shadow-sm relative ${
-                      isActive ? "gradient-primary text-white ring-2 ring-primary/40 ring-offset-2 ring-offset-background scale-105" :
-                      done ? "bg-primary/20 text-primary border border-primary/30 group-hover:bg-primary/35" : "bg-muted text-muted-foreground border border-border group-hover:bg-muted/80"
+                      isActive
+                        ? "gradient-primary text-white ring-2 ring-primary/40 ring-offset-2 ring-offset-background scale-105"
+                        : done
+                          ? "bg-primary/20 text-primary border border-primary/30 group-hover:bg-primary/35"
+                          : "bg-muted text-muted-foreground border border-border group-hover:bg-muted/80"
                     }`}
                   >
                     {isActive && (
-                      <motion.span 
+                      <motion.span
                         className="absolute inset-0 rounded-full bg-primary/25 pointer-events-none"
                         animate={{ scale: [1, 1.45, 1], opacity: [0.65, 0, 0.65] }}
                         transition={{ repeat: Infinity, duration: 1.8, ease: "easeInOut" }}
@@ -287,8 +307,11 @@ export function SampleDetailsViewer({ sampleId }: { sampleId: string }) {
                   </div>
                   <span
                     className={`text-[10px] truncate max-w-[100px] transition-colors ${
-                      isActive ? "text-primary font-bold" :
-                      done ? "text-foreground font-semibold group-hover:text-primary" : "text-muted-foreground group-hover:text-foreground"
+                      isActive
+                        ? "text-primary font-bold"
+                        : done
+                          ? "text-foreground font-semibold group-hover:text-primary"
+                          : "text-muted-foreground group-hover:text-foreground"
                     }`}
                   >
                     {st}
@@ -307,18 +330,35 @@ export function SampleDetailsViewer({ sampleId }: { sampleId: string }) {
             <h3 className="text-sm font-bold text-foreground inline-flex items-center gap-2">
               <ShieldCheck className="size-4 text-primary" /> Physical Intake Verification
             </h3>
-            <p className="text-xs text-muted-foreground mt-1">Check sample compliance before lab ingestion.</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Check sample compliance before lab ingestion.
+            </p>
             <div className="mt-4 space-y-2">
               <label className="flex items-center gap-2 text-xs font-semibold text-muted-foreground select-none cursor-pointer hover:text-foreground">
-                <input type="checkbox" checked={checkWeight} onChange={(e) => setCheckWeight(e.target.checked)} className="rounded text-primary border-input" />
+                <input
+                  type="checkbox"
+                  checked={checkWeight}
+                  onChange={(e) => setCheckWeight(e.target.checked)}
+                  className="rounded text-primary border-input"
+                />
                 Weight matches manifest ({sample.weight})
               </label>
               <label className="flex items-center gap-2 text-xs font-semibold text-muted-foreground select-none cursor-pointer hover:text-foreground">
-                <input type="checkbox" checked={checkContainer} onChange={(e) => setCheckContainer(e.target.checked)} className="rounded text-primary border-input" />
+                <input
+                  type="checkbox"
+                  checked={checkContainer}
+                  onChange={(e) => setCheckContainer(e.target.checked)}
+                  className="rounded text-primary border-input"
+                />
                 Container intact (No leaks/contamination)
               </label>
               <label className="flex items-center gap-2 text-xs font-semibold text-muted-foreground select-none cursor-pointer hover:text-foreground">
-                <input type="checkbox" checked={checkManifest} onChange={(e) => setCheckManifest(e.target.checked)} className="rounded text-primary border-input" />
+                <input
+                  type="checkbox"
+                  checked={checkManifest}
+                  onChange={(e) => setCheckManifest(e.target.checked)}
+                  className="rounded text-primary border-input"
+                />
                 Correct matrix & type listed
               </label>
             </div>
@@ -364,7 +404,9 @@ export function SampleDetailsViewer({ sampleId }: { sampleId: string }) {
           <XCircle className="size-5 text-destructive shrink-0 mt-0.5" />
           <div>
             <h3 className="text-sm font-bold text-destructive">Sample Intake Flagged & Rejected</h3>
-            <p className="text-xs text-muted-foreground mt-1">This sample failed physical validation and has been isolated.</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              This sample failed physical validation and has been isolated.
+            </p>
             <div className="mt-3 text-xs bg-card p-3 rounded border border-destructive/10 font-semibold text-foreground">
               Reason: {sample.rejectionReason || "Failed physical checklist criteria."}
             </div>
@@ -375,7 +417,9 @@ export function SampleDetailsViewer({ sampleId }: { sampleId: string }) {
           <ShieldCheck className="size-5 text-success shrink-0 mt-0.5" />
           <div>
             <h3 className="text-sm font-bold text-success">Sample Verified & Accepted</h3>
-            <p className="text-xs text-muted-foreground mt-1">Physical conditions match compliance guidelines. Storage successfully assigned.</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Physical conditions match compliance guidelines. Storage successfully assigned.
+            </p>
             {sample.verificationNotes && (
               <div className="mt-3 text-xs bg-card p-3 rounded border border-success/10 font-semibold text-foreground">
                 Verification logs: {sample.verificationNotes}
@@ -390,8 +434,12 @@ export function SampleDetailsViewer({ sampleId }: { sampleId: string }) {
           {/* Details */}
           <div className="rounded-xl border border-border bg-card p-5">
             <div className="flex items-center justify-between mb-3 border-b border-border/60 pb-2.5">
-              <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">Analytical Specifications Matrix</h3>
-              <span className="text-[10px] font-bold bg-primary/10 text-primary px-2.5 py-0.5 rounded-full select-none">SLA Assigned</span>
+              <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
+                Analytical Specifications Matrix
+              </h3>
+              <span className="text-[10px] font-bold bg-primary/10 text-primary px-2.5 py-0.5 rounded-full select-none">
+                SLA Assigned
+              </span>
             </div>
             <dl className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
               {[
@@ -399,14 +447,29 @@ export function SampleDetailsViewer({ sampleId }: { sampleId: string }) {
                 ["Assigned Campaign", sample.project, "text-foreground font-medium"],
                 ["Sample Type Matrix", sample.type, "text-primary font-bold"],
                 ["Weight Standard", sample.weight, "font-mono text-foreground font-semibold"],
-                ["Storage Shelf Location", sample.location, "font-mono text-foreground font-medium"],
+                [
+                  "Storage Shelf Location",
+                  sample.location,
+                  "font-mono text-foreground font-medium",
+                ],
                 ["Urgency Priority Level", sample.priority, "font-semibold text-foreground"],
                 ["Lead LIMS Analyst", sample.technician, "text-foreground font-semibold"],
-                ["Intake Registered", new Date(sample.receivedAt).toLocaleDateString(), "text-muted-foreground font-medium"],
+                [
+                  "Intake Registered",
+                  new Date(sample.receivedAt).toLocaleDateString(),
+                  "text-muted-foreground font-medium",
+                ],
               ].map(([k, v, cnText]) => (
-                <div key={k} className="p-2.5 rounded-lg bg-muted/20 border border-border/40 hover:border-border/80 transition-colors">
-                  <dt className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider">{k}</dt>
-                  <dd className={`mt-1.5 truncate ${cnText}`} title={String(v)}>{v}</dd>
+                <div
+                  key={k}
+                  className="p-2.5 rounded-lg bg-muted/20 border border-border/40 hover:border-border/80 transition-colors"
+                >
+                  <dt className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider">
+                    {k}
+                  </dt>
+                  <dd className={`mt-1.5 truncate ${cnText}`} title={String(v)}>
+                    {v}
+                  </dd>
                 </div>
               ))}
             </dl>
@@ -444,7 +507,10 @@ export function SampleDetailsViewer({ sampleId }: { sampleId: string }) {
                 </thead>
                 <tbody>
                   {(sample.results || []).map((r) => (
-                    <tr key={r.element} className="border-b border-border last:border-0 [&>td]:px-2 [&>td]:py-2 font-medium">
+                    <tr
+                      key={r.element}
+                      className="border-b border-border last:border-0 [&>td]:px-2 [&>td]:py-2 font-medium"
+                    >
                       <td className="font-semibold">{r.element}</td>
                       <td className="font-mono">{r.value}</td>
                       <td className="text-muted-foreground">{r.unit}</td>
@@ -463,21 +529,27 @@ export function SampleDetailsViewer({ sampleId }: { sampleId: string }) {
         <div className="space-y-4">
           {/* Real Dynamic scannable Barcode & QR Code Card */}
           <div className="rounded-xl border border-border bg-card p-5 text-center space-y-4">
-            <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Physical Barcode Tag</h3>
-            
+            <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+              Physical Barcode Tag
+            </h3>
+
             <button
               onClick={() => setShowBarcodeModal(true)}
               className="w-full rounded-lg border border-border bg-card/45 p-3 hover:border-primary/40 hover:bg-muted/40 transition group cursor-pointer text-left focus:outline-none focus:ring-1 focus:ring-primary flex flex-col items-center gap-3 relative overflow-hidden"
               title="Click to view barcode tracking actions"
             >
-              <div 
+              <div
                 className="w-full h-14 text-foreground scale-x-95 transition-transform group-hover:scale-x-100"
                 dangerouslySetInnerHTML={{ __html: generateCode39Svg(sample.id) }}
               />
               <div className="w-full border-t border-dashed border-border/80 my-1" />
               <div className="flex items-center justify-between w-full text-xs font-semibold px-1">
-                <span className="text-muted-foreground">Type: <span className="text-foreground font-mono">Code 39</span></span>
-                <span className="text-primary group-hover:underline flex items-center gap-1">Actions <QrCode className="size-3.5" /></span>
+                <span className="text-muted-foreground">
+                  Type: <span className="text-foreground font-mono">Code 39</span>
+                </span>
+                <span className="text-primary group-hover:underline flex items-center gap-1">
+                  Actions <QrCode className="size-3.5" />
+                </span>
               </div>
             </button>
 
@@ -490,32 +562,40 @@ export function SampleDetailsViewer({ sampleId }: { sampleId: string }) {
           {/* Glassmorphic Barcode Actions & Tracking Modal */}
           {showBarcodeModal && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in duration-200">
-              <div className="absolute inset-0 bg-background/45 animate-in fade-in duration-200" onClick={() => setShowBarcodeModal(false)} />
+              <div
+                className="absolute inset-0 bg-background/45 animate-in fade-in duration-200"
+                onClick={() => setShowBarcodeModal(false)}
+              />
               <div className="relative z-55 w-full max-w-2xl bg-card border border-border rounded-xl shadow-2xl p-6 overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col md:flex-row gap-6 max-h-[90vh] overflow-y-auto">
-                
                 {/* Left Side: SVGs & Export Options */}
                 <div className="flex-1 flex flex-col items-center justify-between border-b md:border-b-0 md:border-r border-border pb-6 md:pb-0 md:pr-6 space-y-4">
                   <div className="w-full flex items-center justify-between">
                     <h4 className="font-bold text-foreground text-sm">Tag Render Vectors</h4>
-                    <span className="bg-primary/10 text-primary px-2 py-0.5 rounded text-[10px] font-mono font-bold">100% Crisp SVG</span>
+                    <span className="bg-primary/10 text-primary px-2 py-0.5 rounded text-[10px] font-mono font-bold">
+                      100% Crisp SVG
+                    </span>
                   </div>
 
                   {/* Code 39 rendering */}
                   <div className="w-full p-4 rounded-lg bg-white text-black flex flex-col items-center justify-center border border-border shadow-inner">
-                    <div 
+                    <div
                       className="w-full h-16"
                       dangerouslySetInnerHTML={{ __html: generateCode39Svg(sample.id) }}
                     />
-                    <p className="text-[10px] text-muted-foreground font-mono font-bold mt-1">CODE 39 (LINEAR)</p>
+                    <p className="text-[10px] text-muted-foreground font-mono font-bold mt-1">
+                      CODE 39 (LINEAR)
+                    </p>
                   </div>
 
                   {/* QR Code rendering */}
                   <div className="size-36 p-3 rounded-lg bg-white text-black flex flex-col items-center justify-center border border-border shadow-inner">
-                    <div 
+                    <div
                       className="w-full h-full"
                       dangerouslySetInnerHTML={{ __html: generateQrCodeSvg(sample.id) }}
                     />
-                    <p className="text-[10px] text-muted-foreground font-mono font-bold mt-0.5">2D DATAMATRIX</p>
+                    <p className="text-[10px] text-muted-foreground font-mono font-bold mt-0.5">
+                      2D DATAMATRIX
+                    </p>
                   </div>
 
                   <div className="w-full grid grid-cols-2 gap-2">
@@ -543,7 +623,9 @@ export function SampleDetailsViewer({ sampleId }: { sampleId: string }) {
                 {/* Right Side: Custody Scan Tracker & Shortcuts */}
                 <div className="flex-1 flex flex-col justify-between space-y-4">
                   <div className="flex items-center justify-between">
-                    <h3 className="font-bold text-foreground text-base">Barcode Tracking Actions</h3>
+                    <h3 className="font-bold text-foreground text-base">
+                      Barcode Tracking Actions
+                    </h3>
                     <button
                       onClick={() => setShowBarcodeModal(false)}
                       className="rounded p-1 hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer transition"
@@ -553,14 +635,20 @@ export function SampleDetailsViewer({ sampleId }: { sampleId: string }) {
                   </div>
 
                   <div className="space-y-1">
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Sample ID Reference</span>
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                      Sample ID Reference
+                    </span>
                     <p className="text-lg font-mono font-bold text-primary">{sample.id}</p>
-                    <p className="text-xs text-muted-foreground font-medium">{sample.client} · {sample.project}</p>
+                    <p className="text-xs text-muted-foreground font-medium">
+                      {sample.client} · {sample.project}
+                    </p>
                   </div>
 
                   <div className="border-t border-border pt-3 space-y-3">
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">Verify Custody Scan</span>
-                    
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
+                      Verify Custody Scan
+                    </span>
+
                     {/* Dynamic Scan Log Simulator */}
                     <div className="grid grid-cols-3 gap-2">
                       {["Prep Bench", "QA Lab", "Vault Shelf"].map((loc) => (
@@ -579,25 +667,29 @@ export function SampleDetailsViewer({ sampleId }: { sampleId: string }) {
                   </div>
 
                   <div className="border-t border-border pt-3 space-y-2">
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">Workflow Status Jump</span>
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
+                      Workflow Status Jump
+                    </span>
                     <div className="flex flex-wrap gap-1.5">
-                      {["Received", "Verified", "In Preparation", "In Analysis", "Completed"].map((st) => (
-                        <button
-                          key={st}
-                          disabled={sample.status === st}
-                          onClick={() => {
-                            updateSampleStatus(sample.id, st as SampleStatus);
-                            toast.success(`Workflow status updated to: ${st}`);
-                          }}
-                          className={`rounded-full px-2.5 py-1 text-[10px] font-bold border transition cursor-pointer ${
-                            sample.status === st 
-                              ? "bg-primary text-white border-primary cursor-default opacity-90"
-                              : "bg-background border-border text-muted-foreground hover:bg-muted hover:text-foreground"
-                          }`}
-                        >
-                          {st}
-                        </button>
-                      ))}
+                      {["Received", "Verified", "In Preparation", "In Analysis", "Completed"].map(
+                        (st) => (
+                          <button
+                            key={st}
+                            disabled={sample.status === st}
+                            onClick={() => {
+                              updateSampleStatus(sample.id, st as SampleStatus);
+                              toast.success(`Workflow status updated to: ${st}`);
+                            }}
+                            className={`rounded-full px-2.5 py-1 text-[10px] font-bold border transition cursor-pointer ${
+                              sample.status === st
+                                ? "bg-primary text-white border-primary cursor-default opacity-90"
+                                : "bg-background border-border text-muted-foreground hover:bg-muted hover:text-foreground"
+                            }`}
+                          >
+                            {st}
+                          </button>
+                        ),
+                      )}
                     </div>
                   </div>
 
@@ -612,7 +704,6 @@ export function SampleDetailsViewer({ sampleId }: { sampleId: string }) {
                     </button>
                   </div>
                 </div>
-
               </div>
             </div>
           )}
@@ -622,7 +713,10 @@ export function SampleDetailsViewer({ sampleId }: { sampleId: string }) {
             <h3 className="text-sm font-semibold mb-3">Linked Documents</h3>
             <ul className="space-y-2 text-xs">
               {allDocuments.map((doc, idx) => (
-                <li key={idx} className="flex items-center justify-between rounded border border-border p-2 bg-card">
+                <li
+                  key={idx}
+                  className="flex items-center justify-between rounded border border-border p-2 bg-card"
+                >
                   <span className="inline-flex items-center gap-2 font-medium truncate max-w-[180px]">
                     <FileText className="size-3.5 text-primary" /> {doc.name}
                   </span>
@@ -641,7 +735,7 @@ export function SampleDetailsViewer({ sampleId }: { sampleId: string }) {
                 </li>
               ))}
             </ul>
-            
+
             <div className="mt-4 pt-3 border-t border-border">
               <label className="w-full inline-flex items-center justify-center gap-1.5 rounded border border-border bg-background px-3 py-1.5 text-xs font-semibold cursor-pointer hover:bg-muted transition text-muted-foreground hover:text-foreground select-none">
                 {uploadingDoc ? (
@@ -669,7 +763,7 @@ export function SampleDetailsViewer({ sampleId }: { sampleId: string }) {
             <h3 className="text-sm font-semibold inline-flex items-center gap-2">
               <MessageSquare className="size-4 text-primary" /> Notes
             </h3>
-            
+
             <form onSubmit={handlePostNote} className="mt-3">
               <textarea
                 value={noteText}
@@ -689,11 +783,17 @@ export function SampleDetailsViewer({ sampleId }: { sampleId: string }) {
             {sample.notes && sample.notes.length > 0 && (
               <div className="mt-4 border-t border-border pt-3 space-y-3 max-h-[200px] overflow-y-auto">
                 {sample.notes.map((n) => (
-                  <div key={n.id} className="text-xs bg-muted/40 p-2.5 rounded border border-border/60">
+                  <div
+                    key={n.id}
+                    className="text-xs bg-muted/40 p-2.5 rounded border border-border/60"
+                  >
                     <div className="flex justify-between font-semibold text-foreground mb-1">
                       <span>{n.author}</span>
                       <span className="text-[10px] text-muted-foreground">
-                        {new Date(n.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        {new Date(n.timestamp).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
                       </span>
                     </div>
                     <p className="text-muted-foreground leading-normal">{n.comment}</p>

@@ -6,17 +6,19 @@ Source: github.com/mattpocock/skills/tree/main/skills/engineering
 
 **/diagnose**
 
-  ----------------- -------------------------------------------------------
-  **name**          diagnose
+---
 
-  **description**   Disciplined diagnosis loop for hard bugs and
-                    performance regressions. Reproduce → minimise →
-                    hypothesise → instrument → fix → regression-test. Use
-                    when user says \"diagnose this\" / \"debug this\",
-                    reports a bug, says something is
-                    broken/throwing/failing, or describes a performance
-                    regression.
-  ----------------- -------------------------------------------------------
+**name** diagnose
+
+**description** Disciplined diagnosis loop for hard bugs and
+performance regressions. Reproduce → minimise →
+hypothesise → instrument → fix → regression-test. Use
+when user says \"diagnose this\" / \"debug this\",
+reports a bug, says something is
+broken/throwing/failing, or describes a performance
+regression.
+
+---
 
 **Diagnose**
 
@@ -75,14 +77,14 @@ Build the right feedback loop, and the bug is 90% fixed.
 **Iterate on the loop itself --- treat the loop as a product. Once you
 have a loop, ask:**
 
--   Can I make it faster? (Cache setup, skip unrelated init, narrow the
-    test scope.)
+- Can I make it faster? (Cache setup, skip unrelated init, narrow the
+  test scope.)
 
--   Can I make the signal sharper? (Assert on the specific symptom, not
-    \"didn\'t crash\".)
+- Can I make the signal sharper? (Assert on the specific symptom, not
+  \"didn\'t crash\".)
 
--   Can I make it more deterministic? (Pin time, seed RNG, isolate
-    filesystem, freeze network.)
+- Can I make it more deterministic? (Pin time, seed RNG, isolate
+  filesystem, freeze network.)
 
 A 30-second flaky loop is barely better than no loop. A 2-second
 deterministic loop is a debugging superpower.
@@ -167,17 +169,17 @@ this for the next phase.
 
 **Required before declaring done:**
 
--   Original repro no longer reproduces (re-run the Phase 1 loop)
+- Original repro no longer reproduces (re-run the Phase 1 loop)
 
--   Regression test passes (or absence of seam is documented)
+- Regression test passes (or absence of seam is documented)
 
--   All \[DEBUG-\...\] instrumentation removed (grep the prefix)
+- All \[DEBUG-\...\] instrumentation removed (grep the prefix)
 
--   Throwaway prototypes deleted (or moved to a clearly-marked debug
-    location)
+- Throwaway prototypes deleted (or moved to a clearly-marked debug
+  location)
 
--   The hypothesis that turned out correct is stated in the commit / PR
-    message
+- The hypothesis that turned out correct is stated in the commit / PR
+  message
 
 Then ask: what would have prevented this bug? If the answer involves
 architectural change, hand off to the /improve-codebase-architecture
@@ -185,18 +187,20 @@ skill with the specifics.
 
 **/grill-with-docs**
 
-  ------------------------------ -------------------------------------------------------
-  **name**                       grill-with-docs
+---
 
-  **description**                Grilling session that challenges your plan against the
-                                 existing domain model, sharpens terminology, and
-                                 updates documentation (CONTEXT.md, ADRs) inline as
-                                 decisions crystallise. Use when user wants to
-                                 stress-test a plan against their project\'s language
-                                 and documented decisions.
+**name** grill-with-docs
 
-  **disable-model-invocation**   true
-  ------------------------------ -------------------------------------------------------
+**description** Grilling session that challenges your plan against the
+existing domain model, sharpens terminology, and
+updates documentation (CONTEXT.md, ADRs) inline as
+decisions crystallise. Use when user wants to
+stress-test a plan against their project\'s language
+and documented decisions.
+
+**disable-model-invocation** true
+
+---
 
 Interview me relentlessly about every aspect of this plan until we reach
 a shared understanding. Walk down each branch of the design tree,
@@ -216,46 +220,46 @@ During codebase exploration, also look for existing documentation:
 **Most repos have a single context:**
 
 +-----------------------------------------------------------------------+
-| /                                                                     |
-|                                                                       |
-| ├── CONTEXT.md                                                        |
-|                                                                       |
-| ├── docs/                                                             |
-|                                                                       |
-| │ └── adr/                                                            |
-|                                                                       |
-| │ ├── 0001-event-sourced-orders.md                                    |
-|                                                                       |
-| │ └── 0002-postgres-for-write-model.md                                |
-|                                                                       |
-| └── src/                                                              |
+| / |
+| |
+| ├── CONTEXT.md |
+| |
+| ├── docs/ |
+| |
+| │ └── adr/ |
+| |
+| │ ├── 0001-event-sourced-orders.md |
+| |
+| │ └── 0002-postgres-for-write-model.md |
+| |
+| └── src/ |
 +-----------------------------------------------------------------------+
 
 **If a CONTEXT-MAP.md exists at the root, the repo has multiple
 contexts:**
 
 +-----------------------------------------------------------------------+
-| /                                                                     |
-|                                                                       |
-| ├── CONTEXT-MAP.md                                                    |
-|                                                                       |
-| ├── docs/                                                             |
-|                                                                       |
-| │ └── adr/ ← system-wide decisions                                    |
-|                                                                       |
-| ├── src/                                                              |
-|                                                                       |
-| │ ├── ordering/                                                       |
-|                                                                       |
-| │ │ ├── CONTEXT.md                                                    |
-|                                                                       |
-| │ │ └── docs/adr/ ← context-specific decisions                        |
-|                                                                       |
-| │ └── billing/                                                        |
-|                                                                       |
-| │ ├── CONTEXT.md                                                      |
-|                                                                       |
-| │ └── docs/adr/                                                       |
+| / |
+| |
+| ├── CONTEXT-MAP.md |
+| |
+| ├── docs/ |
+| |
+| │ └── adr/ ← system-wide decisions |
+| |
+| ├── src/ |
+| |
+| │ ├── ordering/ |
+| |
+| │ │ ├── CONTEXT.md |
+| |
+| │ │ └── docs/adr/ ← context-specific decisions |
+| |
+| │ └── billing/ |
+| |
+| │ ├── CONTEXT.md |
+| |
+| │ └── docs/adr/ |
 +-----------------------------------------------------------------------+
 
 Create files lazily --- only when you have something to write.
@@ -299,14 +303,16 @@ If any of the three is missing, skip the ADR.
 
 **/tdd**
 
-  ----------------- -------------------------------------------------------
-  **name**          tdd
+---
 
-  **description**   Test-driven development with red-green-refactor loop.
-                    Use when user wants to build features or fix bugs using
-                    TDD, mentions \"red-green-refactor\", wants integration
-                    tests, or asks for test-first development.
-  ----------------- -------------------------------------------------------
+**name** tdd
+
+**description** Test-driven development with red-green-refactor loop.
+Use when user wants to build features or fix bugs using
+TDD, mentions \"red-green-refactor\", wants integration
+tests, or asks for test-first development.
+
+---
 
 **Philosophy**
 
@@ -339,21 +345,21 @@ user-facing behavior. Tests become insensitive to real changes.
 implementation → repeat.**
 
 +-----------------------------------------------------------------------+
-| WRONG (horizontal):                                                   |
-|                                                                       |
-| RED: test1, test2, test3, test4, test5                                |
-|                                                                       |
-| GREEN: impl1, impl2, impl3, impl4, impl5                              |
-|                                                                       |
-| RIGHT (vertical):                                                     |
-|                                                                       |
-| RED→GREEN: test1→impl1                                                |
-|                                                                       |
-| RED→GREEN: test2→impl2                                                |
-|                                                                       |
-| RED→GREEN: test3→impl3                                                |
-|                                                                       |
-| \...                                                                  |
+| WRONG (horizontal): |
+| |
+| RED: test1, test2, test3, test4, test5 |
+| |
+| GREEN: impl1, impl2, impl3, impl4, impl5 |
+| |
+| RIGHT (vertical): |
+| |
+| RED→GREEN: test1→impl1 |
+| |
+| RED→GREEN: test2→impl2 |
+| |
+| RED→GREEN: test3→impl3 |
+| |
+| \... |
 +-----------------------------------------------------------------------+
 
 **Workflow**
@@ -362,18 +368,18 @@ implementation → repeat.**
 
 Before writing any code:
 
--   Confirm with user what interface changes are needed
+- Confirm with user what interface changes are needed
 
--   Confirm with user which behaviors to test (prioritize)
+- Confirm with user which behaviors to test (prioritize)
 
--   Identify opportunities for deep modules (small interface, deep
-    implementation)
+- Identify opportunities for deep modules (small interface, deep
+  implementation)
 
--   Design interfaces for testability
+- Design interfaces for testability
 
--   List the behaviors to test (not implementation steps)
+- List the behaviors to test (not implementation steps)
 
--   Get user approval on the plan
+- Get user approval on the plan
 
 Ask: \"What should the public interface look like? Which behaviors are
 most important to test?\"
@@ -383,9 +389,9 @@ most important to test?\"
 Write ONE test that confirms ONE thing about the system:
 
 +-----------------------------------------------------------------------+
-| RED: Write test for first behavior → test fails                       |
-|                                                                       |
-| GREEN: Write minimal code to pass → test passes                       |
+| RED: Write test for first behavior → test fails |
+| |
+| GREEN: Write minimal code to pass → test passes |
 +-----------------------------------------------------------------------+
 
 This is your tracer bullet --- proves the path works end-to-end.
@@ -395,63 +401,65 @@ This is your tracer bullet --- proves the path works end-to-end.
 For each remaining behavior:
 
 +-----------------------------------------------------------------------+
-| RED: Write next test → fails                                          |
-|                                                                       |
-| GREEN: Minimal code to pass → passes                                  |
+| RED: Write next test → fails |
+| |
+| GREEN: Minimal code to pass → passes |
 +-----------------------------------------------------------------------+
 
 Rules:
 
--   One test at a time
+- One test at a time
 
--   Only enough code to pass current test
+- Only enough code to pass current test
 
--   Don\'t anticipate future tests
+- Don\'t anticipate future tests
 
--   Keep tests focused on observable behavior
+- Keep tests focused on observable behavior
 
 **4. Refactor**
 
 After all tests pass, look for refactor candidates:
 
--   Extract duplication
+- Extract duplication
 
--   Deepen modules (move complexity behind simple interfaces)
+- Deepen modules (move complexity behind simple interfaces)
 
--   Apply SOLID principles where natural
+- Apply SOLID principles where natural
 
--   Consider what new code reveals about existing code
+- Consider what new code reveals about existing code
 
--   Run tests after each refactor step
+- Run tests after each refactor step
 
 **Never refactor while RED. Get to GREEN first.**
 
 **Checklist Per Cycle**
 
 +-----------------------------------------------------------------------+
-| \[ \] Test describes behavior, not implementation                     |
-|                                                                       |
-| \[ \] Test uses public interface only                                 |
-|                                                                       |
-| \[ \] Test would survive internal refactor                            |
-|                                                                       |
-| \[ \] Code is minimal for this test                                   |
-|                                                                       |
-| \[ \] No speculative features added                                   |
+| \[ \] Test describes behavior, not implementation |
+| |
+| \[ \] Test uses public interface only |
+| |
+| \[ \] Test would survive internal refactor |
+| |
+| \[ \] Code is minimal for this test |
+| |
+| \[ \] No speculative features added |
 +-----------------------------------------------------------------------+
 
 **/improve-codebase-architecture**
 
-  ----------------- -------------------------------------------------------
-  **name**          improve-codebase-architecture
+---
 
-  **description**   Find deepening opportunities in a codebase, informed by
-                    the domain language in CONTEXT.md and the decisions in
-                    docs/adr/. Use when the user wants to improve
-                    architecture, find refactoring opportunities,
-                    consolidate tightly-coupled modules, or make a codebase
-                    more testable and AI-navigable.
-  ----------------- -------------------------------------------------------
+**name** improve-codebase-architecture
+
+**description** Find deepening opportunities in a codebase, informed by
+the domain language in CONTEXT.md and the decisions in
+docs/adr/. Use when the user wants to improve
+architecture, find refactoring opportunities,
+consolidate tightly-coupled modules, or make a codebase
+more testable and AI-navigable.
+
+---
 
 Surface architectural friction and propose deepening opportunities ---
 refactors that turn shallow modules into deep ones. The aim is
@@ -462,41 +470,43 @@ testability and AI-navigability.
 Use these terms exactly in every suggestion. Consistent language is the
 point.
 
-  -------------------- -------------------------------------------------------
-  **Module**           Anything with an interface and an implementation
-                       (function, class, package, slice).
+---
 
-  **Interface**        Everything a caller must know to use the module: types,
-                       invariants, error modes, ordering, config. Not just the
-                       type signature.
+**Module** Anything with an interface and an implementation
+(function, class, package, slice).
 
-  **Implementation**   The code inside.
+**Interface** Everything a caller must know to use the module: types,
+invariants, error modes, ordering, config. Not just the
+type signature.
 
-  **Depth**            Leverage at the interface: a lot of behaviour behind a
-                       small interface. Deep = high leverage. Shallow =
-                       interface nearly as complex as the implementation.
+**Implementation** The code inside.
 
-  **Seam**             Where an interface lives; a place behaviour can be
-                       altered without editing in place. (Use this, not
-                       \"boundary\".)
+**Depth** Leverage at the interface: a lot of behaviour behind a
+small interface. Deep = high leverage. Shallow =
+interface nearly as complex as the implementation.
 
-  **Adapter**          A concrete thing satisfying an interface at a seam.
+**Seam** Where an interface lives; a place behaviour can be
+altered without editing in place. (Use this, not
+\"boundary\".)
 
-  **Leverage**         What callers get from depth.
+**Adapter** A concrete thing satisfying an interface at a seam.
 
-  **Locality**         What maintainers get from depth: change, bugs,
-                       knowledge concentrated in one place.
-  -------------------- -------------------------------------------------------
+**Leverage** What callers get from depth.
+
+**Locality** What maintainers get from depth: change, bugs,
+knowledge concentrated in one place.
+
+---
 
 **Key principles:**
 
--   Deletion test: imagine deleting the module. If complexity vanishes,
-    it was a pass-through. If complexity reappears across N callers, it
-    was earning its keep.
+- Deletion test: imagine deleting the module. If complexity vanishes,
+  it was a pass-through. If complexity reappears across N callers, it
+  was earning its keep.
 
--   The interface is the test surface.
+- The interface is the test surface.
 
--   One adapter = hypothetical seam. Two adapters = real seam.
+- One adapter = hypothetical seam. Two adapters = real seam.
 
 **Process**
 
@@ -506,19 +516,19 @@ Read the project\'s domain glossary and any ADRs in the area you\'re
 touching first. Then walk the codebase organically and note where you
 experience friction:
 
--   Where does understanding one concept require bouncing between many
-    small modules?
+- Where does understanding one concept require bouncing between many
+  small modules?
 
--   Where are modules shallow --- interface nearly as complex as the
-    implementation?
+- Where are modules shallow --- interface nearly as complex as the
+  implementation?
 
--   Where have pure functions been extracted just for testability, but
-    the real bugs hide in how they\'re called (no locality)?
+- Where have pure functions been extracted just for testability, but
+  the real bugs hide in how they\'re called (no locality)?
 
--   Where do tightly-coupled modules leak across their seams?
+- Where do tightly-coupled modules leak across their seams?
 
--   Which parts of the codebase are untested, or hard to test through
-    their current interface?
+- Which parts of the codebase are untested, or hard to test through
+  their current interface?
 
 Apply the deletion test to anything you suspect is shallow.
 
@@ -528,18 +538,18 @@ Write a self-contained HTML file to the OS temp directory. The report
 uses Tailwind via CDN for layout and Mermaid via CDN for diagrams. Each
 candidate gets a before/after visualisation. For each candidate:
 
--   Files --- which files/modules are involved
+- Files --- which files/modules are involved
 
--   Problem --- why the current architecture is causing friction
+- Problem --- why the current architecture is causing friction
 
--   Solution --- plain English description of what would change
+- Solution --- plain English description of what would change
 
--   Benefits --- explained in terms of locality and leverage
+- Benefits --- explained in terms of locality and leverage
 
--   Before / After diagram --- side-by-side, custom-drawn
+- Before / After diagram --- side-by-side, custom-drawn
 
--   Recommendation strength --- one of Strong, Worth exploring,
-    Speculative
+- Recommendation strength --- one of Strong, Worth exploring,
+  Speculative
 
 End the report with a Top recommendation section: which candidate you\'d
 tackle first and why.
@@ -552,25 +562,27 @@ the deepened module, what sits behind the seam, what tests survive.
 
 Side effects happen inline as decisions crystallize:
 
--   Naming a deepened module after a concept not in CONTEXT.md? Add the
-    term to CONTEXT.md right there.
+- Naming a deepened module after a concept not in CONTEXT.md? Add the
+  term to CONTEXT.md right there.
 
--   Sharpening a fuzzy term during the conversation? Update CONTEXT.md
-    right there.
+- Sharpening a fuzzy term during the conversation? Update CONTEXT.md
+  right there.
 
--   User rejects the candidate with a load-bearing reason? Offer an ADR
-    framed as: \"Want me to record this as an ADR so future architecture
-    reviews don\'t re-suggest it?\"
+- User rejects the candidate with a load-bearing reason? Offer an ADR
+  framed as: \"Want me to record this as an ADR so future architecture
+  reviews don\'t re-suggest it?\"
 
 **/to-prd**
 
-  ----------------- -------------------------------------------------------
-  **name**          to-prd
+---
 
-  **description**   Turn the current conversation context into a PRD and
-                    submit it as a GitHub issue. Use when user wants to
-                    create a PRD from the current context.
-  ----------------- -------------------------------------------------------
+**name** to-prd
+
+**description** Turn the current conversation context into a PRD and
+submit it as a GitHub issue. Use when user wants to
+create a PRD from the current context.
+
+---
 
 This skill takes the current conversation context and codebase
 understanding and produces a PRD. Do NOT interview the user --- just
@@ -621,19 +633,19 @@ aspects of the feature.
 
 A list of implementation decisions that were made. This can include:
 
--   The modules that will be built/modified
+- The modules that will be built/modified
 
--   The interfaces of those modules that will be modified
+- The interfaces of those modules that will be modified
 
--   Technical clarifications from the developer
+- Technical clarifications from the developer
 
--   Architectural decisions
+- Architectural decisions
 
--   Schema changes
+- Schema changes
 
--   API contracts
+- API contracts
 
--   Specific interactions
+- Specific interactions
 
 Do NOT include specific file paths or code snippets. They may end up
 being outdated very quickly.
@@ -642,13 +654,13 @@ being outdated very quickly.
 
 A list of testing decisions that were made. Include:
 
--   A description of what makes a good test (only test external
-    behavior, not implementation details)
+- A description of what makes a good test (only test external
+  behavior, not implementation details)
 
--   Which modules will be tested
+- Which modules will be tested
 
--   Prior art for the tests (i.e. similar types of tests in the
-    codebase)
+- Prior art for the tests (i.e. similar types of tests in the
+  codebase)
 
 **Out of Scope**
 
@@ -660,14 +672,16 @@ Any further notes about the feature.
 
 **/to-issues**
 
-  ----------------- -------------------------------------------------------
-  **name**          to-issues
+---
 
-  **description**   Break a plan, spec, or PRD into independently-grabbable
-                    GitHub issues using tracer-bullet vertical slices. Use
-                    when user wants to convert a plan into issues, create
-                    implementation tickets, or break down work into issues.
-  ----------------- -------------------------------------------------------
+**name** to-issues
+
+**description** Break a plan, spec, or PRD into independently-grabbable
+GitHub issues using tracer-bullet vertical slices. Use
+when user wants to convert a plan into issues, create
+implementation tickets, or break down work into issues.
+
+---
 
 Break a plan into independently-grabbable GitHub issues using vertical
 slices (tracer bullets).
@@ -695,24 +709,24 @@ Slices may be \'HITL\' or \'AFK\'. HITL slices require human
 interaction. AFK slices can be implemented and merged without human
 interaction. Prefer AFK over HITL where possible.
 
--   Each slice delivers a narrow but COMPLETE path through every layer
-    (schema, API, UI, tests)
+- Each slice delivers a narrow but COMPLETE path through every layer
+  (schema, API, UI, tests)
 
--   A completed slice is demoable or verifiable on its own
+- A completed slice is demoable or verifiable on its own
 
--   Prefer many thin slices over few thick ones
+- Prefer many thin slices over few thick ones
 
 **4. Quiz the user**
 
 Present the proposed breakdown as a numbered list. For each slice, show:
 
--   Title: short descriptive name
+- Title: short descriptive name
 
--   Type: HITL / AFK
+- Type: HITL / AFK
 
--   Blocked by: which other slices (if any) must complete first
+- Blocked by: which other slices (if any) must complete first
 
--   User stories covered: which user stories this addresses
+- User stories covered: which user stories this addresses
 
 Ask: Does the granularity feel right? Are the dependency relationships
 correct? Should any slices be merged or split? Are the correct slices
@@ -727,43 +741,45 @@ real issue numbers.
 **Issue Template**
 
 +-----------------------------------------------------------------------+
-| \## Parent                                                            |
-|                                                                       |
-| \# \<issue number\> (if the source was a GitHub issue, otherwise      |
-| omit)                                                                 |
-|                                                                       |
-| \## What to build                                                     |
-|                                                                       |
+| \## Parent |
+| |
+| \# \<issue number\> (if the source was a GitHub issue, otherwise |
+| omit) |
+| |
+| \## What to build |
+| |
 | A concise description of this vertical slice. Describe the end-to-end |
-|                                                                       |
-| behavior, not layer-by-layer implementation.                          |
-|                                                                       |
-| \## Acceptance criteria                                               |
-|                                                                       |
-| \* Criterion 1                                                        |
-|                                                                       |
-| \* Criterion 2                                                        |
-|                                                                       |
-| \## Blocked by                                                        |
-|                                                                       |
-| \* Blocked by #\<number\> (if any)                                    |
-|                                                                       |
-| Or \"None - can start immediately\" if no blockers.                   |
+| |
+| behavior, not layer-by-layer implementation. |
+| |
+| \## Acceptance criteria |
+| |
+| \* Criterion 1 |
+| |
+| \* Criterion 2 |
+| |
+| \## Blocked by |
+| |
+| \* Blocked by #\<number\> (if any) |
+| |
+| Or \"None - can start immediately\" if no blockers. |
 +-----------------------------------------------------------------------+
 
 Do NOT close or modify any parent issue.
 
 **/triage**
 
-  ----------------- -------------------------------------------------------
-  **name**          triage
+---
 
-  **description**   Triage issues through a state machine driven by triage
-                    roles. Use when user wants to create an issue, triage
-                    issues, review incoming bugs or feature requests,
-                    prepare issues for an AFK agent, or manage issue
-                    workflow.
-  ----------------- -------------------------------------------------------
+**name** triage
+
+**description** Triage issues through a state machine driven by triage
+roles. Use when user wants to create an issue, triage
+issues, review incoming bugs or feature requests,
+prepare issues for an AFK agent, or manage issue
+workflow.
+
+---
 
 Move issues on the project issue tracker through a small state machine
 of triage roles.
@@ -771,30 +787,31 @@ of triage roles.
 **Every comment or issue posted to the issue tracker during triage must
 start with this disclaimer:**
 
-  -----------------------------------------------------------------------
-  \> \*This was generated by AI during triage.\*
+---
 
-  -----------------------------------------------------------------------
+\> \*This was generated by AI during triage.\*
+
+---
 
 **Roles**
 
 **Two category roles:**
 
--   bug --- something is broken
+- bug --- something is broken
 
--   enhancement --- new feature or improvement
+- enhancement --- new feature or improvement
 
 **Five state roles:**
 
--   needs-triage --- maintainer needs to evaluate
+- needs-triage --- maintainer needs to evaluate
 
--   needs-info --- waiting on reporter for more information
+- needs-info --- waiting on reporter for more information
 
--   ready-for-agent --- fully specified, ready for an AFK agent
+- ready-for-agent --- fully specified, ready for an AFK agent
 
--   ready-for-human --- needs human implementation
+- ready-for-human --- needs human implementation
 
--   wontfix --- will not be actioned
+- wontfix --- will not be actioned
 
 Every triaged issue should carry exactly one category role and one state
 role.
@@ -809,13 +826,13 @@ reporter replies.
 The maintainer invokes /triage and describes what they want in natural
 language. Examples:
 
--   \"Show me anything that needs my attention\"
+- \"Show me anything that needs my attention\"
 
--   \"Let\'s look at #42\"
+- \"Let\'s look at #42\"
 
--   \"Move #42 to ready-for-agent\"
+- \"Move #42 to ready-for-agent\"
 
--   \"What\'s ready for agents to pick up?\"
+- \"What\'s ready for agents to pick up?\"
 
 **Triage a specific issue**
 
@@ -837,51 +854,53 @@ language. Examples:
 
 Apply outcomes:
 
--   ready-for-agent --- post an agent brief comment.
+- ready-for-agent --- post an agent brief comment.
 
--   ready-for-human --- same structure as an agent brief, but note why
-    it can\'t be delegated.
+- ready-for-human --- same structure as an agent brief, but note why
+  it can\'t be delegated.
 
--   needs-info --- post triage notes (template below).
+- needs-info --- post triage notes (template below).
 
--   wontfix (bug) --- polite explanation, then close.
+- wontfix (bug) --- polite explanation, then close.
 
--   wontfix (enhancement) --- write to .out-of-scope/, link to it from a
-    comment, then close.
+- wontfix (enhancement) --- write to .out-of-scope/, link to it from a
+  comment, then close.
 
--   needs-triage --- apply the role. Optional comment if there\'s
-    partial progress.
+- needs-triage --- apply the role. Optional comment if there\'s
+  partial progress.
 
 **Needs-info template**
 
 +-----------------------------------------------------------------------+
-| \## Triage Notes                                                      |
-|                                                                       |
-| \*\*What we\'ve established so far:\*\*                               |
-|                                                                       |
-| \- point 1                                                            |
-|                                                                       |
-| \- point 2                                                            |
-|                                                                       |
-| \*\*What we still need from you (@reporter):\*\*                      |
-|                                                                       |
-| \- question 1                                                         |
-|                                                                       |
-| \- question 2                                                         |
+| \## Triage Notes |
+| |
+| \*\*What we\'ve established so far:\*\* |
+| |
+| \- point 1 |
+| |
+| \- point 2 |
+| |
+| \*\*What we still need from you (@reporter):\*\* |
+| |
+| \- question 1 |
+| |
+| \- question 2 |
 +-----------------------------------------------------------------------+
 
 **/zoom-out**
 
-  ------------------------------ -------------------------------------------------------
-  **name**                       zoom-out
+---
 
-  **description**                Tell the agent to zoom out and give broader context or
-                                 a higher-level perspective. Use when you\'re unfamiliar
-                                 with a section of code or need to understand how it
-                                 fits into the bigger picture.
+**name** zoom-out
 
-  **disable-model-invocation**   true
-  ------------------------------ -------------------------------------------------------
+**description** Tell the agent to zoom out and give broader context or
+a higher-level perspective. Use when you\'re unfamiliar
+with a section of code or need to understand how it
+fits into the bigger picture.
+
+**disable-model-invocation** true
+
+---
 
 I don\'t know this area of code well. Go up a layer of abstraction. Give
 me a map of all the relevant modules and callers, using the project\'s

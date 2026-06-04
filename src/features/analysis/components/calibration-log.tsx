@@ -1,7 +1,14 @@
 import React, { useState } from "react";
 import { Plus, CheckCircle2, XCircle } from "lucide-react";
 import {
-  Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, ReferenceLine,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+  ReferenceLine,
 } from "recharts";
 import { CalibrationRecord, Instrument } from "../../../types";
 
@@ -55,10 +62,19 @@ function CalibrationFormModal({
 
         <div className="space-y-3">
           <div>
-            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Instrument</label>
-            <select value={form.instrumentId} onChange={(e) => set("instrumentId", e.target.value)}
-              className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40">
-              {instruments.map((i) => <option key={i.id} value={i.id}>{i.name} ({i.id})</option>)}
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              Instrument
+            </label>
+            <select
+              value={form.instrumentId}
+              onChange={(e) => set("instrumentId", e.target.value)}
+              className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+            >
+              {instruments.map((i) => (
+                <option key={i.id} value={i.id}>
+                  {i.name} ({i.id})
+                </option>
+              ))}
             </select>
           </div>
           {[
@@ -67,31 +83,53 @@ function CalibrationFormModal({
             { label: "R² Value", key: "r2Value", placeholder: "0.9994" },
           ].map(({ label, key, placeholder }) => (
             <div key={key}>
-              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{label}</label>
-              <input value={(form as any)[key]} onChange={(e) => set(key, e.target.value)}
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                {label}
+              </label>
+              <input
+                value={(form as any)[key]}
+                onChange={(e) => set(key, e.target.value)}
                 placeholder={placeholder}
-                className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40" />
+                className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+              />
             </div>
           ))}
           <div className="flex items-center gap-2">
-            <input type="checkbox" id="passStatus" checked={form.passStatus} onChange={(e) => set("passStatus", e.target.checked)}
-              className="size-4 rounded" />
-            <label htmlFor="passStatus" className="text-sm font-medium text-foreground">Calibration passed</label>
+            <input
+              type="checkbox"
+              id="passStatus"
+              checked={form.passStatus}
+              onChange={(e) => set("passStatus", e.target.checked)}
+              className="size-4 rounded"
+            />
+            <label htmlFor="passStatus" className="text-sm font-medium text-foreground">
+              Calibration passed
+            </label>
           </div>
           <div>
-            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Notes</label>
-            <textarea value={form.notes} onChange={(e) => set("notes", e.target.value)} rows={2}
-              className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none" />
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              Notes
+            </label>
+            <textarea
+              value={form.notes}
+              onChange={(e) => set("notes", e.target.value)}
+              rows={2}
+              className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none"
+            />
           </div>
         </div>
 
         <div className="flex gap-2 pt-2">
-          <button onClick={onClose}
-            className="flex-1 rounded-md border border-border bg-background py-2 text-sm font-semibold text-muted-foreground hover:text-foreground transition">
+          <button
+            onClick={onClose}
+            className="flex-1 rounded-md border border-border bg-background py-2 text-sm font-semibold text-muted-foreground hover:text-foreground transition"
+          >
             Cancel
           </button>
-          <button onClick={handleSave}
-            className="flex-1 rounded-md gradient-primary py-2 text-sm text-white font-semibold hover:opacity-90 transition">
+          <button
+            onClick={handleSave}
+            className="flex-1 rounded-md gradient-primary py-2 text-sm text-white font-semibold hover:opacity-90 transition"
+          >
             Save Record
           </button>
         </div>
@@ -100,16 +138,23 @@ function CalibrationFormModal({
   );
 }
 
-export function CalibrationLog({ calibrationRecords, instruments, onAddRecord }: CalibrationLogProps) {
+export function CalibrationLog({
+  calibrationRecords,
+  instruments,
+  onAddRecord,
+}: CalibrationLogProps) {
   const [showForm, setShowForm] = useState(false);
 
   // Chart data: R² per calibration run
-  const chartData = calibrationRecords.slice(0, 12).reverse().map((c, i) => ({
-    run: `R${i + 1}`,
-    r2: c.r2Value,
-    pass: c.passStatus,
-    instrument: c.instrumentId,
-  }));
+  const chartData = calibrationRecords
+    .slice(0, 12)
+    .reverse()
+    .map((c, i) => ({
+      run: `R${i + 1}`,
+      r2: c.r2Value,
+      pass: c.passStatus,
+      instrument: c.instrumentId,
+    }));
 
   return (
     <div className="rounded-xl border border-border bg-card overflow-hidden">
@@ -129,12 +174,27 @@ export function CalibrationLog({ calibrationRecords, instruments, onAddRecord }:
           <BarChart data={chartData} barSize={18}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
             <XAxis dataKey="run" stroke="var(--color-muted-foreground)" fontSize={11} />
-            <YAxis domain={[0.99, 1.0]} stroke="var(--color-muted-foreground)" fontSize={11} tickFormatter={(v) => v.toFixed(4)} />
+            <YAxis
+              domain={[0.99, 1.0]}
+              stroke="var(--color-muted-foreground)"
+              fontSize={11}
+              tickFormatter={(v) => v.toFixed(4)}
+            />
             <Tooltip
-              contentStyle={{ background: "var(--color-card)", border: "1px solid var(--color-border)", borderRadius: 8, fontSize: 12 }}
+              contentStyle={{
+                background: "var(--color-card)",
+                border: "1px solid var(--color-border)",
+                borderRadius: 8,
+                fontSize: 12,
+              }}
               formatter={(v: number) => [v.toFixed(4), "R²"]}
             />
-            <ReferenceLine y={0.999} stroke="hsl(158 64% 48%)" strokeDasharray="4 2" label={{ value: "R²=0.999", fill: "hsl(158 64% 48%)", fontSize: 10 }} />
+            <ReferenceLine
+              y={0.999}
+              stroke="hsl(158 64% 48%)"
+              strokeDasharray="4 2"
+              label={{ value: "R²=0.999", fill: "hsl(158 64% 48%)", fontSize: 10 }}
+            />
             <Bar dataKey="r2" fill="var(--color-chart-1)" radius={[3, 3, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
@@ -155,17 +215,26 @@ export function CalibrationLog({ calibrationRecords, instruments, onAddRecord }:
           </thead>
           <tbody>
             {calibrationRecords.slice(0, 5).map((c) => (
-              <tr key={c.id} className="border-b border-border last:border-0 [&>td]:px-4 [&>td]:py-2 font-medium hover:bg-muted/20 transition">
+              <tr
+                key={c.id}
+                className="border-b border-border last:border-0 [&>td]:px-4 [&>td]:py-2 font-medium hover:bg-muted/20 transition"
+              >
                 <td className="font-mono">{c.instrumentId}</td>
                 <td>{c.standardUsed}</td>
                 <td className="font-mono">{c.r2Value.toFixed(4)}</td>
                 <td>{c.performedBy}</td>
-                <td className="text-muted-foreground">{new Date(c.calibrationDate).toLocaleDateString()}</td>
+                <td className="text-muted-foreground">
+                  {new Date(c.calibrationDate).toLocaleDateString()}
+                </td>
                 <td>
                   {c.passStatus ? (
-                    <span className="flex items-center gap-1 text-emerald-600 font-semibold"><CheckCircle2 className="size-3.5" /> Pass</span>
+                    <span className="flex items-center gap-1 text-emerald-600 font-semibold">
+                      <CheckCircle2 className="size-3.5" /> Pass
+                    </span>
                   ) : (
-                    <span className="flex items-center gap-1 text-rose-600 font-semibold"><XCircle className="size-3.5" /> Fail</span>
+                    <span className="flex items-center gap-1 text-rose-600 font-semibold">
+                      <XCircle className="size-3.5" /> Fail
+                    </span>
                   )}
                 </td>
               </tr>
@@ -177,7 +246,9 @@ export function CalibrationLog({ calibrationRecords, instruments, onAddRecord }:
       {showForm && (
         <CalibrationFormModal
           instruments={instruments}
-          onSave={(rec) => { onAddRecord(rec); }}
+          onSave={(rec) => {
+            onAddRecord(rec);
+          }}
           onClose={() => setShowForm(false)}
         />
       )}

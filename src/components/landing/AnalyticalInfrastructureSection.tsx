@@ -38,7 +38,10 @@ const STATS = [
 
 export default function AnalyticalInfrastructureSection() {
   return (
-    <section id="infrastructure" className="border-t border-border bg-background relative overflow-hidden">
+    <section
+      id="infrastructure"
+      className="border-t border-border bg-background relative overflow-hidden"
+    >
       <div className="absolute inset-0 landing-grid-fine opacity-30 pointer-events-none" />
 
       <div className="relative mx-auto max-w-7xl px-6 py-20 lg:py-28">
@@ -88,11 +91,11 @@ export default function AnalyticalInfrastructureSection() {
           <div className="grid grid-cols-2 lg:grid-cols-4 divide-x divide-y lg:divide-y-0 divide-background/20 relative z-10">
             {STATS.map((stat, idx) => (
               <div key={stat.label} className="p-8 text-center flex flex-col justify-center">
-                <motion.span 
+                <motion.span
                   initial={{ opacity: 0, scale: 0.8 }}
                   whileInView={{ opacity: 1, scale: 1 }}
                   viewport={{ once: true }}
-                  transition={{ delay: 0.2 + (idx * 0.1), type: "spring" }}
+                  transition={{ delay: 0.2 + idx * 0.1, type: "spring" }}
                   className="block text-3xl md:text-4xl font-extrabold font-display text-primary drop-shadow-md"
                 >
                   {stat.value}

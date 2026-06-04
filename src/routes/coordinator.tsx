@@ -12,7 +12,10 @@ const COORDINATOR_ROLES = ["Lab Coordinator"] as const;
 
 export const Route = createFileRoute("/coordinator")({
   beforeLoad: async () => {
-    const { data: { session }, error } = await supabase.auth.getSession();
+    const {
+      data: { session },
+      error,
+    } = await supabase.auth.getSession();
     if (error || !session?.user) {
       throw redirect({ to: "/login" });
     }
@@ -27,7 +30,14 @@ export const Route = createFileRoute("/coordinator")({
       .eq("id", session.user.id)
       .maybeSingle();
 
-    const role = profile ? mapDbRoleToUi(profile.role) : mapDbRoleToUi("customer");
+    const rawRole: string | null =
+      profile?.role ?? session.user.user_metadata?.role ?? null;
+
+    if (!rawRole) {
+      throw redirect({ to: "/login" });
+    }
+
+    const role = mapDbRoleToUi(rawRole);
 
     if (role === "Customer") {
       throw redirect({ to: "/portal" });

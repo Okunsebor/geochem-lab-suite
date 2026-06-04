@@ -46,7 +46,7 @@ export function IntakeFormFeature() {
       });
 
       toast.success(`Sample registered successfully with ID: ${registered.id}`);
-      
+
       if (generateBarcode) {
         toast.info("Generating secure QR barcode label...");
         const qrSvg = generateQrCodeSvg(registered.id);
@@ -80,7 +80,10 @@ export function IntakeFormFeature() {
       />
 
       <div className="grid gap-4 lg:grid-cols-3">
-        <form onSubmit={handleSubmit} className="lg:col-span-2 rounded-xl border border-border bg-card p-6 space-y-5">
+        <form
+          onSubmit={handleSubmit}
+          className="lg:col-span-2 rounded-xl border border-border bg-card p-6 space-y-5"
+        >
           <div className="grid sm:grid-cols-2 gap-4">
             <InputField
               label="Client"
@@ -137,7 +140,7 @@ export function IntakeFormFeature() {
               value={formData.dateReceived}
               onChange={handleChange}
             />
-            
+
             <div className="sm:col-span-2">
               <label className="text-xs font-medium">Priority Level</label>
               <div className="mt-1 flex gap-2">
@@ -161,20 +164,28 @@ export function IntakeFormFeature() {
             <div className="sm:col-span-2">
               <label className="text-xs font-medium">Requested Tests</label>
               <div className="mt-2 flex flex-wrap gap-2">
-                {["FA-AAS Au", "Multi-element 4-acid", "Multi-element Aqua Regia", "ICP-MS 51E", "LECO S/C"].map(
-                  (t, i) => (
-                    <label
-                      key={t}
-                      className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1 text-xs cursor-pointer hover:bg-muted select-none"
-                    >
-                      <input type="checkbox" defaultChecked={i < 2} className="rounded text-primary border-input" />
-                      {t}
-                    </label>
-                  )
-                )}
+                {[
+                  "FA-AAS Au",
+                  "Multi-element 4-acid",
+                  "Multi-element Aqua Regia",
+                  "ICP-MS 51E",
+                  "LECO S/C",
+                ].map((t, i) => (
+                  <label
+                    key={t}
+                    className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1 text-xs cursor-pointer hover:bg-muted select-none"
+                  >
+                    <input
+                      type="checkbox"
+                      defaultChecked={i < 2}
+                      className="rounded text-primary border-input"
+                    />
+                    {t}
+                  </label>
+                ))}
               </div>
             </div>
-            
+
             <div className="sm:col-span-2">
               <TextAreaField
                 label="Special Instructions"
@@ -218,7 +229,9 @@ export function IntakeFormFeature() {
             <h3 className="text-sm font-semibold inline-flex items-center gap-2">
               <ScanBarcode className="size-4 text-primary" /> Quick scan
             </h3>
-            <p className="mt-1 text-xs text-muted-foreground">Scan an inbound shipment QR code to auto-fill the form.</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Scan an inbound shipment QR code to auto-fill the form.
+            </p>
             <div
               onClick={() => {
                 setFormData((prev) => ({
@@ -234,12 +247,14 @@ export function IntakeFormFeature() {
               Awaiting scanner input… (Click to simulate scan)
             </div>
           </div>
-          
+
           <div className="rounded-xl border border-border bg-card p-5">
             <h3 className="text-sm font-semibold inline-flex items-center gap-2">
               <Upload className="size-4 text-primary" /> Bulk import
             </h3>
-            <p className="mt-1 text-xs text-muted-foreground">CSV with up to 500 samples per batch.</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              CSV with up to 500 samples per batch.
+            </p>
             <div
               onDragOver={(e) => e.preventDefault()}
               onDrop={handleBulkCSV}

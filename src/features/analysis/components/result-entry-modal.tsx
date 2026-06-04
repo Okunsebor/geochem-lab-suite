@@ -21,10 +21,21 @@ interface ResultEntryModalProps {
   onClose: () => void;
 }
 
-const DEFAULT_ROW: ResultRow = { element: "", value: "", unit: "ppm", qaStatus: "Pending Approval" };
+const DEFAULT_ROW: ResultRow = {
+  element: "",
+  value: "",
+  unit: "ppm",
+  qaStatus: "Pending Approval",
+};
 
 export function ResultEntryModal({
-  runId, sampleId, instrumentId, analystName, method, onSubmit, onClose,
+  runId,
+  sampleId,
+  instrumentId,
+  analystName,
+  method,
+  onSubmit,
+  onClose,
 }: ResultEntryModalProps) {
   const [rows, setRows] = useState<ResultRow[]>([
     ...method.elementsTargeted.slice(0, 6).map((el) => ({ ...DEFAULT_ROW, element: el })),
@@ -38,10 +49,10 @@ export function ResultEntryModal({
       // Live QA evaluation on value change
       if (field === "value" || field === "element") {
         const val = parseFloat(field === "value" ? raw : updated[idx].value);
-        const el  = field === "element" ? raw : updated[idx].element;
+        const el = field === "element" ? raw : updated[idx].element;
         if (!isNaN(val) && el) {
           const { qaStatus, flagReason } = evaluateResultQaStatus(val, el, method);
-          updated[idx].qaStatus   = qaStatus;
+          updated[idx].qaStatus = qaStatus;
           updated[idx].flagReason = flagReason;
         }
       }
@@ -49,7 +60,7 @@ export function ResultEntryModal({
     });
   };
 
-  const addRow    = () => setRows((p) => [...p, { ...DEFAULT_ROW }]);
+  const addRow = () => setRows((p) => [...p, { ...DEFAULT_ROW }]);
   const removeRow = (idx: number) => setRows((p) => p.filter((_, i) => i !== idx));
 
   const handleSubmit = () => {
@@ -58,7 +69,8 @@ export function ResultEntryModal({
       .filter((r) => r.element && r.value !== "")
       .map((r, i) => ({
         id: `res-${runId}-${i}`,
-        runId, sampleId,
+        runId,
+        sampleId,
         element: r.element,
         value: parseFloat(r.value) || 0,
         unit: r.unit,
@@ -79,7 +91,6 @@ export function ResultEntryModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
       <div className="relative z-10 w-full max-w-3xl max-h-[90vh] flex flex-col rounded-2xl border border-border bg-card shadow-2xl overflow-hidden">
-
         {/* Header */}
         <div className="flex items-start justify-between gap-3 border-b border-border px-6 py-4 sticky top-0 bg-card z-10">
           <div>
@@ -144,7 +155,11 @@ export function ResultEntryModal({
                       onChange={(e) => updateRow(idx, "unit", e.target.value)}
                       className="rounded border border-border bg-background px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-primary/40"
                     >
-                      {["ppm","ppb","g/t","%","mg/kg"].map((u) => <option key={u} value={u}>{u}</option>)}
+                      {["ppm", "ppb", "g/t", "%", "mg/kg"].map((u) => (
+                        <option key={u} value={u}>
+                          {u}
+                        </option>
+                      ))}
                     </select>
                   </td>
                   <td className="pr-3">
@@ -155,14 +170,22 @@ export function ResultEntryModal({
                         ) : row.qaStatus === "Flag" ? (
                           <AlertTriangle className="size-4 text-amber-500" />
                         ) : null}
-                        <span className={`text-xs font-semibold ${
-                          row.qaStatus === "Pass" ? "text-emerald-600" :
-                          row.qaStatus === "Flag" ? "text-amber-600" : "text-muted-foreground"
-                        }`}>
+                        <span
+                          className={`text-xs font-semibold ${
+                            row.qaStatus === "Pass"
+                              ? "text-emerald-600"
+                              : row.qaStatus === "Flag"
+                                ? "text-amber-600"
+                                : "text-muted-foreground"
+                          }`}
+                        >
                           {row.qaStatus}
                         </span>
                         {row.flagReason && (
-                          <span className="text-[10px] text-muted-foreground italic truncate max-w-32" title={row.flagReason}>
+                          <span
+                            className="text-[10px] text-muted-foreground italic truncate max-w-32"
+                            title={row.flagReason}
+                          >
                             — {row.flagReason}
                           </span>
                         )}
@@ -172,7 +195,10 @@ export function ResultEntryModal({
                     )}
                   </td>
                   <td>
-                    <button onClick={() => removeRow(idx)} className="rounded p-1 hover:bg-rose-500/10 text-muted-foreground hover:text-rose-600 transition">
+                    <button
+                      onClick={() => removeRow(idx)}
+                      className="rounded p-1 hover:bg-rose-500/10 text-muted-foreground hover:text-rose-600 transition"
+                    >
                       <Trash2 className="size-3.5" />
                     </button>
                   </td>
@@ -194,7 +220,10 @@ export function ResultEntryModal({
           <span className="text-xs text-muted-foreground">
             {rows.filter((r) => r.element && r.value !== "").length} results ready
           </span>
-          <button onClick={onClose} className="ml-auto rounded-md border border-border bg-background px-4 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition">
+          <button
+            onClick={onClose}
+            className="ml-auto rounded-md border border-border bg-background px-4 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition"
+          >
             Cancel
           </button>
           <button

@@ -60,10 +60,15 @@ export function useSampleTracking(sampleId?: string) {
       .channel(`sample-tracking-${sampleId}`)
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "tracking_updates", filter: `sample_id=eq.${sampleId}` },
+        {
+          event: "*",
+          schema: "public",
+          table: "tracking_updates",
+          filter: `sample_id=eq.${sampleId}`,
+        },
         () => {
           syncEvents();
-        }
+        },
       )
       .subscribe((status) => {
         setIsConnected(status === "SUBSCRIBED");
@@ -77,6 +82,6 @@ export function useSampleTracking(sampleId?: string) {
 
   return useMemo(
     () => ({ events, loading, isConnected, refresh: syncEvents }),
-    [events, loading, isConnected, syncEvents]
+    [events, loading, isConnected, syncEvents],
   );
 }

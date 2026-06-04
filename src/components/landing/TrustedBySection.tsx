@@ -1,11 +1,11 @@
 import { motion } from "framer-motion";
 
 const LOGOS: { src: string; alt: string }[] = [
-  { src: "/trusted-by/UNDP.png",     alt: "UNDP" },
+  { src: "/trusted-by/UNDP.png", alt: "UNDP" },
   { src: "/trusted-by/Timbuktoo.png", alt: "Timbuktoo Initiative" },
-  { src: "/trusted-by/TETFUND.png",  alt: "TETFund" },
-  { src: "/trusted-by/FGN.png",      alt: "Federal Government of Nigeria" },
-  { src: "/trusted-by/NSUK.png",     alt: "Nasarawa State University, Keffi" },
+  { src: "/trusted-by/TETFUND.png", alt: "TETFund" },
+  { src: "/trusted-by/FGN.png", alt: "Federal Government of Nigeria" },
+  { src: "/trusted-by/NSUK.png", alt: "Nasarawa State University, Keffi" },
 ];
 
 export default function TrustedBySection() {
@@ -53,4 +53,3 @@ function LogoCard({ src, alt }: { src: string; alt: string }) {
     </div>
   );
 }
-

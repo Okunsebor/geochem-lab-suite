@@ -7,7 +7,7 @@ export function useSampleActions() {
     verifySample,
     rejectSample,
     assignStorageLocation,
-    uploadSampleAttachment
+    uploadSampleAttachment,
   } = useLimsState();
 
   const register = async (sampleData: {
@@ -46,6 +46,6 @@ export function useSampleActions() {
     verify,
     reject,
     assignStorage,
-    uploadAttachment
+    uploadAttachment,
   };
 }

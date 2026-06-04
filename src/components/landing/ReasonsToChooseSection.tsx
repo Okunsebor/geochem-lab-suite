@@ -56,8 +56,6 @@ const REASONS = [
   },
 ];
 
-
-
 export default function ReasonsToChooseSection() {
   const [active, setActive] = useState(0);
   const current = REASONS[active];
@@ -69,7 +67,6 @@ export default function ReasonsToChooseSection() {
           eyebrow="Trust & Standards"
           title="Rigorous Standards. Certified Infrastructure."
         />
-
 
         <div className="grid gap-10 lg:grid-cols-12 items-stretch">
           {/* Tabs */}
@@ -101,7 +98,9 @@ export default function ReasonsToChooseSection() {
                 transition={{ duration: 0.35 }}
                 className="space-y-5"
               >
-                <h3 className="text-2xl font-extrabold font-display text-foreground">{current.title}</h3>
+                <h3 className="text-2xl font-extrabold font-display text-foreground">
+                  {current.title}
+                </h3>
                 <ul className="space-y-3">
                   {current.bullets.map((b) => (
                     <li key={b} className="flex gap-3 text-sm text-muted-foreground">
@@ -127,7 +126,10 @@ export default function ReasonsToChooseSection() {
                 width={800}
                 height={600}
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0B1F33]/50 to-transparent pointer-events-none" aria-hidden />
+              <div
+                className="absolute inset-0 bg-gradient-to-t from-[#0B1F33]/50 to-transparent pointer-events-none"
+                aria-hidden
+              />
             </motion.div>
           </div>
         </div>

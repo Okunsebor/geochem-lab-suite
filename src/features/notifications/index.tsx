@@ -27,7 +27,7 @@ export default function NotificationsFeature() {
       toast.info(`Redirected to sample details for ${sampleMatch[0]}`);
       return;
     }
-    
+
     // Extract Report ID (e.g. RPT-2030) or navigate to reports
     const reportMatch = title.match(/RPT-\d+/);
     if (reportMatch || title.toLowerCase().includes("report")) {
@@ -76,7 +76,7 @@ export default function NotificationsFeature() {
       "QA anomaly raised",
       "Sample overdue",
       "Instrument calibration due",
-      "New customer signup"
+      "New customer signup",
     ];
     let updated;
     if (active) {
@@ -90,11 +90,17 @@ export default function NotificationsFeature() {
 
   return (
     <div className="space-y-6">
-      <PageHeader crumbs={[{label:"Administration"},{label:"Notifications"}]} title="Notification Center" description="System alerts, approvals, and reminders." />
+      <PageHeader
+        crumbs={[{ label: "Administration" }, { label: "Notifications" }]}
+        title="Notification Center"
+        description="System alerts, approvals, and reminders."
+      />
       <div className="rounded-xl border border-primary/20 bg-card/90 p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-primary/80">{roleInsights.title}</p>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-primary/80">
+              {roleInsights.title}
+            </p>
             <h3 className="mt-1 text-base font-semibold text-foreground inline-flex items-center gap-2">
               {roleInsights.icon}
               {roleInsights.detail}
@@ -123,17 +129,31 @@ export default function NotificationsFeature() {
           </div>
           <ul>
             {notificationsLoading ? (
-              <li className="p-6 text-center text-sm text-muted-foreground font-semibold">Loading notifications...</li>
+              <li className="p-6 text-center text-sm text-muted-foreground font-semibold">
+                Loading notifications...
+              </li>
             ) : notifications.length === 0 ? (
-              <li className="p-6 text-center text-sm text-muted-foreground font-semibold">No notifications</li>
+              <li className="p-6 text-center text-sm text-muted-foreground font-semibold">
+                No notifications
+              </li>
             ) : (
               notifications.map((n, i) => (
-                <li key={n.id ?? i} className="border-t border-border first:border-0 p-4 flex gap-3 hover:bg-muted/30 items-center">
-                  <span className={`size-2.5 shrink-0 rounded-full ${n.kind === "alert" ? "bg-destructive animate-pulse" : n.kind === "approval" ? "bg-warning" : "bg-info"}`} />
+                <li
+                  key={n.id ?? i}
+                  className="border-t border-border first:border-0 p-4 flex gap-3 hover:bg-muted/30 items-center"
+                >
+                  <span
+                    className={`size-2.5 shrink-0 rounded-full ${n.kind === "alert" ? "bg-destructive animate-pulse" : n.kind === "approval" ? "bg-warning" : "bg-info"}`}
+                  />
                   <div className="flex-1">
-                    <p className={`text-sm ${n.isRead ? "text-muted-foreground font-medium" : "font-semibold text-foreground"}`}>{n.title}</p>
+                    <p
+                      className={`text-sm ${n.isRead ? "text-muted-foreground font-medium" : "font-semibold text-foreground"}`}
+                    >
+                      {n.title}
+                    </p>
                     <p className="text-xs text-muted-foreground font-medium mt-0.5">
-                      {n.time} · <span className="capitalize">{n.kind}</span> · {(n.channel || "in-app").replace("-", " ")}
+                      {n.time} · <span className="capitalize">{n.kind}</span> ·{" "}
+                      {(n.channel || "in-app").replace("-", " ")}
                     </p>
                     {n.body && <p className="mt-1 text-xs text-muted-foreground">{n.body}</p>}
                   </div>
@@ -164,22 +184,29 @@ export default function NotificationsFeature() {
         <div className="space-y-4">
           <div className="rounded-xl border border-border bg-card p-5">
             <h3 className="text-sm font-semibold">Channels</h3>
-            {([
-              { Icon: Bell, label: "In-app" },
-              { Icon: Mail, label: "Email" },
-              { Icon: MessageSquare, label: "Workflow Alerts" },
-            ] as Array<{
-              Icon: ComponentType<{ className?: string }>;
-              label: string;
-              disabled?: boolean;
-            }>).map(({ Icon, label, disabled }, i) => {
+            {(
+              [
+                { Icon: Bell, label: "In-app" },
+                { Icon: Mail, label: "Email" },
+                { Icon: MessageSquare, label: "Workflow Alerts" },
+              ] as Array<{
+                Icon: ComponentType<{ className?: string }>;
+                label: string;
+                disabled?: boolean;
+              }>
+            ).map(({ Icon, label, disabled }, i) => {
               const channels = settings?.channels || ["In-app", "Email", "Workflow Alerts"];
               const checked = channels.includes(label);
               return (
-                <label key={i} className={`mt-3 flex items-center justify-between text-sm select-none ${disabled ? "opacity-50" : "cursor-pointer hover:text-foreground"}`}>
-                  <span className="inline-flex items-center gap-2 text-muted-foreground font-medium"><Icon className="size-4"/> {label}</span>
-                  <input 
-                    type="checkbox" 
+                <label
+                  key={i}
+                  className={`mt-3 flex items-center justify-between text-sm select-none ${disabled ? "opacity-50" : "cursor-pointer hover:text-foreground"}`}
+                >
+                  <span className="inline-flex items-center gap-2 text-muted-foreground font-medium">
+                    <Icon className="size-4" /> {label}
+                  </span>
+                  <input
+                    type="checkbox"
                     checked={checked}
                     disabled={disabled}
                     onChange={(e) => handleChannelToggle(label, e.target.checked)}
@@ -214,10 +241,13 @@ export default function NotificationsFeature() {
                 ];
                 const checked = triggers.includes(t);
                 return (
-                  <li key={t} className="flex items-center justify-between rounded border border-border px-2 py-1.5 font-medium">
+                  <li
+                    key={t}
+                    className="flex items-center justify-between rounded border border-border px-2 py-1.5 font-medium"
+                  >
                     <span>{t}</span>
-                    <input 
-                      type="checkbox" 
+                    <input
+                      type="checkbox"
                       checked={checked}
                       onChange={(e) => handleTriggerToggle(t, e.target.checked)}
                       className="rounded border-input text-primary focus:ring-primary cursor-pointer"

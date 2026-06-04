@@ -18,7 +18,7 @@ export function OptimizedImage({
     <img
       {...props}
       className={cn(className)}
-      loading={priority ? "eager" : loading ?? "lazy"}
+      loading={priority ? "eager" : (loading ?? "lazy")}
       decoding={decoding}
       fetchPriority={priority ? "high" : fetchPriority}
     />

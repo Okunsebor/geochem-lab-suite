@@ -84,10 +84,7 @@ export default function AudienceSplitSection() {
         </div>
         <div className="grid gap-8 lg:grid-cols-2">
           <AudienceCard card={LAB_CARD} index={0}>
-            <Link
-              to="/register"
-              className="mt-8 btn-theme-cyan text-sm w-fit"
-            >
+            <Link to="/register" className="mt-8 btn-theme-cyan text-sm w-fit">
               {LAB_CARD.cta} <ArrowRight className="size-4" />
             </Link>
           </AudienceCard>

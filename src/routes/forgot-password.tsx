@@ -21,7 +21,9 @@ function ForgotPassword() {
           <blockquote className="text-xl text-white/90 leading-snug">
             "Security and precision are the bedrocks of modern geochemical intelligence."
           </blockquote>
-          <p className="mt-4 text-sm text-sidebar-foreground/70">— Chief Security Officer, GeoChem Labs</p>
+          <p className="mt-4 text-sm text-sidebar-foreground/70">
+            — Chief Security Officer, GeoChem Labs
+          </p>
         </div>
       </div>
       <div className="flex items-center justify-center p-6 sm:p-10 bg-background">

@@ -20,7 +20,9 @@ export default function FooterSection() {
             </p>
           </div>
           <div>
-            <h3 className="text-xs font-bold font-mono uppercase tracking-widest text-accent mb-4">Explore</h3>
+            <h3 className="text-xs font-bold font-mono uppercase tracking-widest text-accent mb-4">
+              Explore
+            </h3>
             <ul className="space-y-2 text-sm">
               {PRODUCT_LINKS.map((l) => (
                 <li key={l.label}>
@@ -32,7 +34,9 @@ export default function FooterSection() {
             </ul>
           </div>
           <div>
-            <h3 className="text-xs font-bold font-mono uppercase tracking-widest text-accent mb-4">Access</h3>
+            <h3 className="text-xs font-bold font-mono uppercase tracking-widest text-accent mb-4">
+              Access
+            </h3>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link to="/register" className="hover:text-white transition-colors">
@@ -47,8 +51,13 @@ export default function FooterSection() {
             </ul>
           </div>
           <div>
-            <h3 className="text-xs font-bold font-mono uppercase tracking-widest text-accent mb-4">Contact</h3>
-            <a href="mailto:geochem@unipod.edu.ng" className="text-sm hover:text-white transition-colors">
+            <h3 className="text-xs font-bold font-mono uppercase tracking-widest text-accent mb-4">
+              Contact
+            </h3>
+            <a
+              href="mailto:geochem@unipod.edu.ng"
+              className="text-sm hover:text-white transition-colors"
+            >
               geochem@unipod.edu.ng
             </a>
           </div>

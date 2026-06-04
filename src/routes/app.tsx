@@ -11,7 +11,10 @@ import { mapDbRoleToUi, isEmailConfirmed } from "@/lib/auth-utils";
 
 export const Route = createFileRoute("/app")({
   beforeLoad: async () => {
-    const { data: { session }, error } = await supabase.auth.getSession();
+    const {
+      data: { session },
+      error,
+    } = await supabase.auth.getSession();
     if (error || !session?.user) {
       throw redirect({ to: "/login" });
     }
@@ -26,7 +29,18 @@ export const Route = createFileRoute("/app")({
       .eq("id", session.user.id)
       .maybeSingle();
 
-    const role = profile ? mapDbRoleToUi(profile.role) : mapDbRoleToUi("customer");
+    // Use the DB profile as the authoritative source.
+    // If the profile query returned null (RLS timing race or session not yet
+    // propagated to the DB connection), fall back to session metadata which
+    // is always present in the JWT. Only redirect to login if both are absent.
+    const rawRole: string | null =
+      profile?.role ?? session.user.user_metadata?.role ?? null;
+
+    if (!rawRole) {
+      throw redirect({ to: "/login" });
+    }
+
+    const role = mapDbRoleToUi(rawRole);
 
     if (role === "Customer") {
       throw redirect({ to: "/portal" });
@@ -67,7 +81,9 @@ function AppLayout() {
               <div className="dna-helix-node" />
               <div className="dna-helix-node" />
             </div>
-            <p className="text-[9px] uppercase font-mono tracking-widest text-primary font-bold">Synchronizing Secure LIMS Session</p>
+            <p className="text-[9px] uppercase font-mono tracking-widest text-primary font-bold">
+              Synchronizing Secure LIMS Session
+            </p>
           </div>
         </div>
       </div>

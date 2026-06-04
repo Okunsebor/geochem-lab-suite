@@ -44,9 +44,7 @@ export default function HeroSection() {
         >
           <h1 className="text-5xl md:text-7xl xl:text-8xl font-extrabold tracking-tight text-white leading-[1.05] font-display">
             Scientific Infrastructure.
-            <span className="block mt-2 text-[#00AEEF]">
-              Reimagined.
-            </span>
+            <span className="block mt-2 text-[#00AEEF]">Reimagined.</span>
           </h1>
 
           <div className="h-px w-24 bg-gradient-to-r from-[#00AEEF] to-transparent" />
@@ -54,7 +52,7 @@ export default function HeroSection() {
           {/* Subtext */}
           <div className="space-y-2 max-w-2xl">
             <p className="text-xl md:text-2xl font-bold text-white">
-               Trusted Analytical Intelligence.
+              Trusted Analytical Intelligence.
             </p>
             <p className="text-base md:text-lg font-semibold text-white/80">
               Built for Institutions. Designed for Precision.

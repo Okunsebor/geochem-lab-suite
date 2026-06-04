@@ -9,7 +9,7 @@ import {
   SystemNotification,
   User,
   SampleStatus,
-  Priority
+  Priority,
 } from "../types";
 
 import { useActivityCore } from "./use-activity-core";
@@ -32,10 +32,12 @@ interface LimsStateContextType {
   loading: boolean;
   tickets: any[];
   settings: any;
-  
+
   // Actions
   login: (email: string, password: string) => Promise<any>;
-  registerUser: (input: RegisterUserInput) => Promise<{ needsVerification: boolean; email: string }>;
+  registerUser: (
+    input: RegisterUserInput,
+  ) => Promise<{ needsVerification: boolean; email: string }>;
   logout: () => Promise<void>;
   registerSample: (sampleData: {
     client: string;
@@ -56,7 +58,8 @@ interface LimsStateContextType {
   rejectReport: (reportId: string, comments?: string) => Promise<void>;
   deliverReport: (reportId: string, recipientEmail: string) => Promise<void>;
   downloadReportPdf: (reportId: string) => Promise<void>;
-  inviteUser: (name: string, email: string, role: User["role"]) => void;
+  inviteUser: (name: string, email: string, role: User["role"]) => Promise<void>;
+  updateUserRole: (userId: string, newRole: User["role"]) => Promise<void>;
   toggleInstrumentStatus: (instrumentId: string, status: Instrument["status"]) => void;
   markAllNotificationsRead: () => void;
   markNotificationRead: (notificationId: string | number) => Promise<void>;
@@ -74,7 +77,7 @@ interface LimsStateContextType {
 const LimsStateContext = createContext<LimsStateContextType | undefined>(undefined);
 
 export function LimsStateProvider({ children }: { children: React.ReactNode }) {
-  const { currentUser, session, loading, login, registerUser, logout, switchUserRole } = useAuth();
+  const { currentUser, session, loading, login, registerUser, logout, switchUserRole, inviteUser: authInviteUser } = useAuth();
   const currentName = currentUser?.name || "System";
 
   const { activity, addActivity, clearActivity } = useActivityCore();
@@ -94,7 +97,7 @@ export function LimsStateProvider({ children }: { children: React.ReactNode }) {
       what,
       target,
       when: "Just now",
-      ip: "10.0.1.50"
+      ip: "10.0.1.50",
     });
   };
 
@@ -107,8 +110,25 @@ export function LimsStateProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const { instruments, toggleInstrumentStatus, fetchInstruments, saveInstruments } = useInstrumentsCore(currentName, addActivityHelper);
-  const { users, tickets, settings, inviteUser, addSupportTicket, updateSettings, fetchUsers, saveUsers } = useUsersCore(currentName, addActivityHelper);
+  const { instruments, toggleInstrumentStatus, fetchInstruments, saveInstruments } =
+    useInstrumentsCore(currentName, addActivityHelper);
+  const {
+    users,
+    tickets,
+    settings,
+    inviteUser,
+    setInviteUserFn,
+    updateUserRole,
+    addSupportTicket,
+    updateSettings,
+    fetchUsers,
+    saveUsers,
+  } = useUsersCore(currentName, addActivityHelper);
+
+  // Wire the real auth-layer invite function into the users core hook.
+  // This is done via a setter to avoid a circular hook dependency.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  React.useEffect(() => { setInviteUserFn(authInviteUser); }, []);
 
   const generateReportRef = useRef<(sampleId: string) => void>(() => {});
 
@@ -124,7 +144,9 @@ export function LimsStateProvider({ children }: { children: React.ReactNode }) {
     uploadSampleAttachment,
     logBarcodeScan,
     fetchSampleDetails,
-  } = useSamplesCore(currentUser, currentName, addActivityHelper, addNotificationHelper, (id) => generateReportRef.current(id));
+  } = useSamplesCore(currentUser, currentName, addActivityHelper, addNotificationHelper, (id) =>
+    generateReportRef.current(id),
+  );
 
   const {
     reports,
@@ -134,7 +156,14 @@ export function LimsStateProvider({ children }: { children: React.ReactNode }) {
     rejectReport,
     deliverReport,
     downloadReportPdf,
-  } = useReportsCore(currentName, addActivityHelper, addNotificationHelper, samples, updateSampleStatus, syncSamplesFromDb);
+  } = useReportsCore(
+    currentName,
+    addActivityHelper,
+    addNotificationHelper,
+    samples,
+    updateSampleStatus,
+    syncSamplesFromDb,
+  );
 
   generateReportRef.current = generateReport;
 
@@ -149,33 +178,21 @@ export function LimsStateProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const channel = supabase
       .channel("realtime-lims-samples")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "samples" },
-        () => {
-          syncSamplesFromDb();
-        }
-      )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "reports" as any },
-        () => {
-          syncReportsFromDb();
-        }
-      )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "report_logs" as any },
-        () => {
-          syncReportsFromDb();
-        }
-      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "samples" }, () => {
+        syncSamplesFromDb();
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "reports" as any }, () => {
+        syncReportsFromDb();
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "report_logs" as any }, () => {
+        syncReportsFromDb();
+      })
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "tracking_updates" as any },
         () => {
           syncSamplesFromDb();
-        }
+        },
       )
       .subscribe();
 
@@ -188,16 +205,16 @@ export function LimsStateProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     syncSamplesFromDb();
     syncReportsFromDb();
-    
+
     (async () => {
       await fetchInstruments();
-      
+
       const localAct = localStorage.getItem("gcs_activity");
       if (!localAct) clearActivity();
-      
+
       const localNot = localStorage.getItem("gcs_notifications");
       if (!localNot) clearNotifications();
-      
+
       await fetchUsers();
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -230,6 +247,7 @@ export function LimsStateProvider({ children }: { children: React.ReactNode }) {
         deliverReport,
         downloadReportPdf,
         inviteUser,
+        updateUserRole,
         toggleInstrumentStatus,
         markAllNotificationsRead,
         markNotificationRead,

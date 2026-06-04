@@ -3,7 +3,7 @@
 
 CREATE TABLE IF NOT EXISTS public.sample_logs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  sample_id TEXT NOT NULL REFERENCES public.samples(id) ON DELETE CASCADE,
+  sample_id UUID NOT NULL REFERENCES public.samples(id) ON DELETE CASCADE,
   event_type TEXT NOT NULL,
   event_label TEXT NOT NULL,
   status_before TEXT,
@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS public.sample_logs (
 
 CREATE TABLE IF NOT EXISTS public.tracking_updates (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  sample_id TEXT NOT NULL REFERENCES public.samples(id) ON DELETE CASCADE,
+  sample_id UUID NOT NULL REFERENCES public.samples(id) ON DELETE CASCADE,
   event_type TEXT NOT NULL,
   event_label TEXT NOT NULL,
   summary TEXT NOT NULL,
@@ -64,7 +64,7 @@ EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
 CREATE OR REPLACE FUNCTION public.gcs_insert_tracking_event(
-  p_sample_id TEXT,
+  p_sample_id UUID,
   p_event_type TEXT,
   p_event_label TEXT,
   p_summary TEXT,

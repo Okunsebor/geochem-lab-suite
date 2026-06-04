@@ -7,9 +7,9 @@ import { StatusBadge } from "../../../components/shared/StatusBadge";
 // ─── Stage Icon map ───────────────────────────────────────────────────────────
 
 const STAGE_ICONS: Record<PrepStage, React.ElementType> = {
-  Drying:      Flame,
-  Crushing:    Hammer,
-  Splitting:   Scissors,
+  Drying: Flame,
+  Crushing: Hammer,
+  Splitting: Scissors,
   Pulverizing: Wind,
 };
 
@@ -48,7 +48,9 @@ function PrepJobCard({ job, onClick }: PrepJobCardProps) {
 
         {/* Client / project */}
         <p className="text-sm font-semibold text-foreground leading-tight truncate">{job.client}</p>
-        <p className="text-xs text-muted-foreground truncate">{job.project} · {job.sampleType}</p>
+        <p className="text-xs text-muted-foreground truncate">
+          {job.project} · {job.sampleType}
+        </p>
 
         {/* Technician + equipment */}
         {currentStep?.technicianName && (
@@ -88,11 +90,7 @@ function PrepJobCard({ job, onClick }: PrepJobCardProps) {
                 key={stage}
                 className="flex-1 h-1 rounded-full transition-all"
                 style={{
-                  backgroundColor: isDone
-                    ? color
-                    : isActive
-                    ? `${color}60`
-                    : undefined,
+                  backgroundColor: isDone ? color : isActive ? `${color}60` : undefined,
                   background: !isDone && !isActive ? undefined : undefined,
                 }}
                 title={`${stage}: ${step?.status || "Queued"}`}

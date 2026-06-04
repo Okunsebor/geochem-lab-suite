@@ -1,7 +1,17 @@
 import { useEffect, useMemo } from "react";
 import { Link } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
-import { Activity, ArrowLeft, Beaker, CheckCircle2, Clock3, FileCheck2, FlaskConical, Radio, ShieldCheck } from "lucide-react";
+import {
+  Activity,
+  ArrowLeft,
+  Beaker,
+  CheckCircle2,
+  Clock3,
+  FileCheck2,
+  FlaskConical,
+  Radio,
+  ShieldCheck,
+} from "lucide-react";
 import { useLimsState } from "@/hooks/use-lims-state";
 import { useSampleTracking } from "@/hooks/use-sample-tracking";
 import { SAMPLE_STATUSES } from "@/types";
@@ -21,7 +31,10 @@ export function PortalTrackingFeature({ sampleId }: { sampleId: string }) {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <Link to="/portal" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+        <Link
+          to="/portal"
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+        >
           <ArrowLeft className="size-4" /> Back to dashboard
         </Link>
         <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs">
@@ -31,13 +44,16 @@ export function PortalTrackingFeature({ sampleId }: { sampleId: string }) {
       </div>
 
       <div className="rounded-2xl border border-primary/20 bg-card p-6 shadow-xl">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-primary/80">GeoChem Live Tracking</p>
+        <p className="text-[10px] font-bold uppercase tracking-widest text-primary/80">
+          GeoChem Live Tracking
+        </p>
         <div className="mt-2 flex flex-wrap items-center gap-3">
           <h1 className="text-2xl font-bold">{sample?.id || sampleId}</h1>
           {sample?.status && <StatusBadge status={sample.status} />}
         </div>
         <p className="mt-2 text-sm text-muted-foreground">
-          {sample?.project || "Sample workflow"} · Assigned technician: {sample?.technician || "Pending assignment"}
+          {sample?.project || "Sample workflow"} · Assigned technician:{" "}
+          {sample?.technician || "Pending assignment"}
         </p>
       </div>
 
@@ -57,7 +73,9 @@ export function PortalTrackingFeature({ sampleId }: { sampleId: string }) {
                 className={`rounded-lg border p-3 ${done ? "border-primary/40 bg-primary/5" : "border-border bg-muted/20"}`}
               >
                 <p className="text-xs font-semibold">{status}</p>
-                <p className="mt-1 text-[11px] text-muted-foreground">{done ? "Reached" : "Pending"}</p>
+                <p className="mt-1 text-[11px] text-muted-foreground">
+                  {done ? "Reached" : "Pending"}
+                </p>
               </motion.div>
             );
           })}
@@ -86,18 +104,34 @@ export function PortalTrackingFeature({ sampleId }: { sampleId: string }) {
                     <span className="absolute -left-[19px] top-4 size-2.5 rounded-full bg-primary ring-4 ring-background" />
                     <div className="flex items-center justify-between gap-2">
                       <p className="text-sm font-semibold text-foreground">{event.eventLabel}</p>
-                      <p className="text-xs text-muted-foreground">{new Date(event.createdAt).toLocaleString()}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(event.createdAt).toLocaleString()}
+                      </p>
                     </div>
                     <p className="mt-1 text-xs text-muted-foreground">{event.summary}</p>
                     <div className="mt-2 flex flex-wrap gap-2 text-[11px]">
-                      {event.stage && <span className="rounded bg-background px-2 py-1">Stage: {event.stage}</span>}
-                      {event.status && <span className="rounded bg-background px-2 py-1">Status: {event.status}</span>}
-                      {event.technicianName && <span className="rounded bg-background px-2 py-1">Tech: {event.technicianName}</span>}
+                      {event.stage && (
+                        <span className="rounded bg-background px-2 py-1">
+                          Stage: {event.stage}
+                        </span>
+                      )}
+                      {event.status && (
+                        <span className="rounded bg-background px-2 py-1">
+                          Status: {event.status}
+                        </span>
+                      )}
+                      {event.technicianName && (
+                        <span className="rounded bg-background px-2 py-1">
+                          Tech: {event.technicianName}
+                        </span>
+                      )}
                     </div>
                   </motion.div>
                 ))}
               </AnimatePresence>
-              {events.length === 0 && <p className="text-sm text-muted-foreground">No tracking events yet.</p>}
+              {events.length === 0 && (
+                <p className="text-sm text-muted-foreground">No tracking events yet.</p>
+              )}
             </div>
           )}
         </div>
@@ -107,23 +141,43 @@ export function PortalTrackingFeature({ sampleId }: { sampleId: string }) {
             <p className="text-xs font-semibold text-muted-foreground">Chain of Custody</p>
             <div className="mt-3 space-y-2">
               {(sample?.custody || []).slice(0, 8).map((c, idx) => (
-                <div key={`${c.action}-${idx}`} className="rounded border border-border bg-muted/20 p-2">
+                <div
+                  key={`${c.action}-${idx}`}
+                  className="rounded border border-border bg-muted/20 p-2"
+                >
                   <p className="text-xs font-medium">{c.action}</p>
-                  <p className="text-[11px] text-muted-foreground">{c.technician} · {c.time}</p>
+                  <p className="text-[11px] text-muted-foreground">
+                    {c.technician} · {c.time}
+                  </p>
                 </div>
               ))}
-              {!sample?.custody?.length && <p className="text-xs text-muted-foreground">No custody events logged.</p>}
+              {!sample?.custody?.length && (
+                <p className="text-xs text-muted-foreground">No custody events logged.</p>
+              )}
             </div>
           </div>
 
           <div className="rounded-xl border border-border bg-card p-4">
             <p className="text-xs font-semibold text-muted-foreground">Tracking Highlights</p>
             <div className="mt-3 space-y-2 text-xs">
-              <div className="flex items-center gap-2"><Beaker className="size-3.5 text-primary" /> Preparation history visible live</div>
-              <div className="flex items-center gap-2"><ShieldCheck className="size-3.5 text-primary" /> QA/QC pass and fails stream instantly</div>
-              <div className="flex items-center gap-2"><Clock3 className="size-3.5 text-primary" /> Timestamped chain-of-custody events</div>
-              <div className="flex items-center gap-2"><FileCheck2 className="size-3.5 text-primary" /> Report generation and release updates</div>
-              <div className="flex items-center gap-2"><CheckCircle2 className="size-3.5 text-primary" /> Dashboard and notifications auto-refresh</div>
+              <div className="flex items-center gap-2">
+                <Beaker className="size-3.5 text-primary" /> Preparation history visible live
+              </div>
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="size-3.5 text-primary" /> QA/QC pass and fails stream
+                instantly
+              </div>
+              <div className="flex items-center gap-2">
+                <Clock3 className="size-3.5 text-primary" /> Timestamped chain-of-custody events
+              </div>
+              <div className="flex items-center gap-2">
+                <FileCheck2 className="size-3.5 text-primary" /> Report generation and release
+                updates
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="size-3.5 text-primary" /> Dashboard and notifications
+                auto-refresh
+              </div>
             </div>
           </div>
         </div>

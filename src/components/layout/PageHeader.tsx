@@ -1,9 +1,20 @@
 import type { ReactNode } from "react";
 
-interface Crumb { label: string; to?: string }
+interface Crumb {
+  label: string;
+  to?: string;
+}
 export function PageHeader({
-  title, description, actions, crumbs,
-}: { title: string; description?: string; actions?: ReactNode; crumbs?: Crumb[] }) {
+  title,
+  description,
+  actions,
+  crumbs,
+}: {
+  title: string;
+  description?: string;
+  actions?: ReactNode;
+  crumbs?: Crumb[];
+}) {
   return (
     <div className="flex flex-col gap-3 border-b border-border pb-5">
       {crumbs && (

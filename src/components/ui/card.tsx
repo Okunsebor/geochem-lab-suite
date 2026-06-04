@@ -13,9 +13,11 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
     <div
       ref={ref}
       className={cn(
-        glass ? "glass rounded-xl shadow-lg" : "rounded-xl border bg-card text-card-foreground shadow",
+        glass
+          ? "glass rounded-xl shadow-lg"
+          : "rounded-xl border bg-card text-card-foreground shadow",
         interactive && "interactive-card cursor-pointer",
-        className
+        className,
       )}
       {...props}
     />

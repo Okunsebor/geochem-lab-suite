@@ -25,7 +25,13 @@ const styles: Record<string, string> = {
   Low: "bg-secondary text-secondary-foreground border-border",
 };
 
-export function StatusBadge({ status, className }: { status: SampleStatus | string; className?: string }) {
+export function StatusBadge({
+  status,
+  className,
+}: {
+  status: SampleStatus | string;
+  className?: string;
+}) {
   return (
     <span
       className={cn(

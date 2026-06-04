@@ -32,7 +32,8 @@ function validateForm(data: FormState): FormErrors {
   if (!data.firstName.trim()) errors.firstName = "First name is required.";
   if (!data.lastName.trim()) errors.lastName = "Last name is required.";
   if (!data.email.trim()) errors.email = "Email address is required.";
-  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) errors.email = "Enter a valid email address.";
+  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email))
+    errors.email = "Enter a valid email address.";
   if (!data.organization.trim()) errors.organization = "Organization is required.";
   if (!data.phone.trim()) errors.phone = "Phone number is required.";
   if (!data.password) errors.password = "Password is required.";
@@ -84,7 +85,7 @@ export function RegisterForm() {
         toast.success(
           result.verificationEmailSent
             ? "Verification code sent. Check your inbox and spam folder."
-            : "Continue verification with the latest code we sent you."
+            : "Continue verification with the latest code we sent you.",
         );
         await navigate({ to: getVerifyEmailPath(result.email) });
       } else {
@@ -106,8 +107,8 @@ export function RegisterForm() {
         Create your account
       </h1>
       <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-        Register as a UniPod GeoChem customer to submit samples, track progress, and
-        download analytical certificates.
+        Register as a UniPod GeoChem customer to submit samples, track progress, and download
+        analytical certificates.
       </p>
 
       <form className="mt-6 space-y-3" onSubmit={handleSubmit} noValidate>
@@ -208,7 +209,11 @@ export function RegisterForm() {
 
       <p className="mt-4 text-center text-xs text-muted-foreground">
         Already registered?{" "}
-        <Link to="/login" search={{ intent: "portal" }} className="text-primary hover:underline font-semibold">
+        <Link
+          to="/login"
+          search={{ intent: "portal" }}
+          className="text-primary hover:underline font-semibold"
+        >
           Sign in to your portal
         </Link>
       </p>

@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS analytical_methods (
 -- ─────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS analytical_runs (
   id             TEXT        PRIMARY KEY,              -- RUN-XXXXX
-  sample_id      TEXT        NOT NULL REFERENCES samples(id) ON DELETE CASCADE,
+  sample_id      UUID        NOT NULL REFERENCES samples(id) ON DELETE CASCADE,
   instrument_id  TEXT        NOT NULL,
   method         TEXT        NOT NULL,
   analyst_name   TEXT        NOT NULL,
@@ -77,7 +77,7 @@ CREATE TABLE IF NOT EXISTS calibration_records (
 -- ─────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS qa_flags (
   id                 TEXT        PRIMARY KEY,           -- QF-XXXXX
-  sample_id          TEXT        NOT NULL REFERENCES samples(id) ON DELETE CASCADE,
+  sample_id          UUID        NOT NULL REFERENCES samples(id) ON DELETE CASCADE,
   run_id             TEXT,
   element            TEXT        NOT NULL,
   check_type         check_type  NOT NULL,

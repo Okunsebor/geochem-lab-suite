@@ -10,7 +10,8 @@ export function InstrumentsGrid() {
   const { instruments, toggleInstrumentStatus } = useLimsState();
 
   const handleMaintenance = (id: string, currentStatus: Instrument["status"]) => {
-    const nextStatus: Instrument["status"] = currentStatus === "Maintenance" ? "Online" : "Maintenance";
+    const nextStatus: Instrument["status"] =
+      currentStatus === "Maintenance" ? "Online" : "Maintenance";
     toggleInstrumentStatus(id, nextStatus);
     toast.success(`Instrument ${id} marked as ${nextStatus}`);
   };
@@ -24,7 +25,10 @@ export function InstrumentsGrid() {
       />
       <div className="grid gap-4 lg:grid-cols-2">
         {instruments.map((i) => (
-          <div key={i.id} className="rounded-xl border border-border bg-card p-5 hover:shadow-sm transition">
+          <div
+            key={i.id}
+            className="rounded-xl border border-border bg-card p-5 hover:shadow-sm transition"
+          >
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-sm font-semibold text-foreground">{i.name}</p>
@@ -32,7 +36,7 @@ export function InstrumentsGrid() {
               </div>
               <StatusBadge status={i.status} />
             </div>
-            
+
             <div className="mt-4 grid grid-cols-3 gap-3 text-xs font-semibold">
               <div>
                 <p className="text-muted-foreground">Queue</p>
@@ -44,14 +48,16 @@ export function InstrumentsGrid() {
               </div>
               <div>
                 <p className="text-muted-foreground">Last calibrated</p>
-                <p className="text-base font-bold text-foreground mt-0.5">{i.lastCalibrated || "14h ago"}</p>
+                <p className="text-base font-bold text-foreground mt-0.5">
+                  {i.lastCalibrated || "14h ago"}
+                </p>
               </div>
             </div>
-            
+
             <div className="mt-4 h-1.5 rounded bg-muted overflow-hidden">
               <div className="h-full gradient-primary" style={{ width: `${i.util}%` }} />
             </div>
-            
+
             <div className="mt-4 flex gap-2">
               <button
                 onClick={() => toast.info(`Viewing calibration logs for ${i.id}`)}

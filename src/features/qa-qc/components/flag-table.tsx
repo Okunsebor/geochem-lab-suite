@@ -10,16 +10,16 @@ interface FlagTableProps {
 }
 
 const SEVERITY_META: Record<FlagSeverity, { color: string; bg: string; dot: string }> = {
-  Low:    { color: "text-sky-600",   bg: "bg-sky-500/10",   dot: "bg-sky-500" },
+  Low: { color: "text-sky-600", bg: "bg-sky-500/10", dot: "bg-sky-500" },
   Medium: { color: "text-amber-600", bg: "bg-amber-500/10", dot: "bg-amber-500" },
-  High:   { color: "text-rose-600",  bg: "bg-rose-500/10",  dot: "bg-rose-500" },
+  High: { color: "text-rose-600", bg: "bg-rose-500/10", dot: "bg-rose-500" },
 };
 
 const STATUS_META: Record<FlagStatus, { color: string; bg: string }> = {
-  "Open":             { color: "text-muted-foreground", bg: "bg-muted" },
-  "Pending Approval": { color: "text-amber-600",        bg: "bg-amber-500/10" },
-  "Approved":         { color: "text-emerald-600",      bg: "bg-emerald-500/10" },
-  "Revised":          { color: "text-primary",           bg: "bg-primary/10" },
+  Open: { color: "text-muted-foreground", bg: "bg-muted" },
+  "Pending Approval": { color: "text-amber-600", bg: "bg-amber-500/10" },
+  Approved: { color: "text-emerald-600", bg: "bg-emerald-500/10" },
+  Revised: { color: "text-primary", bg: "bg-primary/10" },
 };
 
 const CHECK_TYPES: CheckType[] = ["Duplicate", "Blank", "CRM", "Standard", "Spike"];
@@ -28,24 +28,30 @@ const STATUSES: FlagStatus[] = ["Open", "Pending Approval", "Approved", "Revised
 
 export function FlagTable({ flags, onResolve, onDismiss }: FlagTableProps) {
   const [selectedFlag, setSelectedFlag] = useState<QaFlag | null>(null);
-  const [filterType,     setFilterType]     = useState<CheckType | "All">("All");
+  const [filterType, setFilterType] = useState<CheckType | "All">("All");
   const [filterSeverity, setFilterSeverity] = useState<FlagSeverity | "All">("All");
-  const [filterStatus,   setFilterStatus]   = useState<FlagStatus | "All">("All");
-  const [search, setSearch]                 = useState("");
+  const [filterStatus, setFilterStatus] = useState<FlagStatus | "All">("All");
+  const [search, setSearch] = useState("");
 
   const filtered = useMemo(() => {
     return flags.filter((f) => {
-      if (filterType     !== "All" && f.checkType !== filterType)     return false;
-      if (filterSeverity !== "All" && f.severity  !== filterSeverity) return false;
-      if (filterStatus   !== "All" && f.status    !== filterStatus)   return false;
-      if (search && !f.sampleId.toLowerCase().includes(search.toLowerCase()) &&
-          !f.element.toLowerCase().includes(search.toLowerCase()) &&
-          !f.id.toLowerCase().includes(search.toLowerCase())) return false;
+      if (filterType !== "All" && f.checkType !== filterType) return false;
+      if (filterSeverity !== "All" && f.severity !== filterSeverity) return false;
+      if (filterStatus !== "All" && f.status !== filterStatus) return false;
+      if (
+        search &&
+        !f.sampleId.toLowerCase().includes(search.toLowerCase()) &&
+        !f.element.toLowerCase().includes(search.toLowerCase()) &&
+        !f.id.toLowerCase().includes(search.toLowerCase())
+      )
+        return false;
       return true;
     });
   }, [flags, filterType, filterSeverity, filterStatus, search]);
 
-  const openCount = flags.filter((f) => f.status === "Open" || f.status === "Pending Approval").length;
+  const openCount = flags.filter(
+    (f) => f.status === "Open" || f.status === "Pending Approval",
+  ).length;
 
   return (
     <>
@@ -75,27 +81,50 @@ export function FlagTable({ flags, onResolve, onDismiss }: FlagTableProps) {
           />
 
           {/* Check type */}
-          <select value={filterType} onChange={(e) => setFilterType(e.target.value as any)}
-            className="rounded-md border border-border bg-background px-2.5 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-primary/40">
+          <select
+            value={filterType}
+            onChange={(e) => setFilterType(e.target.value as any)}
+            className="rounded-md border border-border bg-background px-2.5 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-primary/40"
+          >
             <option value="All">All Types</option>
-            {CHECK_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+            {CHECK_TYPES.map((t) => (
+              <option key={t} value={t}>
+                {t}
+              </option>
+            ))}
           </select>
 
           {/* Severity */}
-          <select value={filterSeverity} onChange={(e) => setFilterSeverity(e.target.value as any)}
-            className="rounded-md border border-border bg-background px-2.5 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-primary/40">
+          <select
+            value={filterSeverity}
+            onChange={(e) => setFilterSeverity(e.target.value as any)}
+            className="rounded-md border border-border bg-background px-2.5 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-primary/40"
+          >
             <option value="All">All Severities</option>
-            {SEVERITIES.map((s) => <option key={s} value={s}>{s}</option>)}
+            {SEVERITIES.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
           </select>
 
           {/* Status */}
-          <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value as any)}
-            className="rounded-md border border-border bg-background px-2.5 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-primary/40">
+          <select
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value as any)}
+            className="rounded-md border border-border bg-background px-2.5 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-primary/40"
+          >
             <option value="All">All Statuses</option>
-            {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+            {STATUSES.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
           </select>
 
-          <span className="ml-auto text-xs text-muted-foreground">{filtered.length} of {flags.length}</span>
+          <span className="ml-auto text-xs text-muted-foreground">
+            {filtered.length} of {flags.length}
+          </span>
         </div>
 
         {/* Table */}
@@ -119,7 +148,9 @@ export function FlagTable({ flags, onResolve, onDismiss }: FlagTableProps) {
               {filtered.length === 0 && (
                 <tr>
                   <td colSpan={10} className="py-12 text-center text-sm text-muted-foreground">
-                    {flags.length === 0 ? "No anomaly flags raised" : "No flags match the current filters"}
+                    {flags.length === 0
+                      ? "No anomaly flags raised"
+                      : "No flags match the current filters"}
                   </td>
                 </tr>
               )}
@@ -143,21 +174,30 @@ export function FlagTable({ flags, onResolve, onDismiss }: FlagTableProps) {
                         <span className={`text-xs font-semibold ${sevMeta.color}`}>
                           {f.percentDeviation.toFixed(1)}%
                         </span>
-                      ) : "—"}
+                      ) : (
+                        "—"
+                      )}
                     </td>
                     <td>
-                      <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-semibold ${sevMeta.bg} ${sevMeta.color}`}>
+                      <span
+                        className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-semibold ${sevMeta.bg} ${sevMeta.color}`}
+                      >
                         <span className={`size-1.5 rounded-full ${sevMeta.dot}`} />
                         {f.severity}
                       </span>
                     </td>
                     <td>
-                      <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${statuMeta.bg} ${statuMeta.color}`}>
+                      <span
+                        className={`inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${statuMeta.bg} ${statuMeta.color}`}
+                      >
                         {f.status}
                       </span>
                     </td>
                     <td className="text-xs text-muted-foreground">
-                      {new Date(f.raisedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                      {new Date(f.raisedAt).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
                     </td>
                     <td>
                       {isOpen && (

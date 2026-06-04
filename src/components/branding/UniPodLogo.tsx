@@ -9,7 +9,12 @@ type Props = {
   height?: number;
 };
 
-export function UniPodLogo({ className, showTagline = false, linkToHome = true, height = 36 }: Props) {
+export function UniPodLogo({
+  className,
+  showTagline = false,
+  linkToHome = true,
+  height = 36,
+}: Props) {
   const img = (
     <img
       src={BRAND_ASSETS.logo}

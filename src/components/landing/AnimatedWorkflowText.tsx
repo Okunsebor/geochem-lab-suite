@@ -8,7 +8,7 @@ const WORKFLOW_STEPS = [
   "Prepared",
   "Analyzed",
   "Validated",
-  "Reported"
+  "Reported",
 ];
 
 export function AnimatedWorkflowText() {
