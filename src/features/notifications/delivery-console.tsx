@@ -61,9 +61,13 @@ export default function NotificationDeliveryConsoleFeature() {
   useEffect(() => {
     const channel = supabase
       .channel("realtime-notification-delivery-console")
-      .on("postgres_changes", { event: "*", schema: "public", table: "notification_emails" }, () => {
-        sync();
-      })
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "notification_emails" },
+        () => {
+          sync();
+        },
+      )
       .subscribe();
     return () => {
       supabase.removeChannel(channel);
@@ -158,9 +162,17 @@ export default function NotificationDeliveryConsoleFeature() {
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={7} className="px-4 py-6 text-center text-muted-foreground">Loading delivery queue...</td></tr>
+                <tr>
+                  <td colSpan={7} className="px-4 py-6 text-center text-muted-foreground">
+                    Loading delivery queue...
+                  </td>
+                </tr>
               ) : rows.length === 0 ? (
-                <tr><td colSpan={7} className="px-4 py-6 text-center text-muted-foreground">No delivery records yet.</td></tr>
+                <tr>
+                  <td colSpan={7} className="px-4 py-6 text-center text-muted-foreground">
+                    No delivery records yet.
+                  </td>
+                </tr>
               ) : (
                 rows.map((row) => (
                   <tr key={row.id} className="border-t border-border [&>td]:px-4 [&>td]:py-2.5">
@@ -181,11 +193,17 @@ export default function NotificationDeliveryConsoleFeature() {
                     <td className="font-medium">{row.recipientEmail}</td>
                     <td>
                       <p className="font-medium text-foreground">{row.subject}</p>
-                      {row.errorMessage && <p className="text-xs text-destructive mt-0.5">{row.errorMessage}</p>}
+                      {row.errorMessage && (
+                        <p className="text-xs text-destructive mt-0.5">{row.errorMessage}</p>
+                      )}
                     </td>
                     <td>{row.attempts}</td>
-                    <td className="text-xs text-muted-foreground">{new Date(row.createdAt).toLocaleString()}</td>
-                    <td className="text-xs text-muted-foreground">{row.sentAt ? new Date(row.sentAt).toLocaleString() : "—"}</td>
+                    <td className="text-xs text-muted-foreground">
+                      {new Date(row.createdAt).toLocaleString()}
+                    </td>
+                    <td className="text-xs text-muted-foreground">
+                      {row.sentAt ? new Date(row.sentAt).toLocaleString() : "—"}
+                    </td>
                     <td>
                       {row.status === "failed" ? (
                         <button

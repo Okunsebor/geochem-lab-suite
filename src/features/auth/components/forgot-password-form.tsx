@@ -36,13 +36,14 @@ export function ForgotPasswordForm() {
         </div>
         <h1 className="text-xl font-bold tracking-tight text-foreground">Recover credentials</h1>
       </div>
-      
+
       {!submitted ? (
         <>
           <p className="text-xs text-muted-foreground font-medium mb-6">
-            Enter your registered email address and we'll dispatch a link to reset your secure LIMS password.
+            Enter your registered email address and we'll dispatch a link to reset your secure LIMS
+            password.
           </p>
-          
+
           <form className="space-y-4" onSubmit={handleSubmit}>
             <InputField
               label="Work email"
@@ -73,8 +74,9 @@ export function ForgotPasswordForm() {
       ) : (
         <div className="space-y-4 py-2">
           <div className="rounded-lg bg-success/10 border border-success/20 p-4 text-xs text-success font-medium">
-            A secure verification link has been successfully dispatched to <strong className="text-foreground">{email}</strong>.
-            Please verify your inbox and follow instructions to update credentials.
+            A secure verification link has been successfully dispatched to{" "}
+            <strong className="text-foreground">{email}</strong>. Please verify your inbox and
+            follow instructions to update credentials.
           </div>
           <p className="text-xs text-muted-foreground font-medium text-center">
             Didn't receive email? Check spam filters or try requesting another link.

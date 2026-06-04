@@ -27,7 +27,11 @@ function Landing() {
     <div className="min-h-screen bg-background text-foreground">
       <HeaderNav />
       <HeroSection />
-      <Suspense fallback={<div className="min-h-[50vh]" aria-busy="true" aria-label="Loading page content" />}>
+      <Suspense
+        fallback={
+          <div className="min-h-[50vh]" aria-busy="true" aria-label="Loading page content" />
+        }
+      >
         <LandingDeferred />
       </Suspense>
     </div>

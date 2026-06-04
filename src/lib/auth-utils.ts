@@ -66,7 +66,9 @@ export function getVerifyEmailUrl(): string {
   return `${getAuthRedirectBase()}/verify-email`;
 }
 
-export function isEmailConfirmed(user: { email_confirmed_at?: string | null } | null | undefined): boolean {
+export function isEmailConfirmed(
+  user: { email_confirmed_at?: string | null } | null | undefined,
+): boolean {
   return Boolean(user?.email_confirmed_at);
 }
 

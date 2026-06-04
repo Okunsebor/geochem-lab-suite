@@ -30,10 +30,13 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   emailVerified: boolean;
-  login: (email: string, password: string) => Promise<{ role: User["role"]; emailVerified: boolean }>;
+  login: (
+    email: string,
+    password: string,
+  ) => Promise<{ role: User["role"]; emailVerified: boolean }>;
   loginWithGoogle: () => Promise<void>;
   registerUser: (
-    input: RegisterUserInput
+    input: RegisterUserInput,
   ) => Promise<{ needsVerification: boolean; email: string; verificationEmailSent: boolean }>;
   logout: () => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
@@ -75,10 +78,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const org = profile.organizations as { name?: string } | null;
         setCurrentUser({
           id: 1,
-          name: profile.full_name || buildDisplayName(
-            sessionUser.user_metadata?.first_name ?? "",
-            sessionUser.user_metadata?.last_name ?? ""
-          ) || sessionUser.email?.split("@")[0] || "User",
+          name:
+            profile.full_name ||
+            buildDisplayName(
+              sessionUser.user_metadata?.first_name ?? "",
+              sessionUser.user_metadata?.last_name ?? "",
+            ) ||
+            sessionUser.email?.split("@")[0] ||
+            "User",
           email: sessionUser.email || "",
           role: mapDbRoleToUi(profile.role),
           status: verified ? "Active" : "Invited",
@@ -100,7 +107,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           sessionUser.user_metadata?.full_name ||
           buildDisplayName(
             sessionUser.user_metadata?.first_name ?? "",
-            sessionUser.user_metadata?.last_name ?? ""
+            sessionUser.user_metadata?.last_name ?? "",
           ) ||
           "User",
         email: sessionUser.email || "",
@@ -114,9 +121,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.warn("Profile sync fallback:", err);
       const metaRole = sessionUser.user_metadata?.role;
       const uiRole =
-        metaRole === "Admin" ||
-        metaRole === "Lab Coordinator" ||
-        metaRole === "Customer"
+        metaRole === "Admin" || metaRole === "Lab Coordinator" || metaRole === "Customer"
           ? metaRole
           : "Customer";
 
@@ -164,7 +169,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setEmailVerified(false);
       }
     },
-    [syncProfile]
+    [syncProfile],
   );
 
   useEffect(() => {
@@ -190,7 +195,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [handleSession]);
 
   const refreshProfile = async () => {
-    const { data: { session: current } } = await supabase.auth.getSession();
+    const {
+      data: { session: current },
+    } = await supabase.auth.getSession();
     if (current?.user) await syncProfile(current.user);
   };
 
@@ -206,6 +213,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const verified = isEmailConfirmed(user);
       if (!verified) {
+        try {
+          await sendVerificationEmail(email, { showToast: false });
+        } catch (resendErr) {
+          console.warn("Could not automatically resend verification email on login:", resendErr);
+        }
         await supabase.auth.signOut();
         throw new Error("Email not confirmed");
       }
@@ -249,10 +261,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const sendVerificationEmail = async (
-    email: string,
-    options: { showToast?: boolean } = {}
-  ) => {
+  const sendVerificationEmail = async (email: string, options: { showToast?: boolean } = {}) => {
     const { showToast = true } = options;
     assertCanResendVerification(email);
     const { error } = await supabase.auth.resend({
@@ -312,7 +321,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       const needsVerification = !data.user?.email_confirmed_at;
-      return { needsVerification, email: input.email.trim(), verificationEmailSent: needsVerification };
+      return {
+        needsVerification,
+        email: input.email.trim(),
+        verificationEmailSent: needsVerification,
+      };
     } finally {
       setLoading(false);
     }
@@ -321,8 +334,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const resendVerificationEmail = async (email: string) => {
     await sendVerificationEmail(email);
   };
-
-
 
   const logout = async () => {
     setLoading(true);

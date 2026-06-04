@@ -39,9 +39,21 @@ export default function LaboratorySection() {
             </p>
             <ul className="space-y-4">
               {[
-                { icon: Beaker, title: "Full assay pipeline", desc: "ICP-MS/OES queues with real-time preparation tracking." },
-                { icon: Microscope, title: "Rigorous QA/QC", desc: "Duplicates, CRMs, and calibration validation built in." },
-                { icon: FileCheck, title: "Certified reporting", desc: "Branded PDF certificates delivered via your portal." },
+                {
+                  icon: Beaker,
+                  title: "Full assay pipeline",
+                  desc: "ICP-MS/OES queues with real-time preparation tracking.",
+                },
+                {
+                  icon: Microscope,
+                  title: "Rigorous QA/QC",
+                  desc: "Duplicates, CRMs, and calibration validation built in.",
+                },
+                {
+                  icon: FileCheck,
+                  title: "Certified reporting",
+                  desc: "Branded PDF certificates delivered via your portal.",
+                },
               ].map((item) => (
                 <li key={item.title} className="flex gap-3">
                   <div className="grid size-10 place-items-center rounded-lg bg-primary/10 text-primary shrink-0">
@@ -54,10 +66,7 @@ export default function LaboratorySection() {
                 </li>
               ))}
             </ul>
-            <Link
-              to="/register"
-              className="btn-theme-cyan text-sm"
-            >
+            <Link to="/register" className="btn-theme-cyan text-sm">
               Register for laboratory access <ArrowRight className="size-4" />
             </Link>
           </motion.div>

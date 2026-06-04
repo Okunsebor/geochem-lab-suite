@@ -9,11 +9,13 @@ interface RawUploadPanelProps {
 }
 
 export function RawUploadPanel({ runId, onUpload }: RawUploadPanelProps) {
-  const [file, setFile]               = useState<File | null>(null);
-  const [preview, setPreview]         = useState<string[][]>([]);
-  const [uploading, setUploading]     = useState(false);
-  const [uploadResult, setUploadResult] = useState<{ url: string | null; count: number } | null>(null);
-  const [dragOver, setDragOver]       = useState(false);
+  const [file, setFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string[][]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [uploadResult, setUploadResult] = useState<{ url: string | null; count: number } | null>(
+    null,
+  );
+  const [dragOver, setDragOver] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleFile = async (f: File) => {
@@ -43,7 +45,11 @@ export function RawUploadPanel({ runId, onUpload }: RawUploadPanelProps) {
     setUploading(false);
   };
 
-  const reset = () => { setFile(null); setPreview([]); setUploadResult(null); };
+  const reset = () => {
+    setFile(null);
+    setPreview([]);
+    setUploadResult(null);
+  };
 
   return (
     <div className="rounded-xl border border-border bg-card overflow-hidden">
@@ -57,7 +63,10 @@ export function RawUploadPanel({ runId, onUpload }: RawUploadPanelProps) {
         {/* Drop zone */}
         {!file && (
           <div
-            onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+            onDragOver={(e) => {
+              e.preventDefault();
+              setDragOver(true);
+            }}
             onDragLeave={() => setDragOver(false)}
             onDrop={handleDrop}
             onClick={() => inputRef.current?.click()}
@@ -69,7 +78,9 @@ export function RawUploadPanel({ runId, onUpload }: RawUploadPanelProps) {
             </div>
             <div className="text-center">
               <p className="text-sm font-semibold text-foreground">Drop instrument file here</p>
-              <p className="text-xs text-muted-foreground mt-1">CSV export from instrument software · max 50 MB</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                CSV export from instrument software · max 50 MB
+              </p>
             </div>
             <input
               ref={inputRef}
@@ -109,7 +120,10 @@ export function RawUploadPanel({ runId, onUpload }: RawUploadPanelProps) {
                     <thead className="bg-muted/40 border-b border-border">
                       <tr>
                         {(preview[0] || []).map((h, i) => (
-                          <th key={i} className="px-3 py-2 text-left font-semibold text-muted-foreground">
+                          <th
+                            key={i}
+                            className="px-3 py-2 text-left font-semibold text-muted-foreground"
+                          >
                             {h}
                           </th>
                         ))}
@@ -119,7 +133,9 @@ export function RawUploadPanel({ runId, onUpload }: RawUploadPanelProps) {
                       {preview.slice(1).map((row, ri) => (
                         <tr key={ri} className="hover:bg-muted/20">
                           {row.map((cell, ci) => (
-                            <td key={ci} className="px-3 py-1.5 font-mono text-foreground">{cell}</td>
+                            <td key={ci} className="px-3 py-1.5 font-mono text-foreground">
+                              {cell}
+                            </td>
                           ))}
                         </tr>
                       ))}
@@ -136,12 +152,20 @@ export function RawUploadPanel({ runId, onUpload }: RawUploadPanelProps) {
                 className="flex items-center gap-1.5 rounded-md gradient-primary px-4 py-2 text-xs text-white font-semibold hover:opacity-90 transition disabled:opacity-50"
               >
                 {uploading ? (
-                  <><span className="size-3 border-2 border-white border-t-transparent rounded-full animate-spin" /> Importing…</>
+                  <>
+                    <span className="size-3 border-2 border-white border-t-transparent rounded-full animate-spin" />{" "}
+                    Importing…
+                  </>
                 ) : (
-                  <><Upload className="size-3.5" /> Confirm Import</>
+                  <>
+                    <Upload className="size-3.5" /> Confirm Import
+                  </>
                 )}
               </button>
-              <button onClick={reset} className="rounded-md border border-border bg-background px-3 py-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition">
+              <button
+                onClick={reset}
+                className="rounded-md border border-border bg-background px-3 py-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition"
+              >
                 Cancel
               </button>
             </div>
@@ -157,13 +181,20 @@ export function RawUploadPanel({ runId, onUpload }: RawUploadPanelProps) {
                 Import complete — {uploadResult.count} results registered
               </p>
               {uploadResult.url && (
-                <a href={uploadResult.url} target="_blank" rel="noopener noreferrer"
-                  className="text-xs text-primary hover:underline">
+                <a
+                  href={uploadResult.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-primary hover:underline"
+                >
                   View raw file ↗
                 </a>
               )}
             </div>
-            <button onClick={reset} className="text-xs text-muted-foreground hover:text-foreground font-semibold">
+            <button
+              onClick={reset}
+              className="text-xs text-muted-foreground hover:text-foreground font-semibold"
+            >
               Upload another
             </button>
           </div>

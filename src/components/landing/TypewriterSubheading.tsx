@@ -14,7 +14,7 @@ export default function TypewriterSubheading() {
   const [cursorVisible, setCursorVisible] = useState(true);
 
   useEffect(() => {
-    const cursorTimer = setInterval(() => setCursorVisible(v => !v), 530);
+    const cursorTimer = setInterval(() => setCursorVisible((v) => !v), 530);
     return () => clearInterval(cursorTimer);
   }, []);
 
@@ -29,15 +29,14 @@ export default function TypewriterSubheading() {
       timeout = setTimeout(() => setDisplayed(displayed.slice(0, -1)), 18);
     } else if (isDeleting && displayed.length === 0) {
       setIsDeleting(false);
-      setPhraseIdx(i => (i + 1) % TYPEWRITER_PHRASES.length);
+      setPhraseIdx((i) => (i + 1) % TYPEWRITER_PHRASES.length);
     }
     return () => clearTimeout(timeout);
   }, [displayed, isDeleting, phraseIdx]);
 
   return (
     <span className="text-muted-foreground">
-      GeoChem Suite{" "}
-      <span className="text-foreground/90">{displayed}</span>
+      GeoChem Suite <span className="text-foreground/90">{displayed}</span>
       <span
         className="inline-block w-[2px] h-[1.1em] bg-accent ml-[1px] align-middle"
         style={{ opacity: cursorVisible ? 1 : 0, transition: "opacity 0.1s" }}

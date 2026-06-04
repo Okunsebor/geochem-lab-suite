@@ -109,7 +109,10 @@ export function LoginForm({ portalIntent = false }: { portalIntent?: boolean }) 
         <div className="space-y-1">
           <div className="flex justify-between items-center">
             <label className="text-xs font-semibold text-foreground">Password</label>
-            <Link to="/forgot-password" className="text-xs text-primary hover:underline font-semibold">
+            <Link
+              to="/forgot-password"
+              className="text-xs text-primary hover:underline font-semibold"
+            >
               Forgot?
             </Link>
           </div>
@@ -169,14 +172,33 @@ export function LoginForm({ portalIntent = false }: { portalIntent?: boolean }) 
         )}
       </button>
 
-
-
       <p className="mt-6 text-center text-xs text-muted-foreground">
         New client?{" "}
         <Link to="/register" className="text-primary hover:underline font-semibold">
           Register first
         </Link>
       </p>
+
+      {DEMO_MODE_ENABLED && (
+        <div className="mt-6 pt-6 border-t border-border space-y-3">
+          <p className="text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            Developer Sandbox Access
+          </p>
+          <div className="grid grid-cols-3 gap-2">
+            {(["Admin", "Lab Coordinator", "Customer"] as const).map((r) => (
+              <button
+                key={r}
+                type="button"
+                onClick={() => handleRoleEnter(r)}
+                disabled={loading}
+                className="px-2 py-1.5 rounded bg-primary/10 hover:bg-primary/20 text-[10px] font-bold text-primary transition cursor-pointer text-center"
+              >
+                {r}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

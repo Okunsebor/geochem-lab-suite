@@ -19,9 +19,18 @@ export default function PlatformSection() {
             </p>
             <div className="space-y-4">
               {[
-                { title: "Scientific metadata density", desc: "Grids and timeline transitions built for assay workflows." },
-                { title: "Physical scan workflows", desc: "Scanner dialogs pre-filled at intake and handoff points." },
-                { title: "QA/QC anomaly monitors", desc: "Real-time CRM tolerance mapping and validation rules." },
+                {
+                  title: "Scientific metadata density",
+                  desc: "Grids and timeline transitions built for assay workflows.",
+                },
+                {
+                  title: "Physical scan workflows",
+                  desc: "Scanner dialogs pre-filled at intake and handoff points.",
+                },
+                {
+                  title: "QA/QC anomaly monitors",
+                  desc: "Real-time CRM tolerance mapping and validation rules.",
+                },
               ].map((item2, idx) => (
                 <motion.div
                   key={item2.title}
@@ -40,10 +49,15 @@ export default function PlatformSection() {
               ))}
             </div>
 
-            <div id="analytics" className="rounded-xl border border-border/80 bg-card/40 p-5 scroll-mt-24">
+            <div
+              id="analytics"
+              className="rounded-xl border border-border/80 bg-card/40 p-5 scroll-mt-24"
+            >
               <div className="flex items-center gap-2 mb-3">
                 <BarChart3 className="size-4 text-primary" />
-                <h3 className="text-sm font-bold text-foreground font-display">Analytics & reporting</h3>
+                <h3 className="text-sm font-bold text-foreground font-display">
+                  Analytics & reporting
+                </h3>
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed">
                 Operational dashboards, turnaround metrics, and QA/QC pass rates — exportable for
@@ -62,14 +76,34 @@ export default function PlatformSection() {
               <span className="inline-flex items-center gap-1.5 font-mono">
                 <Cpu className="size-3.5 text-primary" /> SECURE_LIMS_PIPELINE
               </span>
-              <span className="text-[10px] text-success animate-pulse font-mono font-bold">READY</span>
+              <span className="text-[10px] text-success animate-pulse font-mono font-bold">
+                READY
+              </span>
             </div>
             <div className="space-y-2">
               {[
                 ["GCS-24012", "In Analysis", "ICP-MS-01", "82%", "border-primary/20 bg-primary/5"],
-                ["GCS-24008", "Preparation", "Pulverizer 2", "44%", "border-border hover:border-primary/20"],
-                ["GCS-24004", "QA Flagged", "Au duplicate spread", "—", "border-destructive/30 bg-destructive/5 text-destructive"],
-                ["GCS-24001", "Report Ready", "RPT-2041", "100%", "border-success/30 bg-success/5 text-success"],
+                [
+                  "GCS-24008",
+                  "Preparation",
+                  "Pulverizer 2",
+                  "44%",
+                  "border-border hover:border-primary/20",
+                ],
+                [
+                  "GCS-24004",
+                  "QA Flagged",
+                  "Au duplicate spread",
+                  "—",
+                  "border-destructive/30 bg-destructive/5 text-destructive",
+                ],
+                [
+                  "GCS-24001",
+                  "Report Ready",
+                  "RPT-2041",
+                  "100%",
+                  "border-success/30 bg-success/5 text-success",
+                ],
               ].map(([id, st, who, pct, sc]) => (
                 <div
                   key={id}

@@ -17,11 +17,11 @@ Restart the dev server after changing `.env` (`npm run dev`).
 
 In **Supabase Dashboard > Authentication > URL configuration**:
 
-| Setting | Value (local dev) |
-|--------|-------------------|
-| **Site URL** | `http://localhost:5173` |
-| **Redirect URLs** | `http://localhost:5173/verify-email` |
-| | `http://localhost:5173/**` (optional wildcard for dev) |
+| Setting           | Value (local dev)                                      |
+| ----------------- | ------------------------------------------------------ |
+| **Site URL**      | `http://localhost:5173`                                |
+| **Redirect URLs** | `http://localhost:5173/verify-email`                   |
+|                   | `http://localhost:5173/**` (optional wildcard for dev) |
 
 For production, add your deployed origin, e.g. `https://your-domain.com/verify-email`.
 

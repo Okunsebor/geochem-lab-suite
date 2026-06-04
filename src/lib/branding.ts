@@ -14,4 +14,3 @@ export const BRAND_ASSETS = {
   samplePrepLab: "/branding/SAMPLE PREPARATION LAB.png",
   valueProposition: "/branding/unipod-value-proposition.png",
 } as const;
-

@@ -12,21 +12,27 @@ interface InstrumentStatusGridProps {
 }
 
 const STATUS_COLORS: Record<Instrument["status"], string> = {
-  Online:      "hsl(158 64% 48%)",
+  Online: "hsl(158 64% 48%)",
   Maintenance: "hsl(38 95% 55%)",
   Calibrating: "hsl(210 90% 55%)",
 };
 
 export function InstrumentStatusGrid({
-  instruments, runs, inAnalysisSamples, onAssign,
+  instruments,
+  runs,
+  inAnalysisSamples,
+  onAssign,
 }: InstrumentStatusGridProps) {
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
       {instruments.map((inst) => {
-        const liveQueue  = runs.filter((r) => r.instrumentId === inst.id && (r.status === "Queued" || r.status === "Running")).length;
+        const liveQueue = runs.filter(
+          (r) => r.instrumentId === inst.id && (r.status === "Queued" || r.status === "Running"),
+        ).length;
         const queueCount = liveQueue || inst.queue;
-        const color      = STATUS_COLORS[inst.status];
-        const isDue      = inst.lastCalibrated &&
+        const color = STATUS_COLORS[inst.status];
+        const isDue =
+          inst.lastCalibrated &&
           new Date(inst.lastCalibrated).getTime() < Date.now() - 20 * 3600000;
 
         return (
@@ -58,11 +64,15 @@ export function InstrumentStatusGrid({
               {/* Queue + Util bars */}
               <div className="flex items-end justify-between text-xs">
                 <div>
-                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Queue</p>
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+                    Queue
+                  </p>
                   <p className="text-base font-bold text-foreground">{queueCount}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Util</p>
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+                    Util
+                  </p>
                   <p className="text-base font-bold text-foreground">{inst.util}%</p>
                 </div>
               </div>

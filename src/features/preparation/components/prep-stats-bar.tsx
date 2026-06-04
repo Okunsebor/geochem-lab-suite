@@ -8,16 +8,16 @@ interface PrepStatsBarProps {
 }
 
 const STAGE_ICONS: Record<PrepStage, React.ElementType> = {
-  Drying:      Flame,
-  Crushing:    Hammer,
-  Splitting:   Scissors,
+  Drying: Flame,
+  Crushing: Hammer,
+  Splitting: Scissors,
   Pulverizing: Wind,
 };
 
 export function PrepStatsBar({ prepJobs }: PrepStatsBarProps) {
-  const total       = prepJobs.length;
-  const inProgress  = prepJobs.filter((j) => j.overallStatus === "Active").length;
-  const onHold      = prepJobs.filter((j) => j.overallStatus === "On Hold").length;
+  const total = prepJobs.length;
+  const inProgress = prepJobs.filter((j) => j.overallStatus === "Active").length;
+  const onHold = prepJobs.filter((j) => j.overallStatus === "On Hold").length;
   const completedToday = prepJobs.filter((j) => {
     if (j.overallStatus !== "Completed") return false;
     const last = j.steps.find((s) => s.stage === "Pulverizing");
@@ -37,11 +37,16 @@ export function PrepStatsBar({ prepJobs }: PrepStatsBarProps) {
   })();
 
   const stageCounts: Record<PrepStage, number> = {
-    Drying: 0, Crushing: 0, Splitting: 0, Pulverizing: 0,
+    Drying: 0,
+    Crushing: 0,
+    Splitting: 0,
+    Pulverizing: 0,
   };
-  prepJobs.filter((j) => j.overallStatus === "Active").forEach((j) => {
-    stageCounts[j.currentStage] = (stageCounts[j.currentStage] || 0) + 1;
-  });
+  prepJobs
+    .filter((j) => j.overallStatus === "Active")
+    .forEach((j) => {
+      stageCounts[j.currentStage] = (stageCounts[j.currentStage] || 0) + 1;
+    });
 
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-8">
@@ -101,7 +106,9 @@ export function PrepStatsBar({ prepJobs }: PrepStatsBarProps) {
           >
             <Icon className="size-4" style={{ color }} />
             <p className="text-xl font-bold text-foreground">{count}</p>
-            <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wide">{stage}</p>
+            <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wide">
+              {stage}
+            </p>
           </div>
         );
       })}

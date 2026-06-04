@@ -4,7 +4,7 @@ import { supabase } from "../lib/supabase";
 
 export function useUsersCore(
   currentName: string,
-  addActivity: (who: string, what: string, target: string) => void
+  addActivity: (who: string, what: string, target: string) => void,
 ) {
   const [users, setUsers] = useState<User[]>([]);
 
@@ -34,7 +34,13 @@ export function useUsersCore(
       primaryColor: "#00AEEF",
       logo: "",
       reportFooter: "© GeoChem Labs Inc. · ISO 17025 Accredited · contact@geochem.io",
-      triggers: ["Report awaiting approval", "QA anomaly raised", "Sample overdue", "Instrument calibration due", "New customer signup"],
+      triggers: [
+        "Report awaiting approval",
+        "QA anomaly raised",
+        "Sample overdue",
+        "Instrument calibration due",
+        "New customer signup",
+      ],
       channels: ["In-app", "Email"],
       require2fa: true,
       sessionExpire: true,
@@ -42,7 +48,7 @@ export function useUsersCore(
       maxFailures: "5 attempts",
       apiKey: "sk_live_51Ny931Jkdsj92842Jksdlf...",
       webhookUrl: "https://api.geochemlabs.io/v1/webhooks",
-      webhookHash: "whsec_kdjf892429..."
+      webhookHash: "whsec_kdjf892429...",
     };
   });
 
@@ -51,11 +57,7 @@ export function useUsersCore(
     localStorage.setItem("gcs_users", JSON.stringify(data));
   };
 
-  const inviteUser = (
-    name: string,
-    email: string,
-    role: User["role"]
-  ) => {
+  const inviteUser = (name: string, email: string, role: User["role"]) => {
     const newUser: User = {
       id: users.length + 1,
       name,
@@ -93,5 +95,17 @@ export function useUsersCore(
     }
   };
 
-  return { users, setUsers, saveUsers, tickets, setTickets, settings, setSettings, inviteUser, addSupportTicket, updateSettings, fetchUsers };
+  return {
+    users,
+    setUsers,
+    saveUsers,
+    tickets,
+    setTickets,
+    settings,
+    setSettings,
+    inviteUser,
+    addSupportTicket,
+    updateSettings,
+    fetchUsers,
+  };
 }

@@ -25,7 +25,7 @@ export const InputField = React.forwardRef<HTMLInputElement, InputFieldProps>(
               "w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:border-primary disabled:cursor-not-allowed disabled:opacity-50",
               icon && "pl-9",
               error && "border-destructive focus-visible:ring-destructive",
-              className
+              className,
             )}
             {...props}
           />
@@ -33,7 +33,7 @@ export const InputField = React.forwardRef<HTMLInputElement, InputFieldProps>(
         {error && <p className="text-[10px] font-medium text-destructive">{error}</p>}
       </div>
     );
-  }
+  },
 );
 InputField.displayName = "InputField";
 
@@ -54,7 +54,7 @@ export const SelectField = React.forwardRef<HTMLSelectElement, SelectFieldProps>
           className={cn(
             "w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:border-primary disabled:cursor-not-allowed disabled:opacity-50",
             error && "border-destructive focus-visible:ring-destructive",
-            className
+            className,
           )}
           {...props}
         >
@@ -67,7 +67,7 @@ export const SelectField = React.forwardRef<HTMLSelectElement, SelectFieldProps>
         {error && <p className="text-[10px] font-medium text-destructive">{error}</p>}
       </div>
     );
-  }
+  },
 );
 SelectField.displayName = "SelectField";
 
@@ -87,14 +87,14 @@ export const TextAreaField = React.forwardRef<HTMLTextAreaElement, TextAreaField
           className={cn(
             "w-full rounded-md border border-input bg-background p-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:border-primary disabled:cursor-not-allowed disabled:opacity-50 min-h-[80px]",
             error && "border-destructive focus-visible:ring-destructive",
-            className
+            className,
           )}
           {...props}
         />
         {error && <p className="text-[10px] font-medium text-destructive">{error}</p>}
       </div>
     );
-  }
+  },
 );
 TextAreaField.displayName = "TextAreaField";
 
@@ -114,7 +114,7 @@ export const CheckboxField = React.forwardRef<HTMLInputElement, CheckboxFieldPro
             type="checkbox"
             className={cn(
               "rounded border-input text-primary focus:ring-ring focus:ring-offset-background",
-              className
+              className,
             )}
             {...props}
           />
@@ -123,6 +123,6 @@ export const CheckboxField = React.forwardRef<HTMLInputElement, CheckboxFieldPro
         {error && <p className="text-[10px] font-medium text-destructive">{error}</p>}
       </div>
     );
-  }
+  },
 );
 CheckboxField.displayName = "CheckboxField";

@@ -1,7 +1,13 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
-  LayoutDashboard, FlaskConical, ScanBarcode, Workflow, Beaker,
-  ShieldCheck, FileText, Bell,
+  LayoutDashboard,
+  FlaskConical,
+  ScanBarcode,
+  Workflow,
+  Beaker,
+  ShieldCheck,
+  FileText,
+  Bell,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { UniPodLogo } from "@/components/branding/UniPodLogo";
@@ -26,15 +32,24 @@ const nav = [
 export function CoordinatorSidebar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { currentUser } = useLimsState();
-  const initials = currentUser?.name?.split(" ").map((x) => x[0]).join("").slice(0, 2) || "LC";
+  const initials =
+    currentUser?.name
+      ?.split(" ")
+      .map((x) => x[0])
+      .join("")
+      .slice(0, 2) || "LC";
 
   return (
     <aside className="hidden lg:flex w-64 shrink-0 flex-col text-sidebar-foreground border-y-0 border-l-0 rounded-none shadow-sm glass">
       <div className="flex h-14 items-center gap-2 px-4 border-b border-sidebar-border">
         <UniPodLogo height={28} linkToHome={false} />
         <div className="flex flex-col leading-tight min-w-0">
-          <span className="text-xs font-semibold text-sidebar-foreground truncate">Lab Coordinator</span>
-          <span className="text-[10px] uppercase tracking-wider text-accent font-bold">GeoChem Suite</span>
+          <span className="text-xs font-semibold text-sidebar-foreground truncate">
+            Lab Coordinator
+          </span>
+          <span className="text-[10px] uppercase tracking-wider text-accent font-bold">
+            GeoChem Suite
+          </span>
         </div>
       </div>
       <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-6">
@@ -55,7 +70,7 @@ export function CoordinatorSidebar() {
                         "flex items-center gap-2.5 rounded-md px-3 py-1.5 text-sm transition font-medium",
                         active
                           ? "bg-primary/15 text-primary font-bold border-l-2 border-accent"
-                          : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                          : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                       )}
                     >
                       <Icon className="size-4 shrink-0" />

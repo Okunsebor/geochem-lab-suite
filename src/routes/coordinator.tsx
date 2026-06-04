@@ -12,7 +12,10 @@ const COORDINATOR_ROLES = ["Lab Coordinator"] as const;
 
 export const Route = createFileRoute("/coordinator")({
   beforeLoad: async () => {
-    const { data: { session }, error } = await supabase.auth.getSession();
+    const {
+      data: { session },
+      error,
+    } = await supabase.auth.getSession();
     if (error || !session?.user) {
       throw redirect({ to: "/login" });
     }

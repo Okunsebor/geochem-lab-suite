@@ -34,10 +34,10 @@ function formatTimestamp(iso?: string) {
 }
 
 const STATUS_META: Record<PrepStepStatus, { label: string; color: string; bg: string }> = {
-  "Queued":      { label: "Queued",      color: "text-muted-foreground", bg: "bg-muted" },
-  "In Progress": { label: "In Progress", color: "text-amber-600",        bg: "bg-amber-500/10" },
-  "Completed":   { label: "Completed",   color: "text-emerald-600",      bg: "bg-emerald-500/10" },
-  "Skipped":     { label: "Skipped",     color: "text-muted-foreground", bg: "bg-muted" },
+  Queued: { label: "Queued", color: "text-muted-foreground", bg: "bg-muted" },
+  "In Progress": { label: "In Progress", color: "text-amber-600", bg: "bg-amber-500/10" },
+  Completed: { label: "Completed", color: "text-emerald-600", bg: "bg-emerald-500/10" },
+  Skipped: { label: "Skipped", color: "text-muted-foreground", bg: "bg-muted" },
 };
 
 // ─── Step Row ─────────────────────────────────────────────────────────────────
@@ -93,7 +93,9 @@ function StepRow({ step, isCurrentStage, onStart, onComplete, onSkip }: StepRowP
           </span>
         )}
         {step.durationMinutes != null && (
-          <span className="text-xs text-muted-foreground">{formatDuration(step.durationMinutes)}</span>
+          <span className="text-xs text-muted-foreground">
+            {formatDuration(step.durationMinutes)}
+          </span>
         )}
 
         <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${meta.bg} ${meta.color}`}>
@@ -131,7 +133,9 @@ function StepRow({ step, isCurrentStage, onStart, onComplete, onSkip }: StepRowP
                     className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
                   >
                     {STAGE_EQUIPMENT[step.stage].map((eq) => (
-                      <option key={eq} value={eq}>{eq}</option>
+                      <option key={eq} value={eq}>
+                        {eq}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -201,7 +205,10 @@ function StepRow({ step, isCurrentStage, onStart, onComplete, onSkip }: StepRowP
 interface PrepJobModalProps {
   job: PrepJob;
   onClose: () => void;
-  actions: Pick<UsePreparationReturn, "startStep" | "completeStep" | "skipStep" | "holdJob" | "resumeJob">;
+  actions: Pick<
+    UsePreparationReturn,
+    "startStep" | "completeStep" | "skipStep" | "holdJob" | "resumeJob"
+  >;
 }
 
 export function PrepJobModal({ job, onClose, actions }: PrepJobModalProps) {
@@ -214,10 +221,7 @@ export function PrepJobModal({ job, onClose, actions }: PrepJobModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-        onClick={onClose}
-      />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
 
       {/* Panel */}
       <div className="relative z-10 w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-border bg-card shadow-2xl">
@@ -232,15 +236,17 @@ export function PrepJobModal({ job, onClose, actions }: PrepJobModalProps) {
                   job.overallStatus === "Active"
                     ? "bg-emerald-500/10 text-emerald-600"
                     : job.overallStatus === "On Hold"
-                    ? "bg-rose-500/10 text-rose-600"
-                    : "bg-primary/10 text-primary"
+                      ? "bg-rose-500/10 text-rose-600"
+                      : "bg-primary/10 text-primary"
                 }`}
               >
                 {job.overallStatus}
               </span>
             </div>
             <p className="mt-0.5 text-sm font-medium text-foreground">{job.client}</p>
-            <p className="text-xs text-muted-foreground">{job.project} · {job.sampleType}</p>
+            <p className="text-xs text-muted-foreground">
+              {job.project} · {job.sampleType}
+            </p>
           </div>
           <button
             onClick={onClose}
@@ -254,7 +260,9 @@ export function PrepJobModal({ job, onClose, actions }: PrepJobModalProps) {
         <div className="px-6 py-4 border-b border-border">
           <div className="flex items-center justify-between mb-1.5">
             <span className="text-xs font-semibold text-muted-foreground">Overall Progress</span>
-            <span className="text-xs font-bold text-foreground">{completedCount}/{totalSteps} stages</span>
+            <span className="text-xs font-bold text-foreground">
+              {completedCount}/{totalSteps} stages
+            </span>
           </div>
           <div className="h-2 rounded-full bg-muted overflow-hidden">
             <div
@@ -325,7 +333,10 @@ export function PrepJobModal({ job, onClose, actions }: PrepJobModalProps) {
         <div className="flex items-center gap-2 border-t border-border px-6 py-4 bg-muted/10">
           {job.overallStatus === "Active" && (
             <button
-              onClick={() => { actions.holdJob(job.id); onClose(); }}
+              onClick={() => {
+                actions.holdJob(job.id);
+                onClose();
+              }}
               className="flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-xs font-semibold text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition"
             >
               <Pause className="size-3" /> Put On Hold
@@ -333,7 +344,10 @@ export function PrepJobModal({ job, onClose, actions }: PrepJobModalProps) {
           )}
           {job.overallStatus === "On Hold" && (
             <button
-              onClick={() => { actions.resumeJob(job.id); onClose(); }}
+              onClick={() => {
+                actions.resumeJob(job.id);
+                onClose();
+              }}
               className="flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-xs font-semibold text-sky-500 hover:bg-sky-50 dark:hover:bg-sky-950/30 transition"
             >
               <RotateCcw className="size-3" /> Resume Job

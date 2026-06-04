@@ -11,20 +11,31 @@ interface AnalysisQueueTableProps {
 }
 
 const RUN_STATUS_META: Record<RunStatus, { label: string; color: string; bg: string }> = {
-  Queued:   { label: "Queued",   color: "text-muted-foreground", bg: "bg-muted" },
-  Running:  { label: "Running",  color: "text-amber-600",        bg: "bg-amber-500/10" },
-  Complete: { label: "Complete", color: "text-emerald-600",      bg: "bg-emerald-500/10" },
-  Failed:   { label: "Failed",   color: "text-rose-600",         bg: "bg-rose-500/10" },
+  Queued: { label: "Queued", color: "text-muted-foreground", bg: "bg-muted" },
+  Running: { label: "Running", color: "text-amber-600", bg: "bg-amber-500/10" },
+  Complete: { label: "Complete", color: "text-emerald-600", bg: "bg-emerald-500/10" },
+  Failed: { label: "Failed", color: "text-rose-600", bg: "bg-rose-500/10" },
 };
 
 // Seed rows shown when no real runs exist
 const SEED_RUNS: AnalyticalRun[] = Array.from({ length: 8 }).map((_, i) => ({
   id: `RUN-${10001 + i}`,
   sampleId: `GCS-${24020 + i}`,
-  instrumentId: ["ICP-MS-01","XRF-02","AAS-04","LECO-05","ICP-MS-01"][i % 5],
-  method: ["FA-AAS","ICP-MS-51E","ICP-OES-4A","LECO-CS","AR-ICP-MS"][i % 5],
-  analystName: ["E. Okafor","K. Nakamura","S. Patel","M. Rivera"][i % 4],
-  status: (["Queued","Running","Complete","Queued","Running","Complete","Failed","Queued"] as RunStatus[])[i],
+  instrumentId: ["ICP-MS-01", "XRF-02", "AAS-04", "LECO-05", "ICP-MS-01"][i % 5],
+  method: ["FA-AAS", "ICP-MS-51E", "ICP-OES-4A", "LECO-CS", "AR-ICP-MS"][i % 5],
+  analystName: ["E. Okafor", "K. Nakamura", "S. Patel", "M. Rivera"][i % 4],
+  status: (
+    [
+      "Queued",
+      "Running",
+      "Complete",
+      "Queued",
+      "Running",
+      "Complete",
+      "Failed",
+      "Queued",
+    ] as RunStatus[]
+  )[i],
   results: [],
 }));
 
@@ -74,7 +85,9 @@ export function AnalysisQueueTable({ runs, onStart, onComplete, onFail }: Analys
                   <td className="font-mono text-xs">{r.instrumentId}</td>
                   <td className="text-xs text-muted-foreground">{r.analystName}</td>
                   <td>
-                    <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${meta.bg} ${meta.color}`}>
+                    <span
+                      className={`inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${meta.bg} ${meta.color}`}
+                    >
                       {meta.label}
                     </span>
                   </td>
@@ -83,25 +96,38 @@ export function AnalysisQueueTable({ runs, onStart, onComplete, onFail }: Analys
                   </td>
                   <td className="text-xs text-muted-foreground">
                     {r.results.length > 0 ? (
-                      <span className="text-emerald-600 font-semibold">{r.results.length} results</span>
-                    ) : "—"}
+                      <span className="text-emerald-600 font-semibold">
+                        {r.results.length} results
+                      </span>
+                    ) : (
+                      "—"
+                    )}
                   </td>
                   <td>
                     <div className="flex items-center gap-1">
                       {r.status === "Queued" && (
-                        <button onClick={() => onStart(r.id)} title="Start run"
-                          className="rounded p-1 hover:bg-amber-500/10 text-amber-600 transition">
+                        <button
+                          onClick={() => onStart(r.id)}
+                          title="Start run"
+                          className="rounded p-1 hover:bg-amber-500/10 text-amber-600 transition"
+                        >
                           <Play className="size-3.5" />
                         </button>
                       )}
                       {r.status === "Running" && (
                         <>
-                          <button onClick={() => onComplete(r.id)} title="Mark complete"
-                            className="rounded p-1 hover:bg-emerald-500/10 text-emerald-600 transition">
+                          <button
+                            onClick={() => onComplete(r.id)}
+                            title="Mark complete"
+                            className="rounded p-1 hover:bg-emerald-500/10 text-emerald-600 transition"
+                          >
                             <CheckCircle2 className="size-3.5" />
                           </button>
-                          <button onClick={() => onFail(r.id)} title="Mark failed"
-                            className="rounded p-1 hover:bg-rose-500/10 text-rose-600 transition">
+                          <button
+                            onClick={() => onFail(r.id)}
+                            title="Mark failed"
+                            className="rounded p-1 hover:bg-rose-500/10 text-rose-600 transition"
+                          >
                             <XCircle className="size-3.5" />
                           </button>
                         </>

@@ -7,11 +7,11 @@ interface MethodLibraryProps {
 }
 
 const METHOD_COLORS: Record<string, string> = {
-  "FA-AAS":     "hsl(38 95% 55%)",
+  "FA-AAS": "hsl(38 95% 55%)",
   "ICP-MS-51E": "hsl(210 90% 55%)",
   "ICP-OES-4A": "hsl(270 75% 60%)",
-  "LECO-CS":    "hsl(158 64% 48%)",
-  "AR-ICP-MS":  "hsl(340 80% 55%)",
+  "LECO-CS": "hsl(158 64% 48%)",
+  "AR-ICP-MS": "hsl(340 80% 55%)",
 };
 
 export function MethodLibrary({ methods }: MethodLibraryProps) {
@@ -39,7 +39,9 @@ export function MethodLibrary({ methods }: MethodLibraryProps) {
                   <span className="font-mono text-sm font-bold text-foreground">{m.code}</span>
                   <span className="text-xs text-muted-foreground font-medium">{m.name}</span>
                 </div>
-                <p className="text-xs text-muted-foreground mt-0.5 leading-normal">{m.description}</p>
+                <p className="text-xs text-muted-foreground mt-0.5 leading-normal">
+                  {m.description}
+                </p>
 
                 {/* Elements */}
                 <div className="flex flex-wrap gap-1 mt-2">
@@ -61,9 +63,20 @@ export function MethodLibrary({ methods }: MethodLibraryProps) {
 
                 {/* QC thresholds */}
                 <div className="flex gap-3 mt-2 text-[10px] text-muted-foreground">
-                  <span>Dup RPD: <strong className="text-foreground">{m.qcThresholds.duplicateRpd}%</strong></span>
-                  <span>CRM Tol: <strong className="text-foreground">±{m.qcThresholds.crmTolerance}%</strong></span>
-                  <span>Blank: <strong className="text-foreground">{m.qcThresholds.blankMultiplier}× DL</strong></span>
+                  <span>
+                    Dup RPD:{" "}
+                    <strong className="text-foreground">{m.qcThresholds.duplicateRpd}%</strong>
+                  </span>
+                  <span>
+                    CRM Tol:{" "}
+                    <strong className="text-foreground">±{m.qcThresholds.crmTolerance}%</strong>
+                  </span>
+                  <span>
+                    Blank:{" "}
+                    <strong className="text-foreground">
+                      {m.qcThresholds.blankMultiplier}× DL
+                    </strong>
+                  </span>
                 </div>
               </div>
             </li>

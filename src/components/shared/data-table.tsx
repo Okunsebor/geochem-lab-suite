@@ -46,9 +46,9 @@ export function DataTable<T>({
               />
             </div>
           )}
-          
+
           {filters}
-          
+
           {totalCount !== undefined && (
             <div className="ml-auto text-xs text-muted-foreground">
               {filteredCount !== undefined ? `${filteredCount} of ` : ""}
@@ -71,7 +71,10 @@ export function DataTable<T>({
           <tbody>
             {data.length === 0 ? (
               <tr>
-                <td colSpan={headers.length} className="px-4 py-8 text-center text-muted-foreground">
+                <td
+                  colSpan={headers.length}
+                  className="px-4 py-8 text-center text-muted-foreground"
+                >
                   No records found
                 </td>
               </tr>

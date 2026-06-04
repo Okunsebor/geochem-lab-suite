@@ -42,7 +42,9 @@ export async function requireApiUser(request: Request): Promise<{
   role: UiRole;
 }> {
   const authHeader = request.headers.get("authorization") || request.headers.get("Authorization");
-  const token = authHeader?.startsWith("Bearer ") ? authHeader.slice("Bearer ".length).trim() : null;
+  const token = authHeader?.startsWith("Bearer ")
+    ? authHeader.slice("Bearer ".length).trim()
+    : null;
   if (!token) throw new ApiAuthError("Missing bearer token");
 
   const { data, error } = await supabaseServer.auth.getUser(token);
@@ -63,4 +65,3 @@ export async function requireApiRole(request: Request, allowed: UiRole[]): Promi
   const { role } = await requireApiUser(request);
   if (!allowed.includes(role)) throw new ApiForbiddenError("Insufficient role");
 }
-

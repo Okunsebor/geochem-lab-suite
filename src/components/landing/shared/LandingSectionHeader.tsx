@@ -26,7 +26,9 @@ export function LandingSectionHeader({ eyebrow, title, subtitle, align = "center
         {title}
       </h2>
       {subtitle && (
-        <p className={`mt-4 text-base sm:text-lg text-muted-foreground leading-relaxed ${centered ? "" : "max-w-xl"}`}>
+        <p
+          className={`mt-4 text-base sm:text-lg text-muted-foreground leading-relaxed ${centered ? "" : "max-w-xl"}`}
+        >
           {subtitle}
         </p>
       )}

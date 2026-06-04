@@ -27,13 +27,8 @@ import type { User } from "@/types";
 type VerifyStatus = "pending" | "verifying" | "success" | "error";
 
 export function VerifyEmailPage({ initialEmail }: { initialEmail?: string }) {
-  const {
-    resendVerificationEmail,
-    getResendCooldown,
-    refreshProfile,
-    currentUser,
-    emailVerified,
-  } = useAuth();
+  const { resendVerificationEmail, getResendCooldown, refreshProfile, currentUser, emailVerified } =
+    useAuth();
   const navigate = useNavigate();
 
   const [email] = useState(initialEmail ?? "");
@@ -49,7 +44,9 @@ export function VerifyEmailPage({ initialEmail }: { initialEmail?: string }) {
     await refreshProfile();
 
     let role: User["role"] = "Customer";
-    const { data: { session: active } } = await supabase.auth.getSession();
+    const {
+      data: { session: active },
+    } = await supabase.auth.getSession();
     if (active?.user) {
       const { data: profile } = await supabase
         .from("users" as any)
@@ -97,7 +94,9 @@ export function VerifyEmailPage({ initialEmail }: { initialEmail?: string }) {
           await handleVerifiedRedirect();
         } else {
           setStatus("error");
-          setMessage("Could not confirm your email from this link. Please request a new verification email.");
+          setMessage(
+            "Could not confirm your email from this link. Please request a new verification email.",
+          );
         }
       })
       .catch((err) => {
@@ -220,9 +219,7 @@ export function VerifyEmailPage({ initialEmail }: { initialEmail?: string }) {
                       <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                         Verification sent to
                       </p>
-                      <p className="text-sm font-semibold text-foreground truncate">
-                        {email}
-                      </p>
+                      <p className="text-sm font-semibold text-foreground truncate">{email}</p>
                     </div>
                   </div>
                 )}
@@ -270,15 +267,24 @@ export function VerifyEmailPage({ initialEmail }: { initialEmail?: string }) {
                 {/* Helpful steps */}
                 <div className="mt-6 space-y-3">
                   <div className="flex items-start gap-3 text-sm text-muted-foreground">
-                    <span className="grid size-6 shrink-0 place-items-center rounded-full bg-primary/10 text-primary text-xs font-bold">1</span>
+                    <span className="grid size-6 shrink-0 place-items-center rounded-full bg-primary/10 text-primary text-xs font-bold">
+                      1
+                    </span>
                     <span>Open your email inbox (check spam/junk too)</span>
                   </div>
                   <div className="flex items-start gap-3 text-sm text-muted-foreground">
-                    <span className="grid size-6 shrink-0 place-items-center rounded-full bg-primary/10 text-primary text-xs font-bold">2</span>
-                    <span>Click the <strong className="text-foreground">"Confirm your email"</strong> link</span>
+                    <span className="grid size-6 shrink-0 place-items-center rounded-full bg-primary/10 text-primary text-xs font-bold">
+                      2
+                    </span>
+                    <span>
+                      Click the <strong className="text-foreground">"Confirm your email"</strong>{" "}
+                      link
+                    </span>
                   </div>
                   <div className="flex items-start gap-3 text-sm text-muted-foreground">
-                    <span className="grid size-6 shrink-0 place-items-center rounded-full bg-primary/10 text-primary text-xs font-bold">3</span>
+                    <span className="grid size-6 shrink-0 place-items-center rounded-full bg-primary/10 text-primary text-xs font-bold">
+                      3
+                    </span>
                     <span>You&apos;ll be verified and redirected to your portal</span>
                   </div>
                 </div>
@@ -291,7 +297,13 @@ export function VerifyEmailPage({ initialEmail }: { initialEmail?: string }) {
                   <button
                     type="button"
                     onClick={handleResend}
-                    disabled={resending || handlingEmailLink || cooldown > 0 || !email.trim() || !supabaseReady}
+                    disabled={
+                      resending ||
+                      handlingEmailLink ||
+                      cooldown > 0 ||
+                      !email.trim() ||
+                      !supabaseReady
+                    }
                     className="w-full inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-muted/30 px-4 py-2.5 text-sm font-medium text-foreground hover:bg-muted/60 transition disabled:opacity-50"
                   >
                     {resending ? (
@@ -316,7 +328,11 @@ export function VerifyEmailPage({ initialEmail }: { initialEmail?: string }) {
                     Register again
                   </Link>
                   {" · "}
-                  <Link to="/login" search={{ intent: "portal" }} className="text-primary font-semibold hover:underline">
+                  <Link
+                    to="/login"
+                    search={{ intent: "portal" }}
+                    className="text-primary font-semibold hover:underline"
+                  >
                     Sign in
                   </Link>
                 </p>

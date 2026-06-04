@@ -3,7 +3,10 @@ import { SystemNotification } from "../types";
 import { supabase } from "@/lib/supabase";
 import { mapUiRoleToDb } from "@/lib/auth-utils";
 
-export function useNotificationsCore(currentRole?: "Admin" | "Lab Coordinator" | "Customer", sessionUserId?: string) {
+export function useNotificationsCore(
+  currentRole?: "Admin" | "Lab Coordinator" | "Customer",
+  sessionUserId?: string,
+) {
   const [notifications, setNotifications] = useState<SystemNotification[]>([]);
   const [loadingNotifications, setLoadingNotifications] = useState(true);
 
@@ -63,7 +66,7 @@ export function useNotificationsCore(currentRole?: "Admin" | "Lab Coordinator" |
         Partial<Omit<SystemNotification, "id" | "title" | "kind">> & {
           targetUserId?: string;
           sendEmail?: boolean;
-        }
+        },
     ) => {
       const fallback: SystemNotification = {
         id: Date.now().toString(),
@@ -95,7 +98,8 @@ export function useNotificationsCore(currentRole?: "Admin" | "Lab Coordinator" |
             kind: newNotif.kind,
             is_read: false,
             event_type: newNotif.eventType || "system",
-            audience_role: newNotif.audienceRole || (currentRole ? mapUiRoleToDb(currentRole) : null),
+            audience_role:
+              newNotif.audienceRole || (currentRole ? mapUiRoleToDb(currentRole) : null),
             channel: newNotif.channel || "in-app",
             metadata: newNotif.metadata || {},
           })
@@ -119,13 +123,13 @@ export function useNotificationsCore(currentRole?: "Admin" | "Lab Coordinator" |
         // silent fallback to local
       }
     },
-    [currentRole, sessionUserId]
+    [currentRole, sessionUserId],
   );
 
   const markNotificationRead = useCallback(async (notificationId: string | number) => {
     setNotifications((prev) => {
       const updated = prev.map((n) =>
-        n.id === notificationId ? { ...n, isRead: true, readAt: new Date().toISOString() } : n
+        n.id === notificationId ? { ...n, isRead: true, readAt: new Date().toISOString() } : n,
       );
       localStorage.setItem("gcs_notifications", JSON.stringify(updated));
       return updated;

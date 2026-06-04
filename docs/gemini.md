@@ -24,38 +24,38 @@ GeoChem Suite digitizes the laboratory workflow from sample intake through prepa
 
 The platform provides:
 
-* Authentication and role management
-* Sample registration and intake
-* QR-based sample tracking
-* Preparation workflow management
-* Analysis and QA/QC processing
-* Laboratory report generation
-* Customer self-service portal
-* Real-time workflow visibility
+- Authentication and role management
+- Sample registration and intake
+- QR-based sample tracking
+- Preparation workflow management
+- Analysis and QA/QC processing
+- Laboratory report generation
+- Customer self-service portal
+- Real-time workflow visibility
 
 ### Target Users
 
 #### Admin
 
-* User management
-* Role management
-* Report approvals
-* Workflow oversight
+- User management
+- Role management
+- Report approvals
+- Workflow oversight
 
 #### Lab Staff / Coordinators
 
-* Sample registration
-* Workflow updates
-* Preparation tracking
-* Analysis management
-* Result uploads
+- Sample registration
+- Workflow updates
+- Preparation tracking
+- Analysis management
+- Result uploads
 
 #### Customers
 
-* Sample submission
-* Sample tracking
-* Report downloads
-* Status visibility
+- Sample submission
+- Sample tracking
+- Report downloads
+- Status visibility
 
 ### Core Outcome
 
@@ -71,28 +71,28 @@ This workflow is the MVP success definition.
 
 ## Non-Negotiables
 
-* Follow this file first.
-* Read BrandGuideline.md before designing UI.
-* Read the PRD before implementing features.
-* Read the WBS before creating workflows.
-* Ask questions only when blocked.
-* Build in small, testable slices.
-* Do not invent features.
-* Do not change product direction.
-* Do not introduce Phase 2+ functionality into the MVP.
-* Every workflow must map to documented requirements.
+- Follow this file first.
+- Read BrandGuideline.md before designing UI.
+- Read the PRD before implementing features.
+- Read the WBS before creating workflows.
+- Ask questions only when blocked.
+- Build in small, testable slices.
+- Do not invent features.
+- Do not change product direction.
+- Do not introduce Phase 2+ functionality into the MVP.
+- Every workflow must map to documented requirements.
 
 ## Build Rules
 
-* Prefer simple, maintainable architecture.
-* Use reusable components.
-* Keep modules loosely coupled.
-* Validate every workflow before continuing.
-* Fix root causes.
-* Avoid technical debt.
-* Keep code production-ready.
-* Mobile-first responsive design.
-* Enterprise-grade UI quality.
+- Prefer simple, maintainable architecture.
+- Use reusable components.
+- Keep modules loosely coupled.
+- Validate every workflow before continuing.
+- Fix root causes.
+- Avoid technical debt.
+- Keep code production-ready.
+- Mobile-first responsive design.
+- Enterprise-grade UI quality.
 
 ## Workflow
 
@@ -111,53 +111,53 @@ This workflow is the MVP success definition.
 
 ### Frontend
 
-* React.js
-* TypeScript
-* Tailwind CSS
-* Component-based architecture
+- React.js
+- TypeScript
+- Tailwind CSS
+- Component-based architecture
 
 ### Backend
 
-* Node.js
-* Express.js
+- Node.js
+- Express.js
 
 ### Database
 
-* PostgreSQL
+- PostgreSQL
 
 ### Authentication
 
 Primary:
 
-* Supabase Authentication
+- Supabase Authentication
 
 Requirements:
 
-* Email OTP verification
-* Customer verification page
-* Secure session handling
-* Password reset support
+- Email OTP verification
+- Customer verification page
+- Secure session handling
+- Password reset support
 
 ### Authorization
 
 RBAC Roles:
 
-* Admin
-* Lab Staff
-* Customer
+- Admin
+- Lab Staff
+- Customer
 
 Every route, API endpoint, and dashboard must be permission-protected.
 
 ### State Management
 
-* React Query / TanStack Query
-* Context API for global auth state
+- React Query / TanStack Query
+- Context API for global auth state
 
 ### API Layer
 
-* Service-based architecture
-* Typed API responses
-* Centralized API clients
+- Service-based architecture
+- Typed API responses
+- Centralized API clients
 
 ### Data Flow
 
@@ -170,20 +170,20 @@ User Action
 
 ### Error Handling
 
-* User-friendly errors
-* Retry support where applicable
-* API error boundaries
-* Form validation feedback
-* No silent failures
+- User-friendly errors
+- Retry support where applicable
+- API error boundaries
+- Form validation feedback
+- No silent failures
 
 ### Performance Rules
 
-* Lazy loading
-* Route splitting
-* Query caching
-* Pagination for tables
-* Optimized database queries
-* Avoid unnecessary re-renders
+- Lazy loading
+- Route splitting
+- Query caching
+- Pagination for tables
+- Optimized database queries
+- Avoid unnecessary re-renders
 
 ## Core MVP Modules
 
@@ -226,32 +226,32 @@ This workflow must remain consistent throughout the platform.
 
 ### MVP
 
-* users
-* roles
-* samples
-* sample_logs
-* preparation_records
-* analysis_results
-* reports
-* tracking_updates
+- users
+- roles
+- samples
+- sample_logs
+- preparation_records
+- analysis_results
+- reports
+- tracking_updates
 
 Additional WBS tables may be implemented only when required by the corresponding phase.
 
 ## Quality Bar
 
-* Everything must function.
-* No broken navigation.
-* No broken forms.
-* No broken dashboards.
-* No dead buttons.
-* No dead pages.
-* Empty states required.
-* Loading states required.
-* Error states required.
-* Mobile responsive.
-* Tablet responsive.
-* Desktop responsive.
-* Accessibility compliant.
+- Everything must function.
+- No broken navigation.
+- No broken forms.
+- No broken dashboards.
+- No dead buttons.
+- No dead pages.
+- Empty states required.
+- Loading states required.
+- Error states required.
+- Mobile responsive.
+- Tablet responsive.
+- Desktop responsive.
+- Accessibility compliant.
 
 ## Output Style
 
@@ -279,12 +279,12 @@ List blocking issues only.
 
 ## Never Do
 
-* Never invent requirements.
-* Never skip validation.
-* Never ignore documentation.
-* Never bypass RBAC.
-* Never introduce undocumented workflows.
-* Never add enterprise analytics to MVP.
-* Never add AI features to MVP.
-* Never merge unrelated changes.
-* Never leave partially working functionality.
+- Never invent requirements.
+- Never skip validation.
+- Never ignore documentation.
+- Never bypass RBAC.
+- Never introduce undocumented workflows.
+- Never add enterprise analytics to MVP.
+- Never add AI features to MVP.
+- Never merge unrelated changes.
+- Never leave partially working functionality.

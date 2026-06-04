@@ -36,7 +36,7 @@ export function OrgSettingsFields() {
         <InputField label="Timezone" name="timezone" defaultValue={settings.timezone} />
         <InputField label="Default currency" name="currency" defaultValue={settings.currency} />
       </Section>
-      
+
       <Section title="Billing">
         <div className="rounded-lg border border-border p-4 bg-muted/10 sm:col-span-2">
           <p className="text-sm font-semibold text-foreground">Enterprise Plan</p>
@@ -52,7 +52,7 @@ export function OrgSettingsFields() {
           </button>
         </div>
       </Section>
-      
+
       <div className="flex justify-end">
         <button
           type="submit"
@@ -84,10 +84,26 @@ export function LabSettingsFields() {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <Section title="Laboratory Standard Configurations">
-        <InputField label="Standard Protocol" name="labProtocol" defaultValue={settings.labProtocol} />
-        <InputField label="Default Calibration Interval" name="calInterval" defaultValue={settings.calInterval} />
-        <InputField label="Audit Log Retention" name="auditRetention" defaultValue={settings.auditRetention} />
-        <InputField label="Default Matrix Type" name="matrixType" defaultValue={settings.matrixType} />
+        <InputField
+          label="Standard Protocol"
+          name="labProtocol"
+          defaultValue={settings.labProtocol}
+        />
+        <InputField
+          label="Default Calibration Interval"
+          name="calInterval"
+          defaultValue={settings.calInterval}
+        />
+        <InputField
+          label="Audit Log Retention"
+          name="auditRetention"
+          defaultValue={settings.auditRetention}
+        />
+        <InputField
+          label="Default Matrix Type"
+          name="matrixType"
+          defaultValue={settings.matrixType}
+        />
       </Section>
       <div className="flex justify-end">
         <button
@@ -129,14 +145,16 @@ export function BrandingSettingsFields() {
                   toast.success(`Selected theme primary: ${c}`);
                 }}
                 className={`size-8 rounded-md border cursor-pointer transition-all hover:scale-105 ${
-                  settings.primaryColor === c ? "border-foreground ring-2 ring-primary scale-110" : "border-border"
+                  settings.primaryColor === c
+                    ? "border-foreground ring-2 ring-primary scale-110"
+                    : "border-border"
                 }`}
                 style={{ background: c }}
               />
             ))}
           </div>
         </div>
-        
+
         <div>
           <label className="text-xs font-semibold text-foreground">Logo</label>
           <div
@@ -146,7 +164,7 @@ export function BrandingSettingsFields() {
             Upload (Click to browse)
           </div>
         </div>
-        
+
         <div className="sm:col-span-2">
           <TextAreaField
             label="Report footer"
@@ -310,7 +328,7 @@ export function ApiWebhooksFields() {
           >
             Regenerate key
           </button>
-          
+
           <div className="border-t border-border pt-4 mt-2">
             <InputField
               label="Webhook Ingestion Endpoint"

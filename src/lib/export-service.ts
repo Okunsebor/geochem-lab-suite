@@ -44,7 +44,7 @@ export function generateSamplesCsv(samples: Sample[]): Blob {
     "Received From",
     "Special Instructions",
     "Status",
-    "Received Date"
+    "Received Date",
   ];
 
   const csvRows = samples.map((s) => [
@@ -65,7 +65,8 @@ export function generateSamplesCsv(samples: Sample[]): Blob {
   ]);
 
   // Prepend UTF-8 Byte Order Mark (BOM) to force Excel to open in UTF-8 mode
-  const csvContent = "\uFEFF" + [csvHeaders.join(","), ...csvRows.map((row) => row.join(","))].join("\r\n");
+  const csvContent =
+    "\uFEFF" + [csvHeaders.join(","), ...csvRows.map((row) => row.join(","))].join("\r\n");
   return new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
 }
 
@@ -76,10 +77,10 @@ export function generateSamplesExcel(samples: Sample[]): Blob {
   const rowsHtml = samples
     .map((s, idx) => {
       const rowStyle = idx % 2 === 1 ? 'style="background-color: #f8fafc;"' : "";
-      
+
       let priorityColor = "#475569";
       if (s.priority === "High" || s.priority === "Rush") priorityColor = "#dc2626";
-      
+
       let statusColor = "#475569";
       if (s.status === "Completed" || s.status === "Report Ready") statusColor = "#16a34a";
       else if (s.status === "In Analysis") statusColor = "#2563eb";
@@ -192,13 +193,17 @@ export function generateSamplesPdf(samples: Sample[]): Blob {
     docInstance.setFont("helvetica", "normal");
     docInstance.setFontSize(8.5);
     docInstance.text("Enterprise Sample Registry Export · Certified Data Log", 15, 18);
-    docInstance.text(`Total Records: ${samples.length} | Generated: ${new Date().toLocaleString()}`, 15, 23);
+    docInstance.text(
+      `Total Records: ${samples.length} | Generated: ${new Date().toLocaleString()}`,
+      15,
+      23,
+    );
 
     // Document Type Label
     docInstance.setFont("helvetica", "bold");
     docInstance.setFontSize(12);
     docInstance.text("SAMPLES LOG INVENTORY", pageWidth - 15, 13, { align: "right" });
-    
+
     docInstance.setFontSize(8.5);
     docInstance.setFont("helvetica", "normal");
     docInstance.text(`Page ${page}`, pageWidth - 15, 19, { align: "right" });
@@ -260,11 +265,11 @@ export function generateSamplesPdf(samples: Sample[]): Blob {
     doc.setFont("helvetica", "bold");
     doc.text(s.id, 18, y);
     doc.setFont("helvetica", "normal");
-    
+
     // Safety truncation
     const clientStr = s.client.length > 22 ? s.client.substring(0, 20) + ".." : s.client;
     doc.text(clientStr, 40, y);
-    
+
     const projStr = s.project.length > 22 ? s.project.substring(0, 20) + ".." : s.project;
     doc.text(projStr, 82, y);
 
@@ -308,7 +313,11 @@ export function generateSamplesPdf(samples: Sample[]): Blob {
     doc.setPage(i);
     doc.setTextColor(148, 163, 184);
     doc.setFontSize(7);
-    doc.text("GEOChem LIMS · CONFIDENTIAL SYSTEMS DATA EXPORT · CERTIFIED LOG SHEET", 15, pageHeight - 7);
+    doc.text(
+      "GEOChem LIMS · CONFIDENTIAL SYSTEMS DATA EXPORT · CERTIFIED LOG SHEET",
+      15,
+      pageHeight - 7,
+    );
     doc.text(`Page ${i} of ${totalPages}`, pageWidth - 15, pageHeight - 7, { align: "right" });
   }
 

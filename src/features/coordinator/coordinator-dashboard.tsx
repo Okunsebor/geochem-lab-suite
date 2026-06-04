@@ -12,7 +12,9 @@ export function CoordinatorDashboardFeature() {
   return (
     <div className="space-y-8">
       <div>
-        <p className="text-[10px] font-bold font-mono uppercase tracking-widest text-accent">Lab Coordinator Portal</p>
+        <p className="text-[10px] font-bold font-mono uppercase tracking-widest text-accent">
+          Lab Coordinator Portal
+        </p>
         <h1 className="text-2xl font-bold text-foreground tracking-tight font-display mt-1">
           Operations command center
         </h1>
@@ -22,10 +24,26 @@ export function CoordinatorDashboardFeature() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="In preparation" value={String(inPrep)} icon={<Workflow className="size-4" />} />
-        <StatCard label="In analysis" value={String(inAnalysis)} icon={<Beaker className="size-4" />} />
-        <StatCard label="QA flagged" value={String(qaFlagged)} icon={<ShieldCheck className="size-4" />} />
-        <StatCard label="Active samples" value={String(samples.length)} icon={<ScanBarcode className="size-4" />} />
+        <StatCard
+          label="In preparation"
+          value={String(inPrep)}
+          icon={<Workflow className="size-4" />}
+        />
+        <StatCard
+          label="In analysis"
+          value={String(inAnalysis)}
+          icon={<Beaker className="size-4" />}
+        />
+        <StatCard
+          label="QA flagged"
+          value={String(qaFlagged)}
+          icon={<ShieldCheck className="size-4" />}
+        />
+        <StatCard
+          label="Active samples"
+          value={String(samples.length)}
+          icon={<ScanBarcode className="size-4" />}
+        />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -41,7 +59,9 @@ export function CoordinatorDashboardFeature() {
             className="group rounded-xl border border-border bg-card/80 backdrop-blur-sm p-5 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5 transition-all"
           >
             <card.icon className="size-5 text-primary mb-3" />
-            <p className="font-bold text-sm text-foreground group-hover:text-primary transition-colors">{card.label}</p>
+            <p className="font-bold text-sm text-foreground group-hover:text-primary transition-colors">
+              {card.label}
+            </p>
             <span className="inline-flex items-center gap-1 text-xs text-muted-foreground mt-2 group-hover:text-primary">
               Open <ArrowRight className="size-3" />
             </span>

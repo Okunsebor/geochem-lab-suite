@@ -94,10 +94,17 @@ export function UsersRolesPanel() {
       <div className="grid gap-4 lg:grid-cols-4">
         {[
           ["Admin", "Full platform access", users.filter((u) => u.role === "Admin").length],
-          ["Lab Coordinator", "Workflow + reporting", users.filter((u) => u.role === "Lab Coordinator").length],
+          [
+            "Lab Coordinator",
+            "Workflow + reporting",
+            users.filter((u) => u.role === "Lab Coordinator").length,
+          ],
           ["Customer", "Portal access", users.filter((u) => u.role === "Customer").length],
         ].map((r) => (
-          <div key={r[0]} className="rounded-xl border border-border bg-card p-5 hover:border-primary/20 transition-colors">
+          <div
+            key={r[0]}
+            className="rounded-xl border border-border bg-card p-5 hover:border-primary/20 transition-colors"
+          >
             <div className="flex items-center justify-between">
               <h3 className="font-semibold inline-flex items-center gap-2 text-foreground">
                 <Shield className="size-4 text-primary" /> {r[0]}
@@ -124,7 +131,10 @@ export function UsersRolesPanel() {
             </thead>
             <tbody>
               {users.map((u) => (
-                <tr key={u.id} className="border-b border-border last:border-0 [&>td]:px-4 [&>td]:py-2.5 font-medium transition-colors hover:bg-muted/10">
+                <tr
+                  key={u.id}
+                  className="border-b border-border last:border-0 [&>td]:px-4 [&>td]:py-2.5 font-medium transition-colors hover:bg-muted/10"
+                >
                   <td className="flex items-center gap-2">
                     <div className="grid size-7 shrink-0 place-items-center rounded-full bg-primary/10 text-primary text-[10px] font-bold">
                       {u.name

@@ -8,7 +8,7 @@ export function useReportsCore(
   addNotification: (title: string, kind: string) => void,
   samples: Sample[],
   updateSampleStatusLocally: (sampleId: string, status: SampleStatus) => void,
-  syncSamplesFromDb: () => void
+  syncSamplesFromDb: () => void,
 ) {
   const [reports, setReports] = useState<AnalyticalReport[]>([]);
 
@@ -44,7 +44,7 @@ export function useReportsCore(
               action: l.action,
               performedBy: l.performed_by,
               comments: l.comments,
-              createdAt: l.created_at
+              createdAt: l.created_at,
             }));
 
           return {
@@ -60,7 +60,7 @@ export function useReportsCore(
             approvedAt: r.approved_at,
             deliveredBy: r.delivered_by,
             deliveredAt: r.delivered_at,
-            history: reportLogs
+            history: reportLogs,
           };
         });
 
@@ -69,7 +69,10 @@ export function useReportsCore(
         return;
       }
     } catch (err: any) {
-      console.warn("Reports: Supabase unavailable or table missing, using local sandbox mode:", err.message);
+      console.warn(
+        "Reports: Supabase unavailable or table missing, using local sandbox mode:",
+        err.message,
+      );
       const local = localStorage.getItem("gcs_reports");
       if (local) {
         setReports(JSON.parse(local));
@@ -83,7 +86,7 @@ export function useReportsCore(
 
     setReports((prevReports) => {
       const reportId = `RPT-${2030 + prevReports.length}`;
-      
+
       const newReport: AnalyticalReport = {
         id: reportId,
         sample: sampleId,
@@ -91,7 +94,7 @@ export function useReportsCore(
         status: "Pending Approval",
         createdAt: new Date().toISOString(),
         pages: 1,
-        history: []
+        history: [],
       };
 
       const doGenerate = async () => {
@@ -99,9 +102,12 @@ export function useReportsCore(
         try {
           const { generateReportPdfBlob } = await import("../lib/report-service");
           const pdfBlob = await generateReportPdfBlob(newReport, sample, sample.results || []);
-          
+
           try {
-            pdfUrl = await supabaseHelpers.uploadReportPdf(reportId, new File([pdfBlob], `${reportId}.pdf`, { type: "application/pdf" }));
+            pdfUrl = await supabaseHelpers.uploadReportPdf(
+              reportId,
+              new File([pdfBlob], `${reportId}.pdf`, { type: "application/pdf" }),
+            );
             newReport.pdfUrl = pdfUrl;
           } catch (uploadErr) {
             console.warn("Storage upload failed, fallback to local URL:", uploadErr);
@@ -120,7 +126,7 @@ export function useReportsCore(
             client_org_id: sample.client === "Barrick Gold" ? "org-barrick" : "org-auric",
             status: "Pending Approval",
             pages: 1,
-            pdf_url: pdfUrl || null
+            pdf_url: pdfUrl || null,
           });
 
           await supabase.from("report_logs" as any).insert({
@@ -128,17 +134,17 @@ export function useReportsCore(
             status: "Pending Approval",
             action: "Generated",
             performed_by: currentName,
-            comments: "Report compiled and draft generated awaiting approval."
+            comments: "Report compiled and draft generated awaiting approval.",
           });
-          
+
           syncReportsFromDb();
         } catch (err) {
           console.warn("Offline report creation fallback:", err);
           // If offline, we update the state directly
           setReports((current) => {
-             const withUrl = current.map(r => r.id === reportId ? { ...r, pdfUrl } : r);
-             localStorage.setItem("gcs_reports", JSON.stringify(withUrl));
-             return withUrl;
+            const withUrl = current.map((r) => (r.id === reportId ? { ...r, pdfUrl } : r));
+            localStorage.setItem("gcs_reports", JSON.stringify(withUrl));
+            return withUrl;
           });
         }
       };
@@ -160,7 +166,7 @@ export function useReportsCore(
 
     setReports((prev) => {
       const now = new Date().toISOString();
-      const report = prev.find(r => r.id === reportId);
+      const report = prev.find((r) => r.id === reportId);
       if (report) {
         reportSampleId = report.sample;
       }
@@ -171,7 +177,7 @@ export function useReportsCore(
             status: "Approved" as const,
             approvedBy: currentName,
             approvedAt: now,
-            comments: comments || undefined
+            comments: comments || undefined,
           };
         }
         return r;
@@ -186,25 +192,31 @@ export function useReportsCore(
 
     try {
       const now = new Date().toISOString();
-      await supabase.from("reports" as any).update({
-        status: "Approved",
-        approved_by: currentName,
-        approved_at: now,
-        comments: comments || null
-      }).eq("id", reportId);
+      await supabase
+        .from("reports" as any)
+        .update({
+          status: "Approved",
+          approved_by: currentName,
+          approved_at: now,
+          comments: comments || null,
+        })
+        .eq("id", reportId);
 
       await supabase.from("report_logs" as any).insert({
         report_id: reportId,
         status: "Approved",
         action: "Approved",
         performed_by: currentName,
-        comments: comments || "Report verified, signed, and certified."
+        comments: comments || "Report verified, signed, and certified.",
       });
 
       if (reportSampleId) {
-        await supabase.from("samples").update({
-          status: "Report Ready"
-        }).eq("id", reportSampleId);
+        await supabase
+          .from("samples")
+          .update({
+            status: "Report Ready",
+          })
+          .eq("id", reportSampleId);
       }
 
       syncReportsFromDb();
@@ -224,7 +236,7 @@ export function useReportsCore(
           return {
             ...r,
             status: "Revised" as const,
-            comments: comments || undefined
+            comments: comments || undefined,
           };
         }
         return r;
@@ -234,17 +246,20 @@ export function useReportsCore(
     });
 
     try {
-      await supabase.from("reports" as any).update({
-        status: "Revised",
-        comments: comments || null
-      }).eq("id", reportId);
+      await supabase
+        .from("reports" as any)
+        .update({
+          status: "Revised",
+          comments: comments || null,
+        })
+        .eq("id", reportId);
 
       await supabase.from("report_logs" as any).insert({
         report_id: reportId,
         status: "Revised",
         action: "Rejected",
         performed_by: currentName,
-        comments: comments || "Report rejected back to draft."
+        comments: comments || "Report rejected back to draft.",
       });
 
       syncReportsFromDb();
@@ -264,7 +279,7 @@ export function useReportsCore(
             ...r,
             status: "Delivered" as const,
             deliveredBy: currentName,
-            deliveredAt: now
+            deliveredAt: now,
           };
         }
         return r;
@@ -275,18 +290,21 @@ export function useReportsCore(
 
     try {
       const now = new Date().toISOString();
-      await supabase.from("reports" as any).update({
-        status: "Delivered",
-        delivered_by: currentName,
-        delivered_at: now
-      }).eq("id", reportId);
+      await supabase
+        .from("reports" as any)
+        .update({
+          status: "Delivered",
+          delivered_by: currentName,
+          delivered_at: now,
+        })
+        .eq("id", reportId);
 
       await supabase.from("report_logs" as any).insert({
         report_id: reportId,
         status: "Delivered",
         action: "Delivered",
         performed_by: currentName,
-        comments: `Report delivered via Portal/Email to ${recipientEmail}`
+        comments: `Report delivered via Portal/Email to ${recipientEmail}`,
       });
 
       syncReportsFromDb();
@@ -298,11 +316,12 @@ export function useReportsCore(
   };
 
   const downloadReportPdf = async (reportId: string) => {
-    const report = reports.find(r => r.id === reportId);
+    const report = reports.find((r) => r.id === reportId);
     if (!report) throw new Error("Report not found in LIMS registry.");
 
-    const sample = samples.find(s => s.id === report.sample);
-    if (!sample) throw new Error(`Associated sample "${report.sample}" not found in LIMS registry.`);
+    const sample = samples.find((s) => s.id === report.sample);
+    if (!sample)
+      throw new Error(`Associated sample "${report.sample}" not found in LIMS registry.`);
 
     try {
       const { generateReportPdfBlob, downloadBlob } = await import("../lib/report-service");

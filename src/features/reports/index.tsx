@@ -1,6 +1,17 @@
 import React, { useState } from "react";
-import { 
-  Download, Eye, FileText, Check, X, Mail, FileCheck2, Clock, Send, Search, AlertCircle, Activity
+import {
+  Download,
+  Eye,
+  FileText,
+  Check,
+  X,
+  Mail,
+  FileCheck2,
+  Clock,
+  Send,
+  Search,
+  AlertCircle,
+  Activity,
 } from "lucide-react";
 import { useLimsState } from "../../hooks/use-lims-state";
 import { PageHeader } from "../../components/layout/PageHeader";
@@ -9,14 +20,14 @@ import { toast } from "sonner";
 import { AnalyticalReport } from "../../types";
 
 export function ReportsFeature() {
-  const { 
-    reports, 
-    samples, 
-    generateReport, 
-    approveReport, 
-    rejectReport, 
-    deliverReport, 
-    downloadReportPdf 
+  const {
+    reports,
+    samples,
+    generateReport,
+    approveReport,
+    rejectReport,
+    deliverReport,
+    downloadReportPdf,
   } = useLimsState();
 
   const [selectedReportId, setSelectedReportId] = useState<string>("");
@@ -42,7 +53,7 @@ export function ReportsFeature() {
 
   // Eligible samples for compilation (completed samples that don't have a report yet)
   const compileEligibleSamples = samples.filter(
-    (s) => s.status === "Completed" && !reports.some((r) => r.sample === s.id)
+    (s) => s.status === "Completed" && !reports.some((r) => r.sample === s.id),
   );
 
   const handleApprove = async (id: string) => {
@@ -116,11 +127,13 @@ export function ReportsFeature() {
 
   // Filtering reports
   const filteredReports = reports.filter((r) => {
-    const statusMatch = filterStatus === "All" || 
+    const statusMatch =
+      filterStatus === "All" ||
       (filterStatus === "Pending" ? r.status === "Pending Approval" : r.status === filterStatus);
-    
-    const queryMatch = searchQuery === "All" || 
-      r.id.toLowerCase().includes(searchQuery.toLowerCase()) || 
+
+    const queryMatch =
+      searchQuery === "All" ||
+      r.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
       r.sample.toLowerCase().includes(searchQuery.toLowerCase()) ||
       r.client.toLowerCase().includes(searchQuery.toLowerCase());
 
@@ -156,8 +169,12 @@ export function ReportsFeature() {
         </div>
         <div className="rounded-xl border border-border bg-card p-4 flex items-center justify-between shadow-sm">
           <div>
-            <p className="text-xs font-semibold text-muted-foreground uppercase">Awaiting Sign-off</p>
-            <p className="text-2xl font-bold text-amber-600 dark:text-amber-500 mt-1">{pendingCount}</p>
+            <p className="text-xs font-semibold text-muted-foreground uppercase">
+              Awaiting Sign-off
+            </p>
+            <p className="text-2xl font-bold text-amber-600 dark:text-amber-500 mt-1">
+              {pendingCount}
+            </p>
           </div>
           <div className="rounded-lg bg-amber-500/10 p-2.5 text-amber-500">
             <Clock className="size-5" />
@@ -165,8 +182,12 @@ export function ReportsFeature() {
         </div>
         <div className="rounded-xl border border-border bg-card p-4 flex items-center justify-between shadow-sm">
           <div>
-            <p className="text-xs font-semibold text-muted-foreground uppercase">Approved & Signed</p>
-            <p className="text-2xl font-bold text-green-600 dark:text-green-500 mt-1">{approvedCount}</p>
+            <p className="text-xs font-semibold text-muted-foreground uppercase">
+              Approved & Signed
+            </p>
+            <p className="text-2xl font-bold text-green-600 dark:text-green-500 mt-1">
+              {approvedCount}
+            </p>
           </div>
           <div className="rounded-lg bg-green-500/10 p-2.5 text-green-500">
             <FileCheck2 className="size-5" />
@@ -175,7 +196,9 @@ export function ReportsFeature() {
         <div className="rounded-xl border border-border bg-card p-4 flex items-center justify-between shadow-sm">
           <div>
             <p className="text-xs font-semibold text-muted-foreground uppercase">Delivered</p>
-            <p className="text-2xl font-bold text-blue-600 dark:text-blue-500 mt-1">{deliveredCount}</p>
+            <p className="text-2xl font-bold text-blue-600 dark:text-blue-500 mt-1">
+              {deliveredCount}
+            </p>
           </div>
           <div className="rounded-lg bg-blue-500/10 p-2.5 text-blue-500">
             <Send className="size-5" />
@@ -189,7 +212,7 @@ export function ReportsFeature() {
         <div className="lg:col-span-2 rounded-xl border border-border bg-card overflow-hidden flex flex-col">
           <div className="border-b border-border px-5 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-card">
             <h3 className="text-sm font-semibold text-foreground">Assay Report Repository</h3>
-            
+
             {/* Filtering Controls */}
             <div className="flex flex-wrap items-center gap-2">
               <div className="relative">
@@ -269,12 +292,16 @@ export function ReportsFeature() {
                         </button>
                         <button
                           onClick={async () => {
-                            const toastId = toast.loading(`Generating & exporting PDF for ${r.id}...`);
+                            const toastId = toast.loading(
+                              `Generating & exporting PDF for ${r.id}...`,
+                            );
                             try {
                               await downloadReportPdf(r.id);
                               toast.success(`PDF downloaded for ${r.id}`, { id: toastId });
                             } catch (err: any) {
-                              toast.error(`Failed to export PDF: ${err?.message || err}`, { id: toastId });
+                              toast.error(`Failed to export PDF: ${err?.message || err}`, {
+                                id: toastId,
+                              });
                             }
                           }}
                           className="rounded p-1 hover:bg-muted cursor-pointer transition"
@@ -302,17 +329,21 @@ export function ReportsFeature() {
         {activeReport && (
           <div className="rounded-xl border border-border bg-card overflow-hidden h-fit flex flex-col shadow-sm">
             <div className="border-b border-border px-5 py-3 flex items-center justify-between bg-card">
-              <h3 className="text-sm font-semibold text-foreground">Interactive Preview · {activeReport.id}</h3>
+              <h3 className="text-sm font-semibold text-foreground">
+                Interactive Preview · {activeReport.id}
+              </h3>
               <StatusBadge status={activeReport.status} />
             </div>
-            
+
             {/* Styled Sheet of Paper (PDF simulator) */}
             <div className="p-4 bg-muted/30">
               <div className="mx-auto aspect-[3/4.2] w-full max-w-[340px] rounded bg-white shadow-lg p-5 text-[8px] text-slate-800 space-y-3.5 select-none border relative overflow-hidden">
                 {/* Header banner */}
                 <div className="flex items-center justify-between border-b pb-2 border-slate-200">
                   <div>
-                    <h5 className="font-extrabold text-[9px] tracking-wide text-slate-900">GEOCHEM LABS</h5>
+                    <h5 className="font-extrabold text-[9px] tracking-wide text-slate-900">
+                      GEOCHEM LABS
+                    </h5>
                     <p className="text-[6px] text-slate-500">Premium Analysis & LIMS</p>
                   </div>
                   <div className="text-right">
@@ -324,17 +355,35 @@ export function ReportsFeature() {
                 {/* Metadata Details */}
                 <div className="grid grid-cols-2 gap-3 text-[6px] bg-slate-50 p-2 rounded">
                   <div>
-                    <p className="mb-0.5"><span className="text-slate-400 font-medium">Client:</span> <span className="font-semibold">{activeReport.client}</span></p>
-                    <p className="mb-0.5"><span className="text-slate-400 font-medium">Sample LIMS:</span> <span className="font-semibold">{activeReport.sample}</span></p>
-                    <p><span className="text-slate-400 font-medium">Matrix:</span> {previewSample?.matrix || "Rock/Sulphide"}</p>
+                    <p className="mb-0.5">
+                      <span className="text-slate-400 font-medium">Client:</span>{" "}
+                      <span className="font-semibold">{activeReport.client}</span>
+                    </p>
+                    <p className="mb-0.5">
+                      <span className="text-slate-400 font-medium">Sample LIMS:</span>{" "}
+                      <span className="font-semibold">{activeReport.sample}</span>
+                    </p>
+                    <p>
+                      <span className="text-slate-400 font-medium">Matrix:</span>{" "}
+                      {previewSample?.matrix || "Rock/Sulphide"}
+                    </p>
                   </div>
                   <div className="text-right">
-                    <p className="mb-0.5"><span className="text-slate-400 font-medium">Project:</span> {previewSample?.project || "Exploration A"}</p>
-                    <p className="mb-0.5"><span className="text-slate-400 font-medium">Type:</span> {previewSample?.type || "Core Split"}</p>
-                    <p><span className="text-slate-400 font-medium">Date:</span> {new Date(activeReport.createdAt).toLocaleDateString()}</p>
+                    <p className="mb-0.5">
+                      <span className="text-slate-400 font-medium">Project:</span>{" "}
+                      {previewSample?.project || "Exploration A"}
+                    </p>
+                    <p className="mb-0.5">
+                      <span className="text-slate-400 font-medium">Type:</span>{" "}
+                      {previewSample?.type || "Core Split"}
+                    </p>
+                    <p>
+                      <span className="text-slate-400 font-medium">Date:</span>{" "}
+                      {new Date(activeReport.createdAt).toLocaleDateString()}
+                    </p>
                   </div>
                 </div>
-                
+
                 {/* Results Table */}
                 <div className="space-y-1">
                   <p className="font-bold text-[7px] text-slate-900">Analytical Chemistry Assays</p>
@@ -351,7 +400,9 @@ export function ReportsFeature() {
                       {previewResults.map((r: any) => (
                         <tr key={r.element} className="border-b border-slate-100">
                           <td className="py-1 px-1 font-semibold">{r.element}</td>
-                          <td className="py-1 px-1 font-mono font-bold text-slate-900">{r.value}</td>
+                          <td className="py-1 px-1 font-mono font-bold text-slate-900">
+                            {r.value}
+                          </td>
                           <td className="py-1 px-1">{r.unit}</td>
                           <td className="py-1 px-1 text-right text-slate-500">{r.method}</td>
                         </tr>
@@ -364,23 +415,35 @@ export function ReportsFeature() {
                 <div className="pt-2 flex items-end justify-between border-t border-slate-100 mt-4">
                   <div className="space-y-1">
                     <p className="italic text-[6px] text-slate-650">
-                      Signatory: <span className="font-bold text-slate-900">{activeReport.status === "Approved" || activeReport.status === "Delivered" ? (activeReport.approvedBy || "Adaeze Nwosu ✓") : "Awaiting Sign-off"}</span>
+                      Signatory:{" "}
+                      <span className="font-bold text-slate-900">
+                        {activeReport.status === "Approved" || activeReport.status === "Delivered"
+                          ? activeReport.approvedBy || "Adaeze Nwosu ✓"
+                          : "Awaiting Sign-off"}
+                      </span>
                     </p>
                     {activeReport.status === "Approved" || activeReport.status === "Delivered" ? (
-                      <p className="text-[5px] text-green-600 font-semibold bg-green-50 px-1 py-0.5 rounded w-fit">✓ Digitally Signed & Sealed</p>
+                      <p className="text-[5px] text-green-600 font-semibold bg-green-50 px-1 py-0.5 rounded w-fit">
+                        ✓ Digitally Signed & Sealed
+                      </p>
                     ) : (
-                      <p className="text-[5px] text-amber-600 font-semibold bg-amber-50 px-1 py-0.5 rounded w-fit">⚠ Document Draft Only</p>
+                      <p className="text-[5px] text-amber-600 font-semibold bg-amber-50 px-1 py-0.5 rounded w-fit">
+                        ⚠ Document Draft Only
+                      </p>
                     )}
                   </div>
-                  
+
                   {/* Visual Certification stamp watermark */}
-                  {(activeReport.status === "Approved" || activeReport.status === "Delivered") ? (
+                  {activeReport.status === "Approved" || activeReport.status === "Delivered" ? (
                     <div className="border border-green-600 text-green-600 p-1 text-[5px] font-extrabold rotate-[-6deg] bg-green-50/20 rounded">
-                      GEOCHEM LABS<br/>✓ APPROVED & SEALED
+                      GEOCHEM LABS
+                      <br />✓ APPROVED & SEALED
                     </div>
                   ) : (
                     <div className="border border-slate-300 text-slate-400 p-1 text-[5px] font-extrabold rotate-[-6deg] bg-slate-50 rounded">
-                      UNPUBLISHED<br/>DRAFT
+                      UNPUBLISHED
+                      <br />
+                      DRAFT
                     </div>
                   )}
                 </div>
@@ -438,11 +501,16 @@ export function ReportsFeature() {
                   </h4>
                   <div className="space-y-2 max-h-[140px] overflow-y-auto pr-1">
                     {activeReport.history.map((log) => (
-                      <div key={log.id} className="relative pl-3 pb-1.5 last:pb-0 border-l border-border/80">
+                      <div
+                        key={log.id}
+                        className="relative pl-3 pb-1.5 last:pb-0 border-l border-border/80"
+                      >
                         <div className="absolute -left-[4.5px] top-1 size-2 rounded-full bg-primary/80 ring-2 ring-background" />
                         <div className="flex items-center justify-between text-[10px]">
                           <span className="font-semibold text-foreground">{log.action}</span>
-                          <span className="text-[9px] text-muted-foreground font-medium">{new Date(log.createdAt).toLocaleDateString()}</span>
+                          <span className="text-[9px] text-muted-foreground font-medium">
+                            {new Date(log.createdAt).toLocaleDateString()}
+                          </span>
                         </div>
                         <p className="text-[10px] text-muted-foreground">By {log.performedBy}</p>
                         {log.comments && (
@@ -463,21 +531,31 @@ export function ReportsFeature() {
       {/* Reject Comment Dialog Modal */}
       {isRejectOpen && (
         <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <form onSubmit={handleRejectSubmit} className="bg-card border border-border rounded-xl shadow-xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+          <form
+            onSubmit={handleRejectSubmit}
+            className="bg-card border border-border rounded-xl shadow-xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+          >
             <div className="p-5 border-b border-border flex items-center justify-between">
               <h3 className="font-semibold text-foreground inline-flex items-center gap-1.5">
                 <AlertCircle className="size-4 text-red-500" /> Reject Report Draft
               </h3>
-              <button type="button" onClick={() => setIsRejectOpen(false)} className="rounded p-1 hover:bg-muted cursor-pointer text-muted-foreground hover:text-foreground">
+              <button
+                type="button"
+                onClick={() => setIsRejectOpen(false)}
+                className="rounded p-1 hover:bg-muted cursor-pointer text-muted-foreground hover:text-foreground"
+              >
                 <X className="size-4" />
               </button>
             </div>
             <div className="p-5 space-y-4">
               <p className="text-xs text-muted-foreground font-medium">
-                Please enter a detailed comment explaining the reason for returning this report to draft status. This note will be recorded in the audit trail.
+                Please enter a detailed comment explaining the reason for returning this report to
+                draft status. This note will be recorded in the audit trail.
               </p>
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-foreground">Rejection Comments / Corrective Action</label>
+                <label className="text-xs font-semibold text-foreground">
+                  Rejection Comments / Corrective Action
+                </label>
                 <textarea
                   value={rejectComment}
                   onChange={(e) => setRejectComment(e.target.value)}
@@ -509,21 +587,32 @@ export function ReportsFeature() {
       {/* Delivery Dialog Modal */}
       {isDeliverOpen && (
         <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <form onSubmit={handleDeliverSubmit} className="bg-card border border-border rounded-xl shadow-xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+          <form
+            onSubmit={handleDeliverSubmit}
+            className="bg-card border border-border rounded-xl shadow-xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+          >
             <div className="p-5 border-b border-border flex items-center justify-between">
               <h3 className="font-semibold text-foreground inline-flex items-center gap-1.5">
                 <Send className="size-4 text-primary" /> Deliver Analytical Report
               </h3>
-              <button type="button" onClick={() => setIsDeliverOpen(false)} className="rounded p-1 hover:bg-muted cursor-pointer text-muted-foreground hover:text-foreground">
+              <button
+                type="button"
+                onClick={() => setIsDeliverOpen(false)}
+                className="rounded p-1 hover:bg-muted cursor-pointer text-muted-foreground hover:text-foreground"
+              >
                 <X className="size-4" />
               </button>
             </div>
             <div className="p-5 space-y-4">
               <p className="text-xs text-muted-foreground font-medium">
-                Deliver report <span className="font-semibold">{activeReport?.id}</span>. This will automatically publish the certified document to the Client Portal and send an email notification with the secure PDF attachment.
+                Deliver report <span className="font-semibold">{activeReport?.id}</span>. This will
+                automatically publish the certified document to the Client Portal and send an email
+                notification with the secure PDF attachment.
               </p>
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-foreground">Recipient Email Address</label>
+                <label className="text-xs font-semibold text-foreground">
+                  Recipient Email Address
+                </label>
                 <div className="relative">
                   <Mail className="absolute left-2.5 top-2.5 size-3.5 text-muted-foreground" />
                   <input
@@ -559,21 +648,31 @@ export function ReportsFeature() {
       {/* Compile Report Dialog Modal */}
       {isCompileOpen && (
         <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <form onSubmit={handleCompileReport} className="bg-card border border-border rounded-xl shadow-xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+          <form
+            onSubmit={handleCompileReport}
+            className="bg-card border border-border rounded-xl shadow-xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+          >
             <div className="p-5 border-b border-border flex items-center justify-between">
               <h3 className="font-semibold text-foreground inline-flex items-center gap-1.5">
                 <FileText className="size-4 text-primary" /> Compile New Assay Report
               </h3>
-              <button type="button" onClick={() => setIsCompileOpen(false)} className="rounded p-1 hover:bg-muted cursor-pointer text-muted-foreground hover:text-foreground">
+              <button
+                type="button"
+                onClick={() => setIsCompileOpen(false)}
+                className="rounded p-1 hover:bg-muted cursor-pointer text-muted-foreground hover:text-foreground"
+              >
                 <X className="size-4" />
               </button>
             </div>
             <div className="p-5 space-y-4">
               <p className="text-xs text-muted-foreground font-medium">
-                Choose a completed analytical sample to compile its results into a certified laboratory report draft.
+                Choose a completed analytical sample to compile its results into a certified
+                laboratory report draft.
               </p>
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-foreground">Completed Samples Queue</label>
+                <label className="text-xs font-semibold text-foreground">
+                  Completed Samples Queue
+                </label>
                 <select
                   value={selectedSampleForReport}
                   onChange={(e) => setSelectedSampleForReport(e.target.value)}

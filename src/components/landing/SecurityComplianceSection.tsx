@@ -10,26 +10,36 @@ const FEATURES = [
   {
     icon: FileCheck,
     title: "Immutable audit trail",
-    description: "Every custody handoff, status change, and report approval is logged with timestamps.",
+    description:
+      "Every custody handoff, status change, and report approval is logged with timestamps.",
   },
   {
     icon: Lock,
     title: "Secure authentication",
-    description: "Supabase-backed sign-in with email verification and organization-scoped workspaces.",
+    description:
+      "Supabase-backed sign-in with email verification and organization-scoped workspaces.",
   },
   {
     icon: Database,
     title: "Data integrity",
-    description: "Structured specimen records replace spreadsheet risk with validated QA/QC checkpoints.",
+    description:
+      "Structured specimen records replace spreadsheet risk with validated QA/QC checkpoints.",
   },
 ];
 
 export default function SecurityComplianceSection() {
   return (
-    <section id="security" className="border-t border-border bg-card/20" aria-labelledby="security-heading">
+    <section
+      id="security"
+      className="border-t border-border bg-card/20"
+      aria-labelledby="security-heading"
+    >
       <div className="mx-auto max-w-7xl px-6 py-12 md:py-16 lg:py-20">
         <div className="max-w-3xl mx-auto text-center mb-14">
-          <h2 id="security-heading" className="text-3xl font-extrabold tracking-tight sm:text-4xl text-foreground font-display">
+          <h2
+            id="security-heading"
+            className="text-3xl font-extrabold tracking-tight sm:text-4xl text-foreground font-display"
+          >
             Security & compliance built in
           </h2>
           <p className="mt-4 text-base text-muted-foreground leading-relaxed">
@@ -51,7 +61,9 @@ export default function SecurityComplianceSection() {
                 <f.icon className="size-5" />
               </div>
               <h3 className="font-bold text-foreground text-sm">{f.title}</h3>
-              <p className="mt-2 text-xs sm:text-sm text-muted-foreground leading-relaxed">{f.description}</p>
+              <p className="mt-2 text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                {f.description}
+              </p>
             </motion.div>
           ))}
         </div>

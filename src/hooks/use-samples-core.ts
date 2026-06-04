@@ -9,11 +9,14 @@ export function mapDbSampleToUi(
   notes: any[] = [],
   results: any[] = [],
   custody: any[] = [],
-  attachments: any[] = []
+  attachments: any[] = [],
 ): Sample {
   return {
     id: s.id,
-    client: s.client_name || s.client || (s.client_org_id === "org-barrick" ? "Barrick Gold" : "Auric Mining"),
+    client:
+      s.client_name ||
+      s.client ||
+      (s.client_org_id === "org-barrick" ? "Barrick Gold" : "Auric Mining"),
     project: s.project_name || s.project || "Exploration A",
     type: s.sample_type || s.type || "Core Split",
     status: (s.status || "Received") as SampleStatus,
@@ -21,7 +24,7 @@ export function mapDbSampleToUi(
     technician: s.technician || "M. Rivera",
     priority: (s.priority || "Normal") as Priority,
     location: s.storage_location || s.location || "Rack B-12",
-    weight: s.weight_kg ? `${s.weight_kg} kg` : (s.weight || "2.5 kg"),
+    weight: s.weight_kg ? `${s.weight_kg} kg` : s.weight || "2.5 kg",
     matrix: s.matrix || "Sulphide",
     container: s.container || "Calico Bag",
     receivedFrom: s.received_from || s.receivedFrom || "Field Courier",
@@ -35,26 +38,30 @@ export function mapDbSampleToUi(
       filePath: a.file_path,
       sizeBytes: Number(a.size_bytes || 0),
       uploadedBy: a.uploaded_by || "System",
-      createdAt: a.created_at
+      createdAt: a.created_at,
     })),
     notes: (notes || []).map((n: any) => ({
       id: n.id.toString(),
       author: n.author_name || n.author || "Staff",
       comment: n.comment || "",
-      timestamp: n.created_at || n.timestamp || new Date().toISOString()
+      timestamp: n.created_at || n.timestamp || new Date().toISOString(),
     })),
     results: (results || []).map((r: any) => ({
       element: r.element || "",
       value: r.value || "—",
       unit: r.unit || "g/t",
       method: r.method || "FA-AAS",
-      qa: r.qa_status || r.qa || "Pass"
+      qa: r.qa_status || r.qa || "Pass",
     })),
     custody: (custody || []).map((c: any) => ({
       action: c.action || "",
       technician: c.technician_name || c.technician || "Staff",
-      time: c.time || (c.created_at ? new Date(c.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "Just now")
-    }))
+      time:
+        c.time ||
+        (c.created_at
+          ? new Date(c.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+          : "Just now"),
+    })),
   };
 }
 
@@ -63,7 +70,7 @@ export function useSamplesCore(
   currentName: string,
   addActivity: (who: string, what: string, target: string) => void,
   addNotification: (title: string, kind: string) => void,
-  generateReportCallback: (sampleId: string) => void
+  generateReportCallback: (sampleId: string) => void,
 ) {
   const [samples, setSamples] = useState<Sample[]>([]);
 
@@ -74,9 +81,7 @@ export function useSamplesCore(
 
   const syncSamplesFromDb = async () => {
     try {
-      const { data, error } = await supabase
-        .from("samples")
-        .select(`
+      const { data, error } = await supabase.from("samples").select(`
           id,
           client_name,
           project_name,
@@ -109,7 +114,7 @@ export function useSamplesCore(
               existing?.notes || [],
               existing?.results || [],
               existing?.custody || [],
-              existing?.attachments || []
+              existing?.attachments || [],
             );
           });
           localStorage.setItem("gcs_samples", JSON.stringify(mapped));
@@ -122,7 +127,10 @@ export function useSamplesCore(
         }
       }
     } catch (err: any) {
-      console.warn("Could not load samples from real Supabase database, falling back to LIMS Sandbox:", err.message);
+      console.warn(
+        "Could not load samples from real Supabase database, falling back to LIMS Sandbox:",
+        err.message,
+      );
       const local = localStorage.getItem("gcs_samples");
       if (local) {
         setSamples(JSON.parse(local));
@@ -148,7 +156,9 @@ export function useSamplesCore(
     setSamples((currentSamples) => {
       const nextIdNum = 24000 + currentSamples.length;
       const newSampleId = `GCS-${nextIdNum}`;
-      const cleanWeight = sampleData.weight.endsWith(" kg") ? sampleData.weight : `${sampleData.weight} kg`;
+      const cleanWeight = sampleData.weight.endsWith(" kg")
+        ? sampleData.weight
+        : `${sampleData.weight} kg`;
       const numericWeight = parseFloat(sampleData.weight) || 2.5;
 
       const newSample: Sample = {
@@ -171,9 +181,7 @@ export function useSamplesCore(
           { element: "Au", value: "—", unit: "g/t", method: "FA-AAS", qa: "Pending Approval" },
           { element: "Ag", value: "—", unit: "g/t", method: "ICP-MS", qa: "Pending Approval" },
         ],
-        custody: [
-          { action: "Received at intake", technician: currentName, time: "Just now" },
-        ],
+        custody: [{ action: "Received at intake", technician: currentName, time: "Just now" }],
       };
 
       const writeToDb = async () => {
@@ -204,16 +212,38 @@ export function useSamplesCore(
           });
 
           await supabase.from("analytical_results").insert([
-            { sample_id: newSampleId, element: "Au", value: "—", unit: "g/t", method: "FA-AAS", qa_status: "Pending Approval" },
-            { sample_id: newSampleId, element: "Ag", value: "—", unit: "g/t", method: "ICP-MS", qa_status: "Pending Approval" }
+            {
+              sample_id: newSampleId,
+              element: "Au",
+              value: "—",
+              unit: "g/t",
+              method: "FA-AAS",
+              qa_status: "Pending Approval",
+            },
+            {
+              sample_id: newSampleId,
+              element: "Ag",
+              value: "—",
+              unit: "g/t",
+              method: "ICP-MS",
+              qa_status: "Pending Approval",
+            },
           ]);
 
           syncSamplesFromDb();
         } catch (err: any) {
-          if (err.message?.includes("schema cache") || err.message?.includes("relation") || err.message?.includes("fetch") || err.message?.includes("table") || err.message?.includes("database")) {
+          if (
+            err.message?.includes("schema cache") ||
+            err.message?.includes("relation") ||
+            err.message?.includes("fetch") ||
+            err.message?.includes("table") ||
+            err.message?.includes("database")
+          ) {
             toast.info("Database offline: saved to LIMS Sandbox memory");
           } else {
-            toast.error(`LIMS Database Write Failed: ${err.message || "Could not register sample."}`);
+            toast.error(
+              `LIMS Database Write Failed: ${err.message || "Could not register sample."}`,
+            );
           }
         }
       };
@@ -222,13 +252,13 @@ export function useSamplesCore(
 
       const updated = [newSample, ...currentSamples];
       localStorage.setItem("gcs_samples", JSON.stringify(updated));
-      
+
       addActivity(currentName, "registered sample", newSampleId);
       addNotification(`Sample ${newSampleId} registered for ${newSample.client}`, "info");
 
       return updated;
     });
-    
+
     // We return a mock/placeholder to satisfy typing if consumers depend on the return value immediately.
     // In actual implementation it might be better to return the generated newSample by refactoring.
     const newSampleId = `GCS-${24000 + samples.length}`;
@@ -283,7 +313,13 @@ export function useSamplesCore(
         if (noteErr) throw noteErr;
         syncSamplesFromDb();
       } catch (err: any) {
-        if (err.message?.includes("schema cache") || err.message?.includes("relation") || err.message?.includes("fetch") || err.message?.includes("table") || err.message?.includes("database")) {
+        if (
+          err.message?.includes("schema cache") ||
+          err.message?.includes("relation") ||
+          err.message?.includes("fetch") ||
+          err.message?.includes("table") ||
+          err.message?.includes("database")
+        ) {
           toast.info("Database offline: saved to LIMS Sandbox memory");
         } else {
           toast.error(`LIMS Database Write Failed: ${err.message || "Could not add sample note."}`);
@@ -334,10 +370,18 @@ export function useSamplesCore(
 
         syncSamplesFromDb();
       } catch (err: any) {
-        if (err.message?.includes("schema cache") || err.message?.includes("relation") || err.message?.includes("fetch") || err.message?.includes("table") || err.message?.includes("database")) {
+        if (
+          err.message?.includes("schema cache") ||
+          err.message?.includes("relation") ||
+          err.message?.includes("fetch") ||
+          err.message?.includes("table") ||
+          err.message?.includes("database")
+        ) {
           toast.info("Database offline: saved to LIMS Sandbox memory");
         } else {
-          toast.error(`LIMS Database Write Failed: ${err.message || "Could not update sample status."}`);
+          toast.error(
+            `LIMS Database Write Failed: ${err.message || "Could not update sample status."}`,
+          );
         }
       }
     };
@@ -397,10 +441,18 @@ export function useSamplesCore(
 
       syncSamplesFromDb();
     } catch (err: any) {
-      if (err.message?.includes("schema cache") || err.message?.includes("relation") || err.message?.includes("fetch") || err.message?.includes("table") || err.message?.includes("database")) {
+      if (
+        err.message?.includes("schema cache") ||
+        err.message?.includes("relation") ||
+        err.message?.includes("fetch") ||
+        err.message?.includes("table") ||
+        err.message?.includes("database")
+      ) {
         toast.info("Database offline: saved to LIMS Sandbox memory");
       } else {
-        toast.error(`LIMS Database Write Failed: ${err.message || "Could not accept and verify sample."}`);
+        toast.error(
+          `LIMS Database Write Failed: ${err.message || "Could not accept and verify sample."}`,
+        );
       }
     }
 
@@ -449,7 +501,13 @@ export function useSamplesCore(
 
       syncSamplesFromDb();
     } catch (err: any) {
-      if (err.message?.includes("schema cache") || err.message?.includes("relation") || err.message?.includes("fetch") || err.message?.includes("table") || err.message?.includes("database")) {
+      if (
+        err.message?.includes("schema cache") ||
+        err.message?.includes("relation") ||
+        err.message?.includes("fetch") ||
+        err.message?.includes("table") ||
+        err.message?.includes("database")
+      ) {
         toast.info("Database offline: saved to LIMS Sandbox memory");
       } else {
         toast.error(`LIMS Database Write Failed: ${err.message || "Could not reject sample."}`);
@@ -499,10 +557,18 @@ export function useSamplesCore(
 
       syncSamplesFromDb();
     } catch (err: any) {
-      if (err.message?.includes("schema cache") || err.message?.includes("relation") || err.message?.includes("fetch") || err.message?.includes("table") || err.message?.includes("database")) {
+      if (
+        err.message?.includes("schema cache") ||
+        err.message?.includes("relation") ||
+        err.message?.includes("fetch") ||
+        err.message?.includes("table") ||
+        err.message?.includes("database")
+      ) {
         toast.info("Database offline: saved to LIMS Sandbox memory");
       } else {
-        toast.error(`LIMS Database Write Failed: ${err.message || "Could not assign storage location."}`);
+        toast.error(
+          `LIMS Database Write Failed: ${err.message || "Could not assign storage location."}`,
+        );
       }
     }
 
@@ -511,7 +577,7 @@ export function useSamplesCore(
 
   const uploadSampleAttachment = async (sampleId: string, file: File) => {
     const filePath = `attachments/${sampleId}/${Date.now()}_${file.name}`;
-    
+
     try {
       const { error: uploadErr } = await supabase.storage
         .from("sample-documents" as any)
@@ -519,9 +585,9 @@ export function useSamplesCore(
 
       if (uploadErr) throw uploadErr;
 
-      const { data: { publicUrl } } = supabase.storage
-        .from("sample-documents" as any)
-        .getPublicUrl(filePath);
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("sample-documents" as any).getPublicUrl(filePath);
 
       const { data: attachmentData, error: dbErr } = await supabase
         .from("sample_attachments" as any)
@@ -541,14 +607,14 @@ export function useSamplesCore(
       return attachmentData;
     } catch (err: any) {
       console.warn("uploadSampleAttachment DB write bypassed, creating local mock:", err.message);
-      
+
       const mockAttachment = {
         id: Date.now().toString(),
         name: file.name,
         filePath: "#",
         sizeBytes: file.size,
         uploadedBy: currentName,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
       };
 
       setSamples((prev) => {
@@ -556,7 +622,7 @@ export function useSamplesCore(
           if (s.id === sampleId) {
             return {
               ...s,
-              attachments: [mockAttachment, ...(s.attachments || [])]
+              attachments: [mockAttachment, ...(s.attachments || [])],
             };
           }
           return s;
@@ -576,7 +642,7 @@ export function useSamplesCore(
           const newCustodyEntry: CustodyLogEntry = {
             action: `Barcode Scanned: ${actionDetails}`,
             technician: currentName,
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
           };
           return {
             ...s,
@@ -592,10 +658,7 @@ export function useSamplesCore(
 
     try {
       if (location) {
-        await supabase
-          .from("samples")
-          .update({ storage_location: location })
-          .eq("id", sampleId);
+        await supabase.from("samples").update({ storage_location: location }).eq("id", sampleId);
       }
 
       await supabase.from("custody_logs").insert({
@@ -607,7 +670,13 @@ export function useSamplesCore(
 
       syncSamplesFromDb();
     } catch (err: any) {
-      if (err.message?.includes("schema cache") || err.message?.includes("relation") || err.message?.includes("fetch") || err.message?.includes("table") || err.message?.includes("database")) {
+      if (
+        err.message?.includes("schema cache") ||
+        err.message?.includes("relation") ||
+        err.message?.includes("fetch") ||
+        err.message?.includes("table") ||
+        err.message?.includes("database")
+      ) {
         toast.info("Database offline: saved to LIMS Sandbox memory");
       } else {
         toast.error(`LIMS Database Write Failed: ${err.message || "Could not log barcode scan."}`);
@@ -621,13 +690,15 @@ export function useSamplesCore(
     try {
       const { data, error } = await supabase
         .from("samples")
-        .select(`
+        .select(
+          `
           *,
           sample_notes (*),
           custody_logs (*),
           analytical_results (*),
           sample_attachments (*)
-        `)
+        `,
+        )
         .eq("id", sampleId)
         .single();
 
@@ -639,7 +710,7 @@ export function useSamplesCore(
           data.sample_notes || [],
           data.analytical_results || [],
           data.custody_logs || [],
-          data.sample_attachments || []
+          data.sample_attachments || [],
         );
 
         setSamples((prev) => {

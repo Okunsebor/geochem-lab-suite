@@ -20,25 +20,39 @@ interface AssignModal {
 export function AnalysisFeature() {
   const { samples, instruments, updateSampleStatus } = useLimsState();
   const {
-    analysisRuns, calibrationRecords, analyticalMethods, loadingAnalysis,
-    assignSampleToInstrument, startRun, completeRun, failRun,
-    submitResults, uploadRawFile, addCalibrationRecord, getMethodByCode,
+    analysisRuns,
+    calibrationRecords,
+    analyticalMethods,
+    loadingAnalysis,
+    assignSampleToInstrument,
+    startRun,
+    completeRun,
+    failRun,
+    submitResults,
+    uploadRawFile,
+    addCalibrationRecord,
+    getMethodByCode,
   } = useAnalysis();
   const { raiseFlag } = useQaqc();
 
   const [assignModal, setAssignModal] = useState<AssignModal | null>(null);
   const [resultModal, setResultModal] = useState<string | null>(null); // runId
-  const [uploadRunId,  setUploadRunId]  = useState<string | null>(null);
+  const [uploadRunId, setUploadRunId] = useState<string | null>(null);
   const [selectedSampleId, setSelectedSampleId] = useState("");
-  const [selectedMethod,   setSelectedMethod]   = useState(analyticalMethods[0]?.code || "");
-  const [analystName,      setAnalystName]       = useState("");
+  const [selectedMethod, setSelectedMethod] = useState(analyticalMethods[0]?.code || "");
+  const [analystName, setAnalystName] = useState("");
 
   const inAnalysisSamples = samples.filter((s) => s.status === "In Analysis");
 
   // ── Assign handler ────────────────────────────────────────────────────────
   const handleAssignConfirm = () => {
     if (!assignModal || !selectedSampleId) return;
-    const run = assignSampleToInstrument(selectedSampleId, assignModal.instrumentId, selectedMethod, analystName);
+    const run = assignSampleToInstrument(
+      selectedSampleId,
+      assignModal.instrumentId,
+      selectedMethod,
+      analystName,
+    );
     toast.success(`Sample ${selectedSampleId} assigned to ${assignModal.instrumentId}`, {
       description: `Run ${run.id} created · Method: ${selectedMethod}`,
     });
@@ -59,14 +73,21 @@ export function AnalysisFeature() {
     const flagged = results.filter((r) => r.qaStatus === "Flag");
     flagged.forEach((r) => {
       raiseFlag({
-        sampleId: r.sampleId, runId: r.runId, element: r.element,
-        checkType: "Standard", observedValue: r.value,
-        severity: "Medium", status: "Open",
+        sampleId: r.sampleId,
+        runId: r.runId,
+        element: r.element,
+        checkType: "Standard",
+        observedValue: r.value,
+        severity: "Medium",
+        status: "Open",
       });
     });
 
     toast.success(`${results.length} results submitted for ${run?.sampleId}`, {
-      description: flagged.length > 0 ? `${flagged.length} flag(s) raised for QA review` : "All results passed QA",
+      description:
+        flagged.length > 0
+          ? `${flagged.length} flag(s) raised for QA review`
+          : "All results passed QA",
     });
     setResultModal(null);
   };
@@ -84,8 +105,13 @@ export function AnalysisFeature() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => {
-                const run = analysisRuns.find((r) => r.status === "Running" || r.status === "Queued");
-                if (!run) { toast.info("No active runs to upload to"); return; }
+                const run = analysisRuns.find(
+                  (r) => r.status === "Running" || r.status === "Queued",
+                );
+                if (!run) {
+                  toast.info("No active runs to upload to");
+                  return;
+                }
                 setUploadRunId(run.id);
               }}
               className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-sm text-foreground font-semibold hover:bg-muted shadow-sm transition"
@@ -95,9 +121,15 @@ export function AnalysisFeature() {
             <button
               onClick={() => {
                 const sample = inAnalysisSamples[0];
-                if (!sample) { toast.info("No samples in Analysis queue"); return; }
+                if (!sample) {
+                  toast.info("No samples in Analysis queue");
+                  return;
+                }
                 const inst = instruments.find((i) => i.status === "Online");
-                if (!inst)  { toast.info("No online instruments available"); return; }
+                if (!inst) {
+                  toast.info("No online instruments available");
+                  return;
+                }
                 setAssignModal({ instrumentId: inst.id });
                 setSelectedSampleId(sample.id);
               }}
@@ -131,12 +163,18 @@ export function AnalysisFeature() {
           ) : (
             <AnalysisQueueTable
               runs={analysisRuns}
-              onStart={(runId) => { startRun(runId); toast.info(`Run ${runId} started`); }}
+              onStart={(runId) => {
+                startRun(runId);
+                toast.info(`Run ${runId} started`);
+              }}
               onComplete={(runId) => {
                 completeRun(runId);
                 setResultModal(runId);
               }}
-              onFail={(runId) => { failRun(runId); toast.error(`Run ${runId} marked as failed`); }}
+              onFail={(runId) => {
+                failRun(runId);
+                toast.error(`Run ${runId} marked as failed`);
+              }}
             />
           )}
         </div>
@@ -173,48 +211,78 @@ export function AnalysisFeature() {
       {/* Assign to instrument modal */}
       {assignModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setAssignModal(null)} />
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setAssignModal(null)}
+          />
           <div className="relative z-10 w-full max-w-md rounded-2xl border border-border bg-card shadow-2xl p-6 space-y-4">
             <h3 className="text-base font-semibold text-foreground">
-              Assign Sample — <span className="font-mono text-primary">{assignModal.instrumentId}</span>
+              Assign Sample —{" "}
+              <span className="font-mono text-primary">{assignModal.instrumentId}</span>
             </h3>
 
             <div className="space-y-3">
               <div>
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Sample</label>
-                <select value={selectedSampleId} onChange={(e) => setSelectedSampleId(e.target.value)}
-                  className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40">
-                  {inAnalysisSamples.length === 0
-                    ? <option value="">No samples in analysis queue</option>
-                    : inAnalysisSamples.map((s) => (
-                        <option key={s.id} value={s.id}>{s.id} — {s.client} ({s.project})</option>
-                      ))}
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                  Sample
+                </label>
+                <select
+                  value={selectedSampleId}
+                  onChange={(e) => setSelectedSampleId(e.target.value)}
+                  className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                >
+                  {inAnalysisSamples.length === 0 ? (
+                    <option value="">No samples in analysis queue</option>
+                  ) : (
+                    inAnalysisSamples.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.id} — {s.client} ({s.project})
+                      </option>
+                    ))
+                  )}
                 </select>
               </div>
               <div>
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Analytical Method</label>
-                <select value={selectedMethod} onChange={(e) => setSelectedMethod(e.target.value)}
-                  className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40">
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                  Analytical Method
+                </label>
+                <select
+                  value={selectedMethod}
+                  onChange={(e) => setSelectedMethod(e.target.value)}
+                  className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                >
                   {analyticalMethods.map((m) => (
-                    <option key={m.id} value={m.code}>{m.code} — {m.name}</option>
+                    <option key={m.id} value={m.code}>
+                      {m.code} — {m.name}
+                    </option>
                   ))}
                 </select>
               </div>
               <div>
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Analyst</label>
-                <input value={analystName} onChange={(e) => setAnalystName(e.target.value)}
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                  Analyst
+                </label>
+                <input
+                  value={analystName}
+                  onChange={(e) => setAnalystName(e.target.value)}
                   placeholder="Analyst name"
-                  className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40" />
+                  className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                />
               </div>
             </div>
 
             <div className="flex gap-2 pt-1">
-              <button onClick={() => setAssignModal(null)}
-                className="flex-1 rounded-md border border-border bg-background py-2 text-sm font-semibold text-muted-foreground hover:text-foreground transition">
+              <button
+                onClick={() => setAssignModal(null)}
+                className="flex-1 rounded-md border border-border bg-background py-2 text-sm font-semibold text-muted-foreground hover:text-foreground transition"
+              >
                 Cancel
               </button>
-              <button onClick={handleAssignConfirm} disabled={!selectedSampleId}
-                className="flex-1 rounded-md gradient-primary py-2 text-sm text-white font-semibold hover:opacity-90 transition disabled:opacity-40">
+              <button
+                onClick={handleAssignConfirm}
+                disabled={!selectedSampleId}
+                className="flex-1 rounded-md gradient-primary py-2 text-sm text-white font-semibold hover:opacity-90 transition disabled:opacity-40"
+              >
                 <ClipboardList className="inline size-3.5 mr-1.5" />
                 Assign
               </button>

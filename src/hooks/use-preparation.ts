@@ -1,34 +1,23 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "./use-auth";
-import {
-  PrepJob,
-  PrepStep,
-  PrepStage,
-  PrepStepStatus,
-  Priority,
-} from "../types";
+import { PrepJob, PrepStep, PrepStage, PrepStepStatus, Priority } from "../types";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
-export const PREP_STAGES: PrepStage[] = [
-  "Drying",
-  "Crushing",
-  "Splitting",
-  "Pulverizing",
-];
+export const PREP_STAGES: PrepStage[] = ["Drying", "Crushing", "Splitting", "Pulverizing"];
 
 export const STAGE_EQUIPMENT: Record<PrepStage, string[]> = {
-  Drying:      ["Oven A", "Oven B", "Oven C", "Oven D"],
-  Crushing:    ["JC-400", "JC-401", "Jaw Crusher B"],
-  Splitting:   ["Riffle Splitter", "Rotary Splitter A", "Rotary Splitter B"],
+  Drying: ["Oven A", "Oven B", "Oven C", "Oven D"],
+  Crushing: ["JC-400", "JC-401", "Jaw Crusher B"],
+  Splitting: ["Riffle Splitter", "Rotary Splitter A", "Rotary Splitter B"],
   Pulverizing: ["Pulverizer A-1", "Pulverizer A-2", "Ring Mill B"],
 };
 
 export const STAGE_COLOR: Record<PrepStage, string> = {
-  Drying:      "hsl(38 95% 55%)",
-  Crushing:    "hsl(210 90% 55%)",
-  Splitting:   "hsl(270 75% 60%)",
+  Drying: "hsl(38 95% 55%)",
+  Crushing: "hsl(210 90% 55%)",
+  Splitting: "hsl(270 75% 60%)",
   Pulverizing: "hsl(158 64% 48%)",
 };
 
@@ -117,14 +106,9 @@ export interface UsePreparationReturn {
     client: string,
     project: string,
     sampleType: string,
-    priority: Priority
+    priority: Priority,
   ) => PrepJob;
-  startStep: (
-    jobId: string,
-    stage: PrepStage,
-    technician: string,
-    equipment?: string
-  ) => void;
+  startStep: (jobId: string, stage: PrepStage, technician: string, equipment?: string) => void;
   completeStep: (jobId: string, stage: PrepStage, notes?: string) => void;
   skipStep: (jobId: string, stage: PrepStage, reason?: string) => void;
   holdJob: (jobId: string) => void;
@@ -145,19 +129,19 @@ export function usePreparation(): UsePreparationReturn {
     try {
       const { data: jobsData, error } = await supabase
         .from("preparation_jobs")
-        .select(`
+        .select(
+          `
           *,
           preparation_steps (*),
           samples (client_name, project_name, sample_type, priority)
-        `)
+        `,
+        )
         .order("created_at", { ascending: false });
 
       if (error) throw error;
 
       if (jobsData && jobsData.length > 0) {
-        const mapped = jobsData.map((j: any) =>
-          mapDbJobToUi(j, j.preparation_steps || [])
-        );
+        const mapped = jobsData.map((j: any) => mapDbJobToUi(j, j.preparation_steps || []));
         setPrepJobs(mapped);
         saveLocal(mapped);
         setLoadingPrep(false);
@@ -189,7 +173,9 @@ export function usePreparation(): UsePreparationReturn {
       })
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [syncFromDb]);
 
   // ── Helpers ────────────────────────────────────────────────────────────────
@@ -215,7 +201,7 @@ export function usePreparation(): UsePreparationReturn {
       client: string,
       project: string,
       sampleType: string,
-      priority: Priority
+      priority: Priority,
     ): PrepJob => {
       const jobId = `job-${sampleId}-${Date.now()}`;
       const newJob: PrepJob = {
@@ -259,10 +245,7 @@ export function usePreparation(): UsePreparationReturn {
           await supabase.from("preparation_steps").insert(stepsPayload);
 
           // Update sample status to "In Preparation"
-          await supabase
-            .from("samples")
-            .update({ status: "In Preparation" })
-            .eq("id", sampleId);
+          await supabase.from("samples").update({ status: "In Preparation" }).eq("id", sampleId);
 
           syncFromDb();
         } catch (err: any) {
@@ -272,7 +255,7 @@ export function usePreparation(): UsePreparationReturn {
 
       return newJob;
     },
-    [prepJobs, currentName, currentUser, syncFromDb]
+    [prepJobs, currentName, currentUser, syncFromDb],
   );
 
   const startStep = useCallback(
@@ -285,27 +268,44 @@ export function usePreparation(): UsePreparationReturn {
           currentStage: stage,
           steps: job.steps.map((step) =>
             step.stage === stage
-              ? { ...step, status: "In Progress" as PrepStepStatus, technicianName: technician, equipment, startedAt: now }
-              : step
+              ? {
+                  ...step,
+                  status: "In Progress" as PrepStepStatus,
+                  technicianName: technician,
+                  equipment,
+                  startedAt: now,
+                }
+              : step,
           ),
         };
       });
       updateJobs(updated);
 
-      logActivity({ technician, sampleId: updated.find((j) => j.id === jobId)?.sampleId || "", stage, action: "Started", equipment });
+      logActivity({
+        technician,
+        sampleId: updated.find((j) => j.id === jobId)?.sampleId || "",
+        stage,
+        action: "Started",
+        equipment,
+      });
 
       (async () => {
         try {
           await supabase
             .from("preparation_steps")
-            .update({ status: "In Progress", technician_name: technician, equipment, started_at: now })
+            .update({
+              status: "In Progress",
+              technician_name: technician,
+              equipment,
+              started_at: now,
+            })
             .match({ job_id: jobId, stage });
         } catch (err: any) {
           console.warn("Prep startStep DB write failed:", err.message);
         }
       })();
     },
-    [prepJobs]
+    [prepJobs],
   );
 
   const completeStep = useCallback(
@@ -320,8 +320,16 @@ export function usePreparation(): UsePreparationReturn {
         const steps = job.steps.map((step) => {
           if (step.stage === stage) {
             const startedAt = step.startedAt ? new Date(step.startedAt) : new Date();
-            const durationMinutes = Math.round((new Date().getTime() - startedAt.getTime()) / 60000);
-            return { ...step, status: "Completed" as PrepStepStatus, completedAt: now, durationMinutes, notes: notes || step.notes };
+            const durationMinutes = Math.round(
+              (new Date().getTime() - startedAt.getTime()) / 60000,
+            );
+            return {
+              ...step,
+              status: "Completed" as PrepStepStatus,
+              completedAt: now,
+              durationMinutes,
+              notes: notes || step.notes,
+            };
           }
           return step;
         });
@@ -362,10 +370,7 @@ export function usePreparation(): UsePreparationReturn {
               .update({ overall_status: "Completed", current_stage: stage })
               .eq("id", jobId);
 
-            await supabase
-              .from("samples")
-              .update({ status: "In Analysis" })
-              .eq("id", job.sampleId);
+            await supabase.from("samples").update({ status: "In Analysis" }).eq("id", job.sampleId);
           } else if (job) {
             await supabase
               .from("preparation_jobs")
@@ -378,7 +383,7 @@ export function usePreparation(): UsePreparationReturn {
         }
       })();
     },
-    [prepJobs, currentName, syncFromDb]
+    [prepJobs, currentName, syncFromDb],
   );
 
   const skipStep = useCallback(
@@ -388,14 +393,21 @@ export function usePreparation(): UsePreparationReturn {
         if (job.id !== jobId) return job;
         const next = nextStage(stage);
         const steps = job.steps.map((step) =>
-          step.stage === stage ? { ...step, status: "Skipped" as PrepStepStatus, completedAt: now, notes: reason } : step
+          step.stage === stage
+            ? { ...step, status: "Skipped" as PrepStepStatus, completedAt: now, notes: reason }
+            : step,
         );
         return { ...job, currentStage: next || stage, steps };
       });
       updateJobs(updated);
 
       const job = updated.find((j) => j.id === jobId);
-      logActivity({ technician: currentName, sampleId: job?.sampleId || "", stage, action: "Skipped" });
+      logActivity({
+        technician: currentName,
+        sampleId: job?.sampleId || "",
+        stage,
+        action: "Skipped",
+      });
 
       (async () => {
         try {
@@ -405,66 +417,77 @@ export function usePreparation(): UsePreparationReturn {
             .match({ job_id: jobId, stage });
           const next = nextStage(stage);
           if (next && job) {
-            await supabase
-              .from("preparation_jobs")
-              .update({ current_stage: next })
-              .eq("id", jobId);
+            await supabase.from("preparation_jobs").update({ current_stage: next }).eq("id", jobId);
           }
         } catch (err: any) {
           console.warn("Prep skipStep DB write failed:", err.message);
         }
       })();
     },
-    [prepJobs, currentName]
+    [prepJobs, currentName],
   );
 
   const holdJob = useCallback(
     (jobId: string) => {
       const updated = prepJobs.map((job) =>
-        job.id === jobId ? { ...job, overallStatus: "On Hold" as const } : job
+        job.id === jobId ? { ...job, overallStatus: "On Hold" as const } : job,
       );
       updateJobs(updated);
       const job = updated.find((j) => j.id === jobId);
-      logActivity({ technician: currentName, sampleId: job?.sampleId || "", stage: job?.currentStage || "Drying", action: "Held" });
+      logActivity({
+        technician: currentName,
+        sampleId: job?.sampleId || "",
+        stage: job?.currentStage || "Drying",
+        action: "Held",
+      });
 
       (async () => {
         try {
-          await supabase.from("preparation_jobs").update({ overall_status: "On Hold" }).eq("id", jobId);
+          await supabase
+            .from("preparation_jobs")
+            .update({ overall_status: "On Hold" })
+            .eq("id", jobId);
         } catch {}
       })();
     },
-    [prepJobs, currentName]
+    [prepJobs, currentName],
   );
 
   const resumeJob = useCallback(
     (jobId: string) => {
       const updated = prepJobs.map((job) =>
-        job.id === jobId ? { ...job, overallStatus: "Active" as const } : job
+        job.id === jobId ? { ...job, overallStatus: "Active" as const } : job,
       );
       updateJobs(updated);
       const job = updated.find((j) => j.id === jobId);
-      logActivity({ technician: currentName, sampleId: job?.sampleId || "", stage: job?.currentStage || "Drying", action: "Resumed" });
+      logActivity({
+        technician: currentName,
+        sampleId: job?.sampleId || "",
+        stage: job?.currentStage || "Drying",
+        action: "Resumed",
+      });
 
       (async () => {
         try {
-          await supabase.from("preparation_jobs").update({ overall_status: "Active" }).eq("id", jobId);
+          await supabase
+            .from("preparation_jobs")
+            .update({ overall_status: "Active" })
+            .eq("id", jobId);
         } catch {}
       })();
     },
-    [prepJobs, currentName]
+    [prepJobs, currentName],
   );
 
   const getJobBySampleId = useCallback(
     (sampleId: string) => prepJobs.find((j) => j.sampleId === sampleId),
-    [prepJobs]
+    [prepJobs],
   );
 
   const getJobsByStage = useCallback(
     (stage: PrepStage) =>
-      prepJobs.filter(
-        (j) => j.overallStatus === "Active" && j.currentStage === stage
-      ),
-    [prepJobs]
+      prepJobs.filter((j) => j.overallStatus === "Active" && j.currentStage === stage),
+    [prepJobs],
   );
 
   return {

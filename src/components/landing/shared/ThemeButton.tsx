@@ -35,7 +35,11 @@ export function ThemeLink({ children, className, variant = "cyan", to, search }:
   return (
     <Link
       {...linkProps}
-      className={cn(variantClass[variant], "inline-flex items-center justify-center gap-2", className)}
+      className={cn(
+        variantClass[variant],
+        "inline-flex items-center justify-center gap-2",
+        className,
+      )}
     >
       {children}
     </Link>

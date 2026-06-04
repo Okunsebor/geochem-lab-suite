@@ -7,7 +7,7 @@ import { AnalyticalReport, Sample } from "../types";
 export async function generateReportPdfBlob(
   report: AnalyticalReport,
   sample: Sample,
-  results: any[]
+  results: any[],
 ): Promise<Blob> {
   const doc = new jsPDF({
     orientation: "portrait",
@@ -35,11 +35,13 @@ export async function generateReportPdfBlob(
   doc.setFont("helvetica", "bold");
   doc.setFontSize(14);
   doc.text("CERTIFICATE OF ANALYSIS", 195, 18, { align: "right" });
-  
+
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
   doc.text(`Report ID: ${report.id}`, 195, 24, { align: "right" });
-  doc.text(`Date Issued: ${new Date(report.createdAt).toLocaleDateString()}`, 195, 29, { align: "right" });
+  doc.text(`Date Issued: ${new Date(report.createdAt).toLocaleDateString()}`, 195, 29, {
+    align: "right",
+  });
   doc.text(`Status: ${report.status.toUpperCase()}`, 195, 34, { align: "right" });
 
   // 2. Metadata Columns
@@ -54,21 +56,21 @@ export async function generateReportPdfBlob(
 
   doc.setFontSize(8.5);
   doc.setFont("helvetica", "normal");
-  
+
   // Left Column
   doc.text(`Client Name:`, 15, 62);
   doc.setFont("helvetica", "bold");
   doc.text(sample.client || report.client, 40, 62);
   doc.setFont("helvetica", "normal");
-  
+
   doc.text(`Project Reference:`, 15, 68);
   doc.setFont("helvetica", "bold");
   doc.text(sample.project || "Exploration A", 40, 68);
   doc.setFont("helvetica", "normal");
-  
+
   doc.text(`Registration Tech:`, 15, 74);
   doc.text(sample.technician || "M. Rivera", 40, 74);
-  
+
   doc.text(`Priority Level:`, 15, 80);
   doc.text(sample.priority || "Standard", 40, 80);
 
@@ -77,15 +79,22 @@ export async function generateReportPdfBlob(
   doc.setFont("helvetica", "bold");
   doc.text(sample.id || report.sample, 138, 62);
   doc.setFont("helvetica", "normal");
-  
+
   doc.text(`Matrix/Sample Type:`, 110, 68);
   doc.text(`${sample.matrix || "Rock Core"} / ${sample.type || "Core Split"}`, 138, 68);
-  
+
   doc.text(`Weight & Container:`, 110, 74);
   doc.text(`${sample.weight || "—"} (${sample.container || "Calico Bag"})`, 138, 74);
-  
+
   doc.text(`Special Instructions:`, 110, 80);
-  doc.text(sample.specialInstructions ? sample.specialInstructions.substring(0, 32) + (sample.specialInstructions.length > 32 ? "..." : "") : "None", 138, 80);
+  doc.text(
+    sample.specialInstructions
+      ? sample.specialInstructions.substring(0, 32) +
+          (sample.specialInstructions.length > 32 ? "..." : "")
+      : "None",
+    138,
+    80,
+  );
 
   // 3. Results Section
   doc.setFontSize(11);
@@ -108,12 +117,15 @@ export async function generateReportPdfBlob(
   let y = 114;
   doc.setFont("helvetica", "normal");
 
-  const rows = results && results.length > 0 ? results : [
-    { element: "Au", value: "2.410", unit: "g/t", method: "FA-AAS", qa: "Pass" },
-    { element: "Ag", value: "18.20", unit: "g/t", method: "ICP-MS-51E", qa: "Pass" },
-    { element: "Cu", value: "1.240", unit: "%", method: "ICP-OES-4A", qa: "Pass" },
-    { element: "Pb", value: "0.340", unit: "%", method: "ICP-OES-4A", qa: "Pass" }
-  ];
+  const rows =
+    results && results.length > 0
+      ? results
+      : [
+          { element: "Au", value: "2.410", unit: "g/t", method: "FA-AAS", qa: "Pass" },
+          { element: "Ag", value: "18.20", unit: "g/t", method: "ICP-MS-51E", qa: "Pass" },
+          { element: "Cu", value: "1.240", unit: "%", method: "ICP-OES-4A", qa: "Pass" },
+          { element: "Pb", value: "0.340", unit: "%", method: "ICP-OES-4A", qa: "Pass" },
+        ];
 
   rows.forEach((row: any) => {
     // Row line
@@ -128,7 +140,8 @@ export async function generateReportPdfBlob(
     doc.text(row.method, 130, y);
 
     const isPass = row.qa === "Pass" || row.qa === "Passed" || row.qa === "Approved";
-    const isFail = row.qa === "Fail" || row.qa === "Failed" || row.qa === "Flag" || row.qa === "Flagged";
+    const isFail =
+      row.qa === "Fail" || row.qa === "Failed" || row.qa === "Flag" || row.qa === "Flagged";
 
     if (isPass) {
       doc.setTextColor(22, 163, 74); // green-600
@@ -158,14 +171,24 @@ export async function generateReportPdfBlob(
   y += 10;
   doc.setFontSize(8.5);
   doc.setFont("helvetica", "normal");
-  
+
   doc.text(`Authorized Signatory:`, 15, y);
   doc.setFont("helvetica", "bold");
-  doc.text(report.status === "Approved" || report.status === "Delivered" ? (report.approvedBy || "Adaeze Nwosu (QA Manager)") : "Pending Sign-off", 50, y);
+  doc.text(
+    report.status === "Approved" || report.status === "Delivered"
+      ? report.approvedBy || "Adaeze Nwosu (QA Manager)"
+      : "Pending Sign-off",
+    50,
+    y,
+  );
   doc.setFont("helvetica", "normal");
 
   doc.text(`Signature Date:`, 15, y + 6);
-  doc.text(report.approvedAt ? new Date(report.approvedAt).toLocaleString() : "Not signed", 50, y + 6);
+  doc.text(
+    report.approvedAt ? new Date(report.approvedAt).toLocaleString() : "Not signed",
+    50,
+    y + 6,
+  );
 
   if (report.comments) {
     doc.text(`Rejection/Revision Notes:`, 110, y);
@@ -174,10 +197,20 @@ export async function generateReportPdfBlob(
     doc.setFont("helvetica", "normal");
   } else {
     doc.text(`Delivery Mode:`, 110, y);
-    doc.text(report.status === "Delivered" ? `Client Portal Delivery (${report.deliveredBy || "Automated System"})` : "Not delivered", 132, y);
-    
+    doc.text(
+      report.status === "Delivered"
+        ? `Client Portal Delivery (${report.deliveredBy || "Automated System"})`
+        : "Not delivered",
+      132,
+      y,
+    );
+
     doc.text(`Delivery Date:`, 110, y + 6);
-    doc.text(report.deliveredAt ? new Date(report.deliveredAt).toLocaleDateString() : "Pending delivery", 132, y + 6);
+    doc.text(
+      report.deliveredAt ? new Date(report.deliveredAt).toLocaleDateString() : "Pending delivery",
+      132,
+      y + 6,
+    );
   }
 
   // 5. Visual Certification Stamp / Watermark
@@ -185,7 +218,7 @@ export async function generateReportPdfBlob(
     doc.setDrawColor(22, 163, 74);
     doc.setLineWidth(0.8);
     doc.rect(145, y + 16, 50, 16);
-    
+
     doc.setTextColor(22, 163, 74);
     doc.setFontSize(9);
     doc.setFont("helvetica", "bold");
@@ -196,7 +229,7 @@ export async function generateReportPdfBlob(
     doc.setDrawColor(148, 163, 184);
     doc.setLineWidth(0.8);
     doc.rect(145, y + 16, 50, 16);
-    
+
     doc.setTextColor(148, 163, 184);
     doc.setFontSize(9);
     doc.setFont("helvetica", "bold");
@@ -209,7 +242,11 @@ export async function generateReportPdfBlob(
   doc.setTextColor(148, 163, 184);
   doc.setFontSize(7.5);
   doc.setFont("helvetica", "normal");
-  doc.text("This analytical report is generated electronically under ISO/IEC 17025 accreditation standards.", 15, 283);
+  doc.text(
+    "This analytical report is generated electronically under ISO/IEC 17025 accreditation standards.",
+    15,
+    283,
+  );
   doc.text("All values reported here represent quality audited and verified data logs.", 15, 287);
   doc.text("Page 1 of 1", 195, 287, { align: "right" });
 

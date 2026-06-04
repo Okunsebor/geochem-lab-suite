@@ -215,7 +215,7 @@ USING (
   public.current_user_role() = 'customer'
   AND status IN ('Delivered')
   AND sample_id IN (
-    SELECT s.id::text
+    SELECT s.id
     FROM public.samples s
     JOIN public.projects p ON p.id = s.project_id
     WHERE p.organization_id = public.current_user_org_id()

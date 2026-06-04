@@ -25,7 +25,7 @@ END $$;
 -- ─────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS preparation_jobs (
   id             UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
-  sample_id      TEXT         NOT NULL REFERENCES samples(id) ON DELETE CASCADE,
+  sample_id      UUID         NOT NULL REFERENCES samples(id) ON DELETE CASCADE,
   overall_status prep_job_status NOT NULL DEFAULT 'Active',
   current_stage  prep_stage   NOT NULL DEFAULT 'Drying',
   created_by     TEXT,
@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS preparation_jobs (
 CREATE TABLE IF NOT EXISTS preparation_steps (
   id               UUID             PRIMARY KEY DEFAULT gen_random_uuid(),
   job_id           UUID             NOT NULL REFERENCES preparation_jobs(id) ON DELETE CASCADE,
-  sample_id        TEXT             NOT NULL REFERENCES samples(id) ON DELETE CASCADE,
+  sample_id        UUID             NOT NULL REFERENCES samples(id) ON DELETE CASCADE,
   stage            prep_stage       NOT NULL,
   status           prep_step_status NOT NULL DEFAULT 'Queued',
   technician_name  TEXT,

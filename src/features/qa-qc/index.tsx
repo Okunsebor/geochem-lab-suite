@@ -8,9 +8,14 @@ import { FlagTable } from "./components/flag-table";
 
 export function QaqcFeature() {
   const {
-    qaFlags, loadingFlags,
-    passRate, openFlagCount, crmOutOfSpec, avgDuplicateSpread,
-    resolveFlag, dismissFlag,
+    qaFlags,
+    loadingFlags,
+    passRate,
+    openFlagCount,
+    crmOutOfSpec,
+    avgDuplicateSpread,
+    resolveFlag,
+    dismissFlag,
   } = useQaqc();
 
   return (

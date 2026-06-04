@@ -3,25 +3,19 @@
  * Pure-functional QA/QC engine for GeoChem Suite LIMS.
  * No side effects — all functions are deterministic and testable.
  */
-import {
-  AnalyticalResultFull,
-  AnalyticalMethod,
-  QaFlag,
-  FlagSeverity,
-  CheckType,
-} from "../types";
+import { AnalyticalResultFull, AnalyticalMethod, QaFlag, FlagSeverity, CheckType } from "../types";
 
 // ─── QC Thresholds (defaults when no method config present) ──────────────────
 
 export const DEFAULT_DUPLICATE_RPD_PCT = 10;
-export const DEFAULT_BLANK_MULTIPLIER  = 1.0;
+export const DEFAULT_BLANK_MULTIPLIER = 1.0;
 export const DEFAULT_CRM_TOLERANCE_PCT = 5;
 
 // ─── Severity Classifier ─────────────────────────────────────────────────────
 
 function classifySeverity(deviation: number, warn: number, high: number): FlagSeverity {
-  if (deviation > high)  return "High";
-  if (deviation > warn)  return "Medium";
+  if (deviation > high) return "High";
+  if (deviation > warn) return "Medium";
   return "Low";
 }
 
@@ -36,7 +30,7 @@ export interface DuplicateCheckResult {
 export function evaluateDuplicate(
   original: number,
   duplicate: number,
-  threshold = DEFAULT_DUPLICATE_RPD_PCT
+  threshold = DEFAULT_DUPLICATE_RPD_PCT,
 ): DuplicateCheckResult {
   const avg = (original + duplicate) / 2;
   const rpd = avg === 0 ? 0 : (Math.abs(original - duplicate) / avg) * 100;
@@ -56,7 +50,7 @@ export interface BlankCheckResult {
 export function evaluateBlank(
   observedValue: number,
   detectionLimit: number,
-  multiplier = DEFAULT_BLANK_MULTIPLIER
+  multiplier = DEFAULT_BLANK_MULTIPLIER,
 ): BlankCheckResult {
   const dl = detectionLimit <= 0 ? 0.001 : detectionLimit;
   const ratio = observedValue / dl;
@@ -76,7 +70,7 @@ export interface CrmCheckResult {
 export function evaluateCrm(
   observed: number,
   certified: number,
-  tolerance = DEFAULT_CRM_TOLERANCE_PCT
+  tolerance = DEFAULT_CRM_TOLERANCE_PCT,
 ): CrmCheckResult {
   const percentDeviation = certified === 0 ? 0 : (Math.abs(observed - certified) / certified) * 100;
   const flag = percentDeviation > tolerance;
@@ -89,7 +83,7 @@ export function evaluateCrm(
 export function autoFlagResults(
   results: AnalyticalResultFull[],
   method: AnalyticalMethod,
-  analystName: string
+  analystName: string,
 ): QaFlag[] {
   const flags: QaFlag[] = [];
   let flagCounter = Date.now();
@@ -130,7 +124,7 @@ export function autoFlagResults(
 export function evaluateResultQaStatus(
   value: number,
   element: string,
-  method: AnalyticalMethod
+  method: AnalyticalMethod,
 ): { qaStatus: "Pass" | "Flag" | "Pending Approval"; flagReason?: string } {
   const dl = method.detectionLimits[element] ?? 0.001;
 
@@ -187,13 +181,15 @@ export function parseCsv(csvText: string): ParsedCsvRow[] {
   for (let i = 1; i < lines.length; i++) {
     const cells = lines[i].split(",").map((c) => c.trim());
     const raw: Record<string, string> = {};
-    headers.forEach((h, idx) => { raw[h] = cells[idx] ?? ""; });
+    headers.forEach((h, idx) => {
+      raw[h] = cells[idx] ?? "";
+    });
 
     const sampleId = raw["sample_id"] || raw["sample"] || raw["id"] || undefined;
-    const element  = raw["element"] || raw["analyte"] || undefined;
-    const rawVal   = raw["value"] || raw["result"] || raw["concentration"] || "";
-    const value    = rawVal !== "" ? parseFloat(rawVal) : undefined;
-    const unit     = raw["unit"] || raw["units"] || undefined;
+    const element = raw["element"] || raw["analyte"] || undefined;
+    const rawVal = raw["value"] || raw["result"] || raw["concentration"] || "";
+    const value = rawVal !== "" ? parseFloat(rawVal) : undefined;
+    const unit = raw["unit"] || raw["units"] || undefined;
 
     rows.push({ sampleId, element, value, unit, raw });
   }
@@ -207,7 +203,7 @@ export function csvRowsToResults(
   runId: string,
   instrumentId: string,
   method: AnalyticalMethod,
-  analystName: string
+  analystName: string,
 ): AnalyticalResultFull[] {
   const now = new Date().toISOString();
   return rows

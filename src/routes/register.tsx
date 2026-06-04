@@ -20,7 +20,8 @@ function Register() {
         <div className="relative p-10 flex flex-col justify-end min-h-full text-white max-w-lg">
           <h2 className="text-2xl font-bold font-display">UniPod Geochemistry Laboratory</h2>
           <p className="mt-2 text-sm text-white/85 leading-relaxed">
-            Register once to unlock sample submission, live tracking, and secure certificate delivery.
+            Register once to unlock sample submission, live tracking, and secure certificate
+            delivery.
           </p>
         </div>
       </div>

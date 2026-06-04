@@ -11,13 +11,16 @@ export function ActivityLogsTable() {
   const totalPages = Math.ceil(activity.length / itemsPerPage);
   const paginatedData = activity.slice(
     (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
+    currentPage * itemsPerPage,
   );
 
   const headers = ["Time", "Actor", "Action", "Target", "IP"];
 
   const renderRow = (a: any, idx: number) => (
-    <tr key={idx} className="border-t border-border hover:bg-muted/30 [&>td]:px-4 [&>td]:py-2.5 font-medium transition-colors">
+    <tr
+      key={idx}
+      className="border-t border-border hover:bg-muted/30 [&>td]:px-4 [&>td]:py-2.5 font-medium transition-colors"
+    >
       <td className="text-muted-foreground text-xs">{a.when}</td>
       <td className="font-semibold text-foreground">{a.who}</td>
       <td className="text-muted-foreground">{a.what}</td>
@@ -33,7 +36,7 @@ export function ActivityLogsTable() {
         title="Activity Logs"
         description="Full audit trail of every action across the platform."
       />
-      
+
       <DataTable
         data={paginatedData}
         headers={headers}

@@ -11,15 +11,17 @@ General workflow tools, not code-specific.
 
 **/grill-me**
 
-  ----------------- -------------------------------------------------------
-  **name**          grill-me
+---
 
-  **description**   Interview the user relentlessly about a plan or design
-                    until reaching shared understanding, resolving each
-                    branch of the decision tree. Use when user wants to
-                    stress-test a plan, get grilled on their design, or
-                    mentions \"grill me\".
-  ----------------- -------------------------------------------------------
+**name** grill-me
+
+**description** Interview the user relentlessly about a plan or design
+until reaching shared understanding, resolving each
+branch of the decision tree. Use when user wants to
+stress-test a plan, get grilled on their design, or
+mentions \"grill me\".
+
+---
 
 Interview me relentlessly about every aspect of this plan until we reach
 a shared understanding. Walk down each branch of the design tree,
@@ -33,16 +35,18 @@ codebase instead.
 
 **/caveman**
 
-  ----------------- -------------------------------------------------------
-  **name**          caveman
+---
 
-  **description**   Ultra-compressed communication mode. Cuts token usage
-                    \~75% by dropping filler, articles, and pleasantries
-                    while keeping full technical accuracy. Use when user
-                    says \"caveman mode\", \"talk like caveman\", \"use
-                    caveman\", \"less tokens\", \"be brief\", or invokes
-                    /caveman.
-  ----------------- -------------------------------------------------------
+**name** caveman
+
+**description** Ultra-compressed communication mode. Cuts token usage
+\~75% by dropping filler, articles, and pleasantries
+while keeping full technical accuracy. Use when user
+says \"caveman mode\", \"talk like caveman\", \"use
+caveman\", \"less tokens\", \"be brief\", or invokes
+/caveman.
+
+---
 
 Respond terse like smart caveman. All technical substance stay. Only
 fluff die.
@@ -88,14 +92,16 @@ part done.
 
 **/handoff**
 
-  ------------------- -------------------------------------------------------
-  **name**            handoff
+---
 
-  **description**     Compact the current conversation into a handoff
-                      document for another agent to pick up.
+**name** handoff
 
-  **argument-hint**   What will the next session be used for?
-  ------------------- -------------------------------------------------------
+**description** Compact the current conversation into a handoff
+document for another agent to pick up.
+
+**argument-hint** What will the next session be used for?
+
+---
 
 Write a handoff document summarising the current conversation so a fresh
 agent can continue the work. Save it to a path produced by mktemp -t
@@ -112,13 +118,15 @@ next session will focus on and tailor the doc accordingly.
 
 **/write-a-skill**
 
-  ----------------- -------------------------------------------------------
-  **name**          write-a-skill
+---
 
-  **description**   Create new agent skills with proper structure,
-                    progressive disclosure, and bundled resources. Use when
-                    user wants to create, write, or build a new skill.
-  ----------------- -------------------------------------------------------
+**name** write-a-skill
+
+**description** Create new agent skills with proper structure,
+progressive disclosure, and bundled resources. Use when
+user wants to create, write, or build a new skill.
+
+---
 
 **Process**
 
@@ -138,44 +146,44 @@ next session will focus on and tailor the doc accordingly.
 **Skill Structure**
 
 +-----------------------------------------------------------------------+
-| skill-name/                                                           |
-|                                                                       |
-| ├── SKILL.md \# Main instructions (required)                          |
-|                                                                       |
-| ├── REFERENCE.md \# Detailed docs (if needed)                         |
-|                                                                       |
-| ├── EXAMPLES.md \# Usage examples (if needed)                         |
-|                                                                       |
-| └── scripts/ \# Utility scripts (if needed)                           |
-|                                                                       |
-| └── helper.js                                                         |
+| skill-name/ |
+| |
+| ├── SKILL.md \# Main instructions (required) |
+| |
+| ├── REFERENCE.md \# Detailed docs (if needed) |
+| |
+| ├── EXAMPLES.md \# Usage examples (if needed) |
+| |
+| └── scripts/ \# Utility scripts (if needed) |
+| |
+| └── helper.js |
 +-----------------------------------------------------------------------+
 
 **SKILL.md Template**
 
 +-----------------------------------------------------------------------+
-| \-\--                                                                 |
-|                                                                       |
-| name: skill-name                                                      |
-|                                                                       |
-| description: Brief description of capability. Use when \[specific     |
-| triggers\].                                                           |
-|                                                                       |
-| \-\--                                                                 |
-|                                                                       |
-| \# Skill Name                                                         |
-|                                                                       |
-| \## Quick start                                                       |
-|                                                                       |
-| \[Minimal working example\]                                           |
-|                                                                       |
-| \## Workflows                                                         |
-|                                                                       |
-| \[Step-by-step processes with checklists for complex tasks\]          |
-|                                                                       |
-| \## Advanced features                                                 |
-|                                                                       |
-| \[Link to separate files: See REFERENCE.md\]                          |
+| \-\-- |
+| |
+| name: skill-name |
+| |
+| description: Brief description of capability. Use when \[specific |
+| triggers\]. |
+| |
+| \-\-- |
+| |
+| \# Skill Name |
+| |
+| \## Quick start |
+| |
+| \[Minimal working example\] |
+| |
+| \## Workflows |
+| |
+| \[Step-by-step processes with checklists for complex tasks\] |
+| |
+| \## Advanced features |
+| |
+| \[Link to separate files: See REFERENCE.md\] |
 +-----------------------------------------------------------------------+
 
 **Description Requirements**
@@ -190,13 +198,13 @@ skill provides, (2) When/why to trigger it.
 
 Format:
 
--   Max 1024 chars
+- Max 1024 chars
 
--   Write in third person
+- Write in third person
 
--   First sentence: what it does
+- First sentence: what it does
 
--   Second sentence: \"Use when \[specific triggers\]\"
+- Second sentence: \"Use when \[specific triggers\]\"
 
 Good example: \"Extract text and tables from PDF files, fill forms,
 merge documents. Use when working with PDF files or when user mentions
@@ -220,19 +228,19 @@ distinct domains, advanced features are rarely needed.
 **Review Checklist**
 
 +-----------------------------------------------------------------------+
-| After drafting, verify:                                               |
-|                                                                       |
-| \- Description includes triggers (\"Use when\...\")                   |
-|                                                                       |
-| \- SKILL.md under 100 lines                                           |
-|                                                                       |
-| \- No time-sensitive info                                             |
-|                                                                       |
-| \- Consistent terminology                                             |
-|                                                                       |
-| \- Concrete examples included                                         |
-|                                                                       |
-| \- References one level deep                                          |
+| After drafting, verify: |
+| |
+| \- Description includes triggers (\"Use when\...\") |
+| |
+| \- SKILL.md under 100 lines |
+| |
+| \- No time-sensitive info |
+| |
+| \- Consistent terminology |
+| |
+| \- Concrete examples included |
+| |
+| \- References one level deep |
 +-----------------------------------------------------------------------+
 
 **Misc Skills**
@@ -241,30 +249,32 @@ Tools kept around but rarely used.
 
 **/git-guardrails-claude-code**
 
-  ----------------- -------------------------------------------------------
-  **name**          git-guardrails-claude-code
+---
 
-  **description**   Set up Claude Code hooks to block dangerous git
-                    commands (push, reset \--hard, clean, branch -D, etc.)
-                    before they execute. Use when user wants to prevent
-                    destructive git operations, add git safety hooks, or
-                    block git push/reset in Claude Code.
-  ----------------- -------------------------------------------------------
+**name** git-guardrails-claude-code
+
+**description** Set up Claude Code hooks to block dangerous git
+commands (push, reset \--hard, clean, branch -D, etc.)
+before they execute. Use when user wants to prevent
+destructive git operations, add git safety hooks, or
+block git push/reset in Claude Code.
+
+---
 
 Sets up a PreToolUse hook that intercepts and blocks dangerous git
 commands before Claude executes them.
 
 **What Gets Blocked**
 
--   git push (all variants including \--force)
+- git push (all variants including \--force)
 
--   git reset \--hard
+- git reset \--hard
 
--   git clean -f / git clean -fd
+- git clean -f / git clean -fd
 
--   git branch -D
+- git branch -D
 
--   git checkout . / git restore .
+- git checkout . / git restore .
 
 When blocked, Claude sees a message telling it that it does not have
 authority to access these commands.
@@ -278,9 +288,9 @@ all projects (\~/.claude/settings.json)?**
 
 Copy it to the target location based on scope:
 
--   Project: .claude/hooks/block-dangerous-git.sh
+- Project: .claude/hooks/block-dangerous-git.sh
 
--   Global: \~/.claude/hooks/block-dangerous-git.sh
+- Global: \~/.claude/hooks/block-dangerous-git.sh
 
 Make it executable with chmod +x.
 
@@ -289,70 +299,70 @@ Make it executable with chmod +x.
 Project (.claude/settings.json):
 
 +-----------------------------------------------------------------------+
-| {                                                                     |
-|                                                                       |
-| \"hooks\": {                                                          |
-|                                                                       |
-| \"PreToolUse\": \[                                                    |
-|                                                                       |
-| {                                                                     |
-|                                                                       |
-| \"matcher\": \"Bash\",                                                |
-|                                                                       |
-| \"hooks\": \[                                                         |
-|                                                                       |
-| {                                                                     |
-|                                                                       |
-| \"type\": \"command\",                                                |
-|                                                                       |
-| \"command\":                                                          |
+| { |
+| |
+| \"hooks\": { |
+| |
+| \"PreToolUse\": \[ |
+| |
+| { |
+| |
+| \"matcher\": \"Bash\", |
+| |
+| \"hooks\": \[ |
+| |
+| { |
+| |
+| \"type\": \"command\", |
+| |
+| \"command\": |
 | \"\\\"\$CLAUDE_PROJECT_DIR\\\"/.claude/hooks/block-dangerous-git.sh\" |
-|                                                                       |
-| }                                                                     |
-|                                                                       |
-| \]                                                                    |
-|                                                                       |
-| }                                                                     |
-|                                                                       |
-| \]                                                                    |
-|                                                                       |
-| }                                                                     |
-|                                                                       |
-| }                                                                     |
+| |
+| } |
+| |
+| \] |
+| |
+| } |
+| |
+| \] |
+| |
+| } |
+| |
+| } |
 +-----------------------------------------------------------------------+
 
 Global (\~/.claude/settings.json):
 
 +-----------------------------------------------------------------------+
-| {                                                                     |
-|                                                                       |
-| \"hooks\": {                                                          |
-|                                                                       |
-| \"PreToolUse\": \[                                                    |
-|                                                                       |
-| {                                                                     |
-|                                                                       |
-| \"matcher\": \"Bash\",                                                |
-|                                                                       |
-| \"hooks\": \[                                                         |
-|                                                                       |
-| {                                                                     |
-|                                                                       |
-| \"type\": \"command\",                                                |
-|                                                                       |
-| \"command\": \"\~/.claude/hooks/block-dangerous-git.sh\"              |
-|                                                                       |
-| }                                                                     |
-|                                                                       |
-| \]                                                                    |
-|                                                                       |
-| }                                                                     |
-|                                                                       |
-| \]                                                                    |
-|                                                                       |
-| }                                                                     |
-|                                                                       |
-| }                                                                     |
+| { |
+| |
+| \"hooks\": { |
+| |
+| \"PreToolUse\": \[ |
+| |
+| { |
+| |
+| \"matcher\": \"Bash\", |
+| |
+| \"hooks\": \[ |
+| |
+| { |
+| |
+| \"type\": \"command\", |
+| |
+| \"command\": \"\~/.claude/hooks/block-dangerous-git.sh\" |
+| |
+| } |
+| |
+| \] |
+| |
+| } |
+| |
+| \] |
+| |
+| } |
+| |
+| } |
 +-----------------------------------------------------------------------+
 
 If the settings file already exists, merge the hook into existing
@@ -363,35 +373,38 @@ patterns from the blocked list.
 
 **5. Verify:**
 
-  -----------------------------------------------------------------------
-  echo \'{\"tool_input\":{\"command\":\"git push origin main\"}}\' \|
-  \<path-to-script\>
+---
 
-  -----------------------------------------------------------------------
+echo \'{\"tool_input\":{\"command\":\"git push origin main\"}}\' \|
+\<path-to-script\>
+
+---
 
 Should exit with code 2 and print a BLOCKED message to stderr.
 
 **/setup-pre-commit**
 
-  ----------------- -------------------------------------------------------
-  **name**          setup-pre-commit
+---
 
-  **description**   Set up Husky pre-commit hooks with lint-staged
-                    (Prettier), type checking, and tests in the current
-                    repo. Use when user wants to add pre-commit hooks, set
-                    up Husky, configure lint-staged, or add commit-time
-                    formatting/typechecking/testing.
-  ----------------- -------------------------------------------------------
+**name** setup-pre-commit
+
+**description** Set up Husky pre-commit hooks with lint-staged
+(Prettier), type checking, and tests in the current
+repo. Use when user wants to add pre-commit hooks, set
+up Husky, configure lint-staged, or add commit-time
+formatting/typechecking/testing.
+
+---
 
 **What This Sets Up**
 
--   Husky pre-commit hook
+- Husky pre-commit hook
 
--   lint-staged running Prettier on all staged files
+- lint-staged running Prettier on all staged files
 
--   Prettier config (if missing)
+- Prettier config (if missing)
 
--   typecheck and test scripts in the pre-commit hook
+- typecheck and test scripts in the pre-commit hook
 
 **Steps**
 
@@ -401,28 +414,30 @@ if unclear.
 
 **2. Install dependencies as devDependencies:**
 
-  -----------------------------------------------------------------------
-  husky lint-staged prettier
+---
 
-  -----------------------------------------------------------------------
+husky lint-staged prettier
+
+---
 
 **3. Initialize Husky:**
 
-  -----------------------------------------------------------------------
-  npx husky init
+---
 
-  -----------------------------------------------------------------------
+npx husky init
+
+---
 
 This creates .husky/ dir and adds prepare: \"husky\" to package.json.
 
 **4. Create .husky/pre-commit (no shebang needed for Husky v9+):**
 
 +-----------------------------------------------------------------------+
-| npx lint-staged                                                       |
-|                                                                       |
-| npm run typecheck                                                     |
-|                                                                       |
-| npm run test                                                          |
+| npx lint-staged |
+| |
+| npm run typecheck |
+| |
+| npm run test |
 +-----------------------------------------------------------------------+
 
 Adapt: Replace npm with detected package manager. If repo has no
@@ -431,46 +446,46 @@ typecheck or test script, omit those lines.
 **5. Create .lintstagedrc:**
 
 +-----------------------------------------------------------------------+
-| {                                                                     |
-|                                                                       |
-| \"\*\": \"prettier \--ignore-unknown \--write\"                       |
-|                                                                       |
-| }                                                                     |
+| { |
+| |
+| \"\*\": \"prettier \--ignore-unknown \--write\" |
+| |
+| } |
 +-----------------------------------------------------------------------+
 
 **6. Create .prettierrc (if missing):**
 
 +-----------------------------------------------------------------------+
-| {                                                                     |
-|                                                                       |
-| \"useTabs\": false,                                                   |
-|                                                                       |
-| \"tabWidth\": 2,                                                      |
-|                                                                       |
-| \"printWidth\": 80,                                                   |
-|                                                                       |
-| \"singleQuote\": false,                                               |
-|                                                                       |
-| \"trailingComma\": \"es5\",                                           |
-|                                                                       |
-| \"semi\": true,                                                       |
-|                                                                       |
-| \"arrowParens\": \"always\"                                           |
-|                                                                       |
-| }                                                                     |
+| { |
+| |
+| \"useTabs\": false, |
+| |
+| \"tabWidth\": 2, |
+| |
+| \"printWidth\": 80, |
+| |
+| \"singleQuote\": false, |
+| |
+| \"trailingComma\": \"es5\", |
+| |
+| \"semi\": true, |
+| |
+| \"arrowParens\": \"always\" |
+| |
+| } |
 +-----------------------------------------------------------------------+
 
 **7. Verify:**
 
--   .husky/pre-commit exists and is executable
+- .husky/pre-commit exists and is executable
 
--   .lintstagedrc exists
+- .lintstagedrc exists
 
--   prepare script in package.json is \"husky\"
+- prepare script in package.json is \"husky\"
 
--   prettier config exists
+- prettier config exists
 
--   Run npx lint-staged to verify it works
+- Run npx lint-staged to verify it works
 
 8\. Commit: Stage all changed/created files and commit with message: Add
 pre-commit hooks (husky + lint-staged + prettier). This will run through
@@ -478,10 +493,10 @@ the new pre-commit hooks --- a good smoke test that everything works.
 
 **Notes**
 
--   Husky v9+ doesn\'t need shebangs in hook files
+- Husky v9+ doesn\'t need shebangs in hook files
 
--   prettier \--ignore-unknown skips files Prettier can\'t parse
-    (images, etc.)
+- prettier \--ignore-unknown skips files Prettier can\'t parse
+  (images, etc.)
 
--   The pre-commit runs lint-staged first (fast, staged-only), then full
-    typecheck and tests
+- The pre-commit runs lint-staged first (fast, staged-only), then full
+  typecheck and tests

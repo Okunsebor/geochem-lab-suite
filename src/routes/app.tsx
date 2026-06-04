@@ -11,7 +11,10 @@ import { mapDbRoleToUi, isEmailConfirmed } from "@/lib/auth-utils";
 
 export const Route = createFileRoute("/app")({
   beforeLoad: async () => {
-    const { data: { session }, error } = await supabase.auth.getSession();
+    const {
+      data: { session },
+      error,
+    } = await supabase.auth.getSession();
     if (error || !session?.user) {
       throw redirect({ to: "/login" });
     }
@@ -67,7 +70,9 @@ function AppLayout() {
               <div className="dna-helix-node" />
               <div className="dna-helix-node" />
             </div>
-            <p className="text-[9px] uppercase font-mono tracking-widest text-primary font-bold">Synchronizing Secure LIMS Session</p>
+            <p className="text-[9px] uppercase font-mono tracking-widest text-primary font-bold">
+              Synchronizing Secure LIMS Session
+            </p>
           </div>
         </div>
       </div>

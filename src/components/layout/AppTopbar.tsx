@@ -1,7 +1,23 @@
-import { 
-  Menu, X, FlaskConical, LayoutDashboard, Workflow, Activity, Settings, 
-  ScanBarcode, Beaker, ShieldCheck, Boxes, ClipboardList, BarChart3, 
-  Users2, HardDrive, LifeBuoy, Bell, FileText, Mail
+import {
+  Menu,
+  X,
+  FlaskConical,
+  LayoutDashboard,
+  Workflow,
+  Activity,
+  Settings,
+  ScanBarcode,
+  Beaker,
+  ShieldCheck,
+  Boxes,
+  ClipboardList,
+  BarChart3,
+  Users2,
+  HardDrive,
+  LifeBuoy,
+  Bell,
+  FileText,
+  Mail,
 } from "lucide-react";
 import type { ComponentType } from "react";
 import { useState } from "react";
@@ -66,13 +82,17 @@ export function AppTopbar() {
   const [showMobileNav, setShowMobileNav] = useState(false);
   const { currentUser } = useLimsState();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  
-  const initials = currentUser?.name?.split(" ").map((x) => x[0]).join("").slice(0, 2) || "US";
+
+  const initials =
+    currentUser?.name
+      ?.split(" ")
+      .map((x) => x[0])
+      .join("")
+      .slice(0, 2) || "US";
 
   return (
     <>
       <header className="sticky top-0 z-30 flex h-14 items-center gap-3 px-4 lg:px-6 glass border-x-0 border-t-0 rounded-none shadow-sm">
-        
         {/* Mobile Hamburger menu */}
         <button
           onClick={() => setShowMobileNav(true)}
@@ -85,7 +105,7 @@ export function AppTopbar() {
         <div className="flex flex-1 items-center gap-3">
           <TopbarSearch />
         </div>
-        
+
         <TopbarNotifications />
         <TopbarUserMenu />
       </header>
@@ -117,8 +137,12 @@ export function AppTopbar() {
                     <FlaskConical className="size-4" />
                   </div>
                   <div className="flex flex-col leading-tight text-left">
-                    <span className="text-sm font-semibold text-sidebar-foreground">GeoChem Suite</span>
-                    <span className="text-[10px] uppercase tracking-wider text-sidebar-foreground/60">LIMS Menu</span>
+                    <span className="text-sm font-semibold text-sidebar-foreground">
+                      GeoChem Suite
+                    </span>
+                    <span className="text-[10px] uppercase tracking-wider text-sidebar-foreground/60">
+                      LIMS Menu
+                    </span>
                   </div>
                 </div>
                 <button
@@ -133,10 +157,14 @@ export function AppTopbar() {
               <nav className="flex-1 overflow-y-auto px-4 py-5 space-y-6 text-left">
                 {nav.map((group) => (
                   <div key={group.label}>
-                    <p className="px-3 pb-1.5 text-[9px] font-semibold uppercase tracking-widest text-sidebar-foreground/40">{group.label}</p>
+                    <p className="px-3 pb-1.5 text-[9px] font-semibold uppercase tracking-widest text-sidebar-foreground/40">
+                      {group.label}
+                    </p>
                     <ul className="space-y-0.5">
                       {group.items.map((item) => {
-                        const active = item.exact ? pathname === item.to : pathname.startsWith(item.to);
+                        const active = item.exact
+                          ? pathname === item.to
+                          : pathname.startsWith(item.to);
                         const Icon = item.icon;
                         return (
                           <li key={item.to}>
@@ -150,7 +178,12 @@ export function AppTopbar() {
                                   : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                               )}
                             >
-                              <Icon className={cn("size-4", active ? "text-primary font-bold" : "text-sidebar-foreground/60")} />
+                              <Icon
+                                className={cn(
+                                  "size-4",
+                                  active ? "text-primary font-bold" : "text-sidebar-foreground/60",
+                                )}
+                              />
                               {item.label}
                             </Link>
                           </li>
@@ -164,10 +197,16 @@ export function AppTopbar() {
               {/* User profile details container at base */}
               <div className="border-t border-sidebar-border p-4 shrink-0 bg-sidebar-accent/15">
                 <div className="flex items-center gap-2.5 rounded-lg bg-sidebar-accent/35 border border-sidebar-border/30 p-2.5">
-                  <div className="grid size-8 place-items-center rounded-full bg-gradient-to-br from-primary to-info text-white text-xs font-bold shrink-0">{initials}</div>
+                  <div className="grid size-8 place-items-center rounded-full bg-gradient-to-br from-primary to-info text-white text-xs font-bold shrink-0">
+                    {initials}
+                  </div>
                   <div className="flex-1 min-w-0 text-left">
-                    <p className="truncate text-xs font-bold text-sidebar-foreground">{currentUser?.name || "Staff User"}</p>
-                    <p className="truncate text-[10px] text-sidebar-foreground/60">{currentUser?.role || "LIMS Technician"}</p>
+                    <p className="truncate text-xs font-bold text-sidebar-foreground">
+                      {currentUser?.name || "Staff User"}
+                    </p>
+                    <p className="truncate text-[10px] text-sidebar-foreground/60">
+                      {currentUser?.role || "LIMS Technician"}
+                    </p>
                   </div>
                 </div>
               </div>
