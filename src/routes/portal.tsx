@@ -44,7 +44,14 @@ export const Route = createFileRoute("/portal")({
       .eq("id", session.user.id)
       .maybeSingle();
 
-    const role = profile ? mapDbRoleToUi(profile.role) : mapDbRoleToUi("customer");
+    const rawRole: string | null =
+      profile?.role ?? session.user.user_metadata?.role ?? null;
+
+    if (!rawRole) {
+      throw redirect({ to: "/login", search: { intent: "portal" } });
+    }
+
+    const role = mapDbRoleToUi(rawRole);
 
     if (role === "Admin") {
       throw redirect({ to: "/app" });

@@ -54,7 +54,11 @@ export function VerifyEmailPage({ initialEmail }: { initialEmail?: string }) {
         .eq("id", active.user.id)
         .maybeSingle();
       if (profile?.role) role = mapDbRoleToUi(profile.role);
-      else if (active.user.user_metadata?.role) role = active.user.user_metadata.role;
+      else if (active.user.user_metadata?.role) {
+        // user_metadata.role is the raw DB string ("admin", "manager", "customer").
+        // Must go through mapDbRoleToUi before being passed to getPortalPathForRole.
+        role = mapDbRoleToUi(active.user.user_metadata.role as string);
+      }
     }
 
     window.setTimeout(() => {

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
 import { useAuth, formatAuthError, getPortalPathForRole } from "../../../hooks/use-auth";
@@ -10,7 +10,7 @@ import { UniPodLogo } from "@/components/branding/UniPodLogo";
 import { DEMO_MODE_ENABLED } from "@/lib/auth-utils";
 
 export function LoginForm({ portalIntent = false }: { portalIntent?: boolean }) {
-  const { login, loginWithGoogle, switchUserRole, currentUser, emailVerified } = useAuth();
+  const { login, loginWithGoogle, switchUserRole } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -20,12 +20,6 @@ export function LoginForm({ portalIntent = false }: { portalIntent?: boolean }) 
   const redirectForRole = async (role: User["role"]) => {
     await navigate({ to: getPortalPathForRole(role) });
   };
-
-  useEffect(() => {
-    if (currentUser && emailVerified) {
-      void redirectForRole(currentUser.role);
-    }
-  }, [currentUser, emailVerified]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
