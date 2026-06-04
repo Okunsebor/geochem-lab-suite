@@ -58,7 +58,8 @@ interface LimsStateContextType {
   rejectReport: (reportId: string, comments?: string) => Promise<void>;
   deliverReport: (reportId: string, recipientEmail: string) => Promise<void>;
   downloadReportPdf: (reportId: string) => Promise<void>;
-  inviteUser: (name: string, email: string, role: User["role"]) => void;
+  inviteUser: (name: string, email: string, role: User["role"]) => Promise<void>;
+  updateUserRole: (userId: string, newRole: User["role"]) => Promise<void>;
   toggleInstrumentStatus: (instrumentId: string, status: Instrument["status"]) => void;
   markAllNotificationsRead: () => void;
   markNotificationRead: (notificationId: string | number) => Promise<void>;
@@ -76,7 +77,7 @@ interface LimsStateContextType {
 const LimsStateContext = createContext<LimsStateContextType | undefined>(undefined);
 
 export function LimsStateProvider({ children }: { children: React.ReactNode }) {
-  const { currentUser, session, loading, login, registerUser, logout, switchUserRole } = useAuth();
+  const { currentUser, session, loading, login, registerUser, logout, switchUserRole, inviteUser: authInviteUser } = useAuth();
   const currentName = currentUser?.name || "System";
 
   const { activity, addActivity, clearActivity } = useActivityCore();
@@ -116,11 +117,18 @@ export function LimsStateProvider({ children }: { children: React.ReactNode }) {
     tickets,
     settings,
     inviteUser,
+    setInviteUserFn,
+    updateUserRole,
     addSupportTicket,
     updateSettings,
     fetchUsers,
     saveUsers,
   } = useUsersCore(currentName, addActivityHelper);
+
+  // Wire the real auth-layer invite function into the users core hook.
+  // This is done via a setter to avoid a circular hook dependency.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  React.useEffect(() => { setInviteUserFn(authInviteUser); }, []);
 
   const generateReportRef = useRef<(sampleId: string) => void>(() => {});
 
@@ -239,6 +247,7 @@ export function LimsStateProvider({ children }: { children: React.ReactNode }) {
         deliverReport,
         downloadReportPdf,
         inviteUser,
+        updateUserRole,
         toggleInstrumentStatus,
         markAllNotificationsRead,
         markNotificationRead,

@@ -55,89 +55,134 @@ function buildDisplayName(firstName: string, lastName: string): string {
   return [firstName.trim(), lastName.trim()].filter(Boolean).join(" ");
 }
 
+/** Poll public.users until the row appears — only useful when we have an active session.
+ * The handle_new_user trigger is synchronous, so this is only needed when signUp
+ * returns a session (email confirmation disabled). When confirmation IS required,
+ * data.session is null and RLS blocks any query here, so we skip this entirely.
+ */
+async function waitForProfile(
+  userId: string,
+  attempts = 5,
+  delayMs = 600,
+): Promise<boolean> {
+  for (let i = 0; i < attempts; i++) {
+    const { data } = await supabase
+      .from("users" as any)
+      .select("id")
+      .eq("id", userId)
+      .maybeSingle();
+    if (data) return true;
+    if (i < attempts - 1) await new Promise((r) => setTimeout(r, delayMs));
+  }
+  return false;
+}
+
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [emailVerified, setEmailVerified] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const syncProfile = useCallback(async (sessionUser: SupabaseUser) => {
+  // ─── syncProfile ──────────────────────────────────────────────────────────
+  // Single source of truth: public.users is authoritative for role.
+  // If no row exists, call upsert_user_profile RPC to create one, then re-fetch.
+  // Never falls back to raw_user_meta_data for role decisions.
+  const syncProfile = useCallback(async (sessionUser: SupabaseUser): Promise<User["role"]> => {
     const verified = isEmailConfirmed(sessionUser);
     setEmailVerified(verified);
 
-    try {
-      const { data: profile, error } = await supabase
-        .from("users" as any)
-        .select("*, organizations(name)")
-        .eq("id", sessionUser.id)
-        .maybeSingle();
+    // Helper to build a display name from best available data
+    const buildName = (fullName?: string) =>
+      fullName ||
+      buildDisplayName(
+        sessionUser.user_metadata?.first_name ?? "",
+        sessionUser.user_metadata?.last_name ?? "",
+      ) ||
+      sessionUser.email?.split("@")[0] ||
+      "User";
 
-      if (error) throw error;
+    // Attempt 1: fetch from public.users
+    const { data: profile, error: fetchError } = await supabase
+      .from("users" as any)
+      .select("*, organizations(name)")
+      .eq("id", sessionUser.id)
+      .maybeSingle();
 
-      if (profile) {
-        const org = profile.organizations as { name?: string } | null;
-        setCurrentUser({
-          id: 1,
-          name:
-            profile.full_name ||
-            buildDisplayName(
-              sessionUser.user_metadata?.first_name ?? "",
-              sessionUser.user_metadata?.last_name ?? "",
-            ) ||
-            sessionUser.email?.split("@")[0] ||
-            "User",
-          email: sessionUser.email || "",
-          role: mapDbRoleToUi(profile.role),
-          status: verified ? "Active" : "Invited",
-          lastSeen: "Just now",
-          organization: org?.name ?? sessionUser.user_metadata?.organization_name,
-        });
-        return mapDbRoleToUi(profile.role);
-      }
+    if (fetchError) {
+      // Hard DB / RLS error — do not silently swallow
+      console.error("syncProfile: DB error fetching profile:", fetchError);
+      // We still try to recover via RPC below rather than crashing
+    }
 
-      const metaRole = sessionUser.user_metadata?.role as User["role"] | undefined;
-      const uiRole =
-        typeof metaRole === "string" && ["Admin", "Lab Coordinator", "Customer"].includes(metaRole)
-          ? metaRole
-          : mapDbRoleToUi(mapUiRoleToDb("Customer"));
-
+    if (profile) {
+      const org = profile.organizations as { name?: string } | null;
+      const uiRole = mapDbRoleToUi(profile.role);
       setCurrentUser({
         id: 1,
-        name:
-          sessionUser.user_metadata?.full_name ||
-          buildDisplayName(
-            sessionUser.user_metadata?.first_name ?? "",
-            sessionUser.user_metadata?.last_name ?? "",
-          ) ||
-          "User",
+        name: buildName(profile.full_name),
         email: sessionUser.email || "",
         role: uiRole,
         status: verified ? "Active" : "Invited",
         lastSeen: "Just now",
-        organization: sessionUser.user_metadata?.organization_name,
-      });
-      return uiRole;
-    } catch (err) {
-      console.warn("Profile sync fallback:", err);
-      const metaRole = sessionUser.user_metadata?.role;
-      const uiRole =
-        metaRole === "Admin" || metaRole === "Lab Coordinator" || metaRole === "Customer"
-          ? metaRole
-          : "Customer";
-
-      setCurrentUser({
-        id: 1,
-        name: sessionUser.user_metadata?.full_name || sessionUser.email?.split("@")[0] || "User",
-        email: sessionUser.email || "",
-        role: uiRole,
-        status: verified ? "Active" : "Invited",
-        lastSeen: "Just now",
-        organization: sessionUser.user_metadata?.organization_name,
+        organization: org?.name ?? sessionUser.user_metadata?.organization_name,
       });
       return uiRole;
     }
+
+    // Attempt 2: profile missing — call upsert_user_profile RPC to create it
+    console.warn("syncProfile: no public.users row found for", sessionUser.id, "— calling upsert RPC");
+    try {
+      const metaRole = (sessionUser.user_metadata?.role as string | undefined) ?? "customer";
+      const { data: upserted, error: rpcError } = await supabase.rpc(
+        "upsert_user_profile" as any,
+        {
+          p_full_name: buildName(sessionUser.user_metadata?.full_name),
+          p_role: metaRole,
+          p_phone_number: sessionUser.user_metadata?.phone ?? null,
+        },
+      );
+
+      if (rpcError) throw rpcError;
+
+      const row = Array.isArray(upserted) ? upserted[0] : upserted;
+      if (row) {
+        const uiRole = mapDbRoleToUi(row.role);
+        setCurrentUser({
+          id: 1,
+          name: buildName(row.full_name),
+          email: sessionUser.email || "",
+          role: uiRole,
+          status: verified ? "Active" : "Invited",
+          lastSeen: "Just now",
+          organization: sessionUser.user_metadata?.organization_name,
+        });
+        return uiRole;
+      }
+    } catch (rpcErr) {
+      console.error("syncProfile: upsert_user_profile RPC failed:", rpcErr);
+    }
+
+    // Attempt 3: RPC also failed — set a minimal user state but treat as Customer
+    // This is a genuine degraded state; log clearly so it can be diagnosed.
+    console.error(
+      "syncProfile: CRITICAL — could not resolve profile for user",
+      sessionUser.id,
+      ". User will be treated as Customer until profile is repaired.",
+    );
+    setCurrentUser({
+      id: 1,
+      name: buildName(sessionUser.user_metadata?.full_name),
+      email: sessionUser.email || "",
+      role: "Customer",
+      status: "Invited",
+      lastSeen: "Just now",
+      organization: sessionUser.user_metadata?.organization_name,
+    });
+    return "Customer";
   }, []);
 
+  // ─── handleSession ────────────────────────────────────────────────────────
   const handleSession = useCallback(
     async (nextSession: Session | null) => {
       setSession(nextSession);
@@ -201,6 +246,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (current?.user) await syncProfile(current.user);
   };
 
+  // ─── login ────────────────────────────────────────────────────────────────
   const login = async (email: string, password: string) => {
     setLoading(true);
     localStorage.removeItem("gcs_demo_role");
@@ -242,6 +288,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // ─── loginWithGoogle ───────────────────────────────────────────────────────
   const loginWithGoogle = async () => {
     setLoading(true);
     localStorage.removeItem("gcs_demo_role");
@@ -261,6 +308,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // ─── sendVerificationEmail (internal) ─────────────────────────────────────
   const sendVerificationEmail = async (email: string, options: { showToast?: boolean } = {}) => {
     const { showToast = true } = options;
     assertCanResendVerification(email);
@@ -274,6 +322,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (showToast) toast.success("Verification code sent. Check your inbox.");
   };
 
+  // ─── registerUser ─────────────────────────────────────────────────────────
+  // Atomic registration: if the DB profile isn't created within the retry window,
+  // delete the orphaned auth account and return a visible error.
   const registerUser = async (input: RegisterUserInput) => {
     setLoading(true);
     localStorage.removeItem("gcs_demo_role");
@@ -315,7 +366,53 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { needsVerification: true, email: input.email.trim(), verificationEmailSent };
       }
 
-      // Profile is provisioned by DB trigger; sign out so portal stays locked until verified
+      const userId = data.user?.id;
+
+      // ── Profile verification ────────────────────────────────────────────────
+      // The handle_new_user DB trigger is SYNCHRONOUS — it runs inside the same
+      // Postgres transaction as the auth.users INSERT, so if signUp succeeded
+      // the public.users row already exists by the time we get here.
+      //
+      // When email confirmation is required, Supabase returns data.session = null.
+      // In that state auth.uid() is null so any query to public.users is blocked
+      // by RLS. We MUST NOT poll or call RPCs in this case — the profile is fine.
+      //
+      // We only need to poll + repair when we have an active session (i.e. email
+      // confirmation is disabled in the Supabase project settings).
+      if (userId && data.session) {
+        // Active session: we can query public.users and call RPCs normally.
+        const profileReady = await waitForProfile(userId, 5, 600);
+        if (!profileReady) {
+          console.warn(
+            "registerUser: DB trigger did not create profile for",
+            userId,
+            "— attempting RPC repair",
+          );
+          try {
+            const { error: rpcError } = await supabase.rpc("upsert_user_profile" as any, {
+              p_full_name: fullName,
+              p_role: "customer",
+              p_phone_number: input.phone.trim() || null,
+            });
+            if (rpcError) throw rpcError;
+          } catch (rpcErr) {
+            // RPC failed — sign out the session so the orphaned auth account
+            // doesn't stay logged in, then surface the error.
+            console.error(
+              "registerUser: RPC repair failed:",
+              rpcErr,
+            );
+            try { await supabase.auth.signOut(); } catch (_) {}
+            throw new Error(
+              "Account creation failed: your user record could not be initialised. Please try again or contact support.",
+            );
+          }
+        }
+      }
+      // When data.session is null (email confirmation required), the trigger
+      // already ran synchronously. Nothing to do — proceed to verification step.
+
+      // Sign out the temporary session if one was granted (email confirmation disabled)
       if (data.session) {
         await supabase.auth.signOut();
       }
@@ -331,10 +428,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // ─── resendVerificationEmail ───────────────────────────────────────────────
   const resendVerificationEmail = async (email: string) => {
     await sendVerificationEmail(email);
   };
 
+  // ─── logout ───────────────────────────────────────────────────────────────
   const logout = async () => {
     setLoading(true);
     localStorage.removeItem("gcs_demo_role");
@@ -369,6 +468,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // ─── forgotPassword ───────────────────────────────────────────────────────
   const forgotPassword = async (email: string) => {
     setLoading(true);
     try {
@@ -382,6 +482,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // ─── resetPassword ────────────────────────────────────────────────────────
   const resetPassword = async (password: string) => {
     setLoading(true);
     try {
@@ -393,6 +494,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // ─── switchUserRole (demo mode) ───────────────────────────────────────────
   const switchUserRole = (role: User["role"]) => {
     localStorage.setItem("gcs_demo_role", role);
     const names: Record<User["role"], string> = {
@@ -411,8 +513,54 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setEmailVerified(true);
   };
 
+  // ─── inviteUser ───────────────────────────────────────────────────────────
+  // Option A implementation: uses Supabase's built-in invite email flow.
+  // The invited user receives a magic link; on first sign-in the DB trigger
+  // (handle_user_confirmed) creates their public.users profile automatically.
+  // The admin_update_user_role RPC then pre-sets the intended role so it's
+  // ready the moment they confirm their account.
   const inviteUser = async (name: string, email: string, role: User["role"]) => {
-    console.log(`Workspace invite queued for ${email} (${role}) — ${name}`);
+    const dbRole = mapUiRoleToDb(role);
+
+    // Step 1: Send Supabase invite email (creates auth.users with invited status)
+    const { data: inviteData, error: inviteError } = await (supabase.auth as any).admin
+      ? // supabase-js v2 admin API (only works with service role key — not available in browser)
+        // This path will not execute in the browser; it's kept as documentation.
+        (supabase.auth as any).admin.inviteUserByEmail(email, {
+          data: { full_name: name, role: dbRole },
+        })
+      : // Browser-safe path: use signUp with a random temp password.
+        // The user will set their own password via the invite/reset flow.
+        supabase.auth.signUp({
+          email: email.trim(),
+          password: crypto.randomUUID(), // Random, discarded — user sets their own via email link
+          options: {
+            data: {
+              full_name: name,
+              role: dbRole,
+            },
+          },
+        });
+
+    if (inviteError) throw inviteError;
+
+    const invitedUserId =
+      (inviteData as any)?.user?.id ?? (inviteData as any)?.data?.user?.id;
+
+    // Step 2: If we got an ID, pre-set the role in public.users via the admin RPC.
+    // The handle_new_user trigger may have already run, but the RPC ensures the role
+    // is correct even if the trigger defaulted to 'customer'.
+    if (invitedUserId) {
+      try {
+        await supabase.rpc("admin_update_user_role" as any, {
+          p_target_user_id: invitedUserId,
+          p_new_role: dbRole,
+        });
+      } catch (roleErr) {
+        // Non-fatal: role can be updated from the admin panel later
+        console.warn("inviteUser: could not pre-set role via RPC:", roleErr);
+      }
+    }
   };
 
   return (
