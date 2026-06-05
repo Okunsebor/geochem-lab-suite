@@ -74,6 +74,7 @@ const nav = [
 
 function PortalLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const resolvedPathname = useRouterState({ select: (s) => (s.resolvedLocation || s.location).pathname });
   const { currentUser, loading, logout } = useAuth();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
@@ -331,11 +332,10 @@ function PortalLayout() {
 
       <main className="flex-1 mx-auto max-w-7xl w-full px-6 py-8 overflow-x-hidden">
         <motion.div
-          key={pathname}
+          key={resolvedPathname}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.28, ease: [0.25, 1, 0.5, 1] }}
-          className="will-change-[transform,opacity]"
+          transition={{ duration: 0 }}
         >
           <Outlet />
         </motion.div>

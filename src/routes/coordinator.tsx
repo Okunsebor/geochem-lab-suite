@@ -52,7 +52,7 @@ export const Route = createFileRoute("/coordinator")({
 
 function CoordinatorLayout() {
   const { currentUser, loading } = useAuth();
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const pathname = useRouterState({ select: (s) => (s.resolvedLocation || s.location).pathname });
 
   if (loading) {
     return (
@@ -76,7 +76,7 @@ function CoordinatorLayout() {
             key={pathname}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.28 }}
+            transition={{ duration: 0 }}
           >
             <Outlet />
           </motion.div>

@@ -55,7 +55,7 @@ export const Route = createFileRoute("/app")({
 
 function AppLayout() {
   const { currentUser, loading } = useAuth();
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const pathname = useRouterState({ select: (s) => (s.resolvedLocation || s.location).pathname });
 
   useEffect(() => {
     supabaseHelpers.healthCheck();
@@ -102,8 +102,7 @@ function AppLayout() {
             key={pathname}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.28, ease: [0.25, 1, 0.5, 1] }}
-            className="will-change-[transform,opacity]"
+            transition={{ duration: 0 }}
           >
             <Outlet />
           </motion.div>
