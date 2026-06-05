@@ -5,7 +5,6 @@ import { User } from "../types";
 import { toast } from "sonner";
 import {
   assertCanResendVerification,
-  DEMO_MODE_ENABLED,
   formatAuthError,
   isEmailConfirmed,
   mapDbRoleToUi,
@@ -44,7 +43,6 @@ interface AuthContextType {
   resendVerificationEmail: (email: string) => Promise<void>;
   getResendCooldown: (email: string) => number;
 
-  switchUserRole: (role: User["role"]) => void;
   inviteUser: (name: string, email: string, role: User["role"]) => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
@@ -188,27 +186,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(nextSession);
       if (nextSession?.user) {
         await syncProfile(nextSession.user);
-      } else if (DEMO_MODE_ENABLED) {
-        const demoRole = localStorage.getItem("gcs_demo_role") as User["role"] | null;
-        if (demoRole) {
-          const names: Record<User["role"], string> = {
-            Admin: "Adaeze Nwosu",
-            "Lab Coordinator": "M. Rivera",
-            Customer: "Jane Smith",
-          };
-          setCurrentUser({
-            id: 1,
-            name: names[demoRole] || "Demo User",
-            email: `${demoRole.toLowerCase().replace(/\s+/g, "")}@geochem.io`,
-            role: demoRole,
-            status: "Active",
-            lastSeen: "Just now",
-          });
-          setEmailVerified(true);
-        } else {
-          setCurrentUser(null);
-          setEmailVerified(false);
-        }
       } else {
         setCurrentUser(null);
         setEmailVerified(false);
@@ -249,7 +226,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // ─── login ────────────────────────────────────────────────────────────────
   const login = async (email: string, password: string) => {
     setLoading(true);
-    localStorage.removeItem("gcs_demo_role");
     try {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
@@ -291,7 +267,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // ─── loginWithGoogle ───────────────────────────────────────────────────────
   const loginWithGoogle = async () => {
     setLoading(true);
-    localStorage.removeItem("gcs_demo_role");
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
@@ -327,7 +302,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // delete the orphaned auth account and return a visible error.
   const registerUser = async (input: RegisterUserInput) => {
     setLoading(true);
-    localStorage.removeItem("gcs_demo_role");
     try {
       const fullName = buildDisplayName(input.firstName, input.lastName);
       const { data, error } = await supabase.auth.signUp({
@@ -436,7 +410,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // ─── logout ───────────────────────────────────────────────────────────────
   const logout = async () => {
     setLoading(true);
-    localStorage.removeItem("gcs_demo_role");
     try {
       // Auth audit (best-effort)
       try {
@@ -494,62 +467,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // ─── switchUserRole (demo mode) ───────────────────────────────────────────
-  const switchUserRole = (role: User["role"]) => {
-    localStorage.setItem("gcs_demo_role", role);
-    const names: Record<User["role"], string> = {
-      Admin: "Adaeze Nwosu",
-      "Lab Coordinator": "M. Rivera",
-      Customer: "Jane Smith",
-    };
-    setCurrentUser({
-      id: 1,
-      name: names[role] || "Demo User",
-      email: `${role.toLowerCase().replace(/\s+/g, "")}@geochem.io`,
-      role,
-      status: "Active",
-      lastSeen: "Just now",
-    });
-    setEmailVerified(true);
-  };
-
   // ─── inviteUser ───────────────────────────────────────────────────────────
-  // Option A implementation: uses Supabase's built-in invite email flow.
-  // The invited user receives a magic link; on first sign-in the DB trigger
-  // (handle_user_confirmed) creates their public.users profile automatically.
-  // The admin_update_user_role RPC then pre-sets the intended role so it's
-  // ready the moment they confirm their account.
   const inviteUser = async (name: string, email: string, role: User["role"]) => {
+    if (currentUser?.role !== "Admin") {
+      throw new Error("Only an Admin can invite new users.");
+    }
+
     const dbRole = mapUiRoleToDb(role);
 
-    // Step 1: Send Supabase invite email (creates auth.users with invited status)
-    const { data: inviteData, error: inviteError } = await (supabase.auth as any).admin
-      ? // supabase-js v2 admin API (only works with service role key — not available in browser)
-        // This path will not execute in the browser; it's kept as documentation.
-        (supabase.auth as any).admin.inviteUserByEmail(email, {
-          data: { full_name: name, role: dbRole },
-        })
-      : // Browser-safe path: use signUp with a random temp password.
-        // The user will set their own password via the invite/reset flow.
-        supabase.auth.signUp({
-          email: email.trim(),
-          password: crypto.randomUUID(), // Random, discarded — user sets their own via email link
-          options: {
-            data: {
-              full_name: name,
-              role: dbRole,
-            },
-          },
-        });
+    const { data: inviteData, error: inviteError } = await supabase.auth.signUp({
+      email: email.trim(),
+      password: crypto.randomUUID(), // Random, discarded — user sets their own via email link
+      options: {
+        data: {
+          full_name: name,
+          role: dbRole,
+        },
+      },
+    });
 
     if (inviteError) throw inviteError;
 
     const invitedUserId =
       (inviteData as any)?.user?.id ?? (inviteData as any)?.data?.user?.id;
 
-    // Step 2: If we got an ID, pre-set the role in public.users via the admin RPC.
-    // The handle_new_user trigger may have already run, but the RPC ensures the role
-    // is correct even if the trigger defaulted to 'customer'.
     if (invitedUserId) {
       try {
         await supabase.rpc("admin_update_user_role" as any, {
@@ -557,9 +498,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           p_new_role: dbRole,
         });
       } catch (roleErr) {
-        // Non-fatal: role can be updated from the admin panel later
         console.warn("inviteUser: could not pre-set role via RPC:", roleErr);
       }
+    }
+
+    // Trigger the setup invite via password reset
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    if (resetError) {
+      console.warn("inviteUser: could not send setup invite:", resetError);
+      // We don't throw here to avoid failing the whole invite process if only the email fails.
     }
   };
 
@@ -579,7 +528,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         resendVerificationEmail,
         getResendCooldown: getVerificationResendCooldown,
 
-        switchUserRole,
         inviteUser,
         refreshProfile,
       }}

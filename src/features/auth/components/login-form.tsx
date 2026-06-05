@@ -7,10 +7,9 @@ import { toast } from "sonner";
 import { getVerifyEmailPath } from "@/lib/auth-routes";
 import type { User } from "@/types";
 import { UniPodLogo } from "@/components/branding/UniPodLogo";
-import { DEMO_MODE_ENABLED } from "@/lib/auth-utils";
 
 export function LoginForm({ portalIntent = false }: { portalIntent?: boolean }) {
-  const { login, loginWithGoogle, switchUserRole } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -43,27 +42,6 @@ export function LoginForm({ portalIntent = false }: { portalIntent?: boolean }) 
     }
   };
 
-  const handleRoleEnter = async (role: User["role"]) => {
-    if (!DEMO_MODE_ENABLED) return;
-    const roleEmails: Record<User["role"], string> = {
-      Admin: "adaeze@geochem.io",
-      "Lab Coordinator": "m.rivera@geochem.io",
-      Customer: "jane@auricmining.com",
-    };
-
-    setLoading(true);
-    try {
-      const { role: resolvedRole } = await login(roleEmails[role], "password123");
-      toast.success(`Signed in as ${resolvedRole}`);
-      await redirectForRole(resolvedRole);
-    } catch {
-      switchUserRole(role);
-      toast.info(`Development sandbox: ${role}`);
-      await redirectForRole(role);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
@@ -173,26 +151,7 @@ export function LoginForm({ portalIntent = false }: { portalIntent?: boolean }) 
         </Link>
       </p>
 
-      {DEMO_MODE_ENABLED && (
-        <div className="mt-6 pt-6 border-t border-border space-y-3">
-          <p className="text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-            Developer Sandbox Access
-          </p>
-          <div className="grid grid-cols-3 gap-2">
-            {(["Admin", "Lab Coordinator", "Customer"] as const).map((r) => (
-              <button
-                key={r}
-                type="button"
-                onClick={() => handleRoleEnter(r)}
-                disabled={loading}
-                className="px-2 py-1.5 rounded bg-primary/10 hover:bg-primary/20 text-[10px] font-bold text-primary transition cursor-pointer text-center"
-              >
-                {r}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+
     </div>
   );
 }

@@ -63,7 +63,6 @@ interface LimsStateContextType {
   toggleInstrumentStatus: (instrumentId: string, status: Instrument["status"]) => void;
   markAllNotificationsRead: () => void;
   markNotificationRead: (notificationId: string | number) => Promise<void>;
-  switchUserRole: (role: User["role"]) => void;
   verifySample: (sampleId: string, notes: string, storageLocation: string) => Promise<void>;
   rejectSample: (sampleId: string, reason: string) => Promise<void>;
   assignStorageLocation: (sampleId: string, location: string) => Promise<void>;
@@ -77,7 +76,7 @@ interface LimsStateContextType {
 const LimsStateContext = createContext<LimsStateContextType | undefined>(undefined);
 
 export function LimsStateProvider({ children }: { children: React.ReactNode }) {
-  const { currentUser, session, loading, login, registerUser, logout, switchUserRole, inviteUser: authInviteUser } = useAuth();
+  const { currentUser, session, loading, login, registerUser, logout, inviteUser: authInviteUser } = useAuth();
   const currentName = currentUser?.name || "System";
 
   const { activity, addActivity, clearActivity } = useActivityCore();
@@ -251,7 +250,6 @@ export function LimsStateProvider({ children }: { children: React.ReactNode }) {
         toggleInstrumentStatus,
         markAllNotificationsRead,
         markNotificationRead,
-        switchUserRole,
         verifySample,
         rejectSample,
         assignStorageLocation,
