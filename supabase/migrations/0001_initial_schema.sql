@@ -1,11 +1,22 @@
 -- 0001_initial_schema.sql
 -- GeoChem LIMS Initial Database Schema
 
--- 1. ENUMS
-CREATE TYPE user_role AS ENUM ('admin', 'manager', 'technician', 'customer');
-CREATE TYPE sample_status AS ENUM ('Received', 'Verified', 'In Preparation', 'In Analysis', 'Completed', 'Report Ready');
-CREATE TYPE priority_level AS ENUM ('Standard', 'Rush', 'Urgent');
-CREATE TYPE qa_status AS ENUM ('Pending', 'Passed', 'Failed', 'Retest');
+-- 1. ENUMS (idempotent – safe to re-run on an existing database)
+DO $$ BEGIN
+  CREATE TYPE user_role AS ENUM ('admin', 'manager', 'technician', 'customer');
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE TYPE sample_status AS ENUM ('Received', 'Verified', 'In Preparation', 'In Analysis', 'Completed', 'Report Ready');
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE TYPE priority_level AS ENUM ('Standard', 'Rush', 'Urgent');
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE TYPE qa_status AS ENUM ('Pending', 'Passed', 'Failed', 'Retest');
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- 2. TABLES
 
