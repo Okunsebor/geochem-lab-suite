@@ -78,6 +78,7 @@ CREATE POLICY "report_logs_delete" ON public.report_logs FOR DELETE USING ((SELE
 -- ─────────────────────────────────────────────
 -- AUDIT TRIGGER LINKAGE
 -- ─────────────────────────────────────────────
+DROP TRIGGER IF EXISTS audit_reports_changes ON public.reports;
 CREATE TRIGGER audit_reports_changes
     AFTER INSERT OR UPDATE OR DELETE ON public.reports
     FOR EACH ROW EXECUTE FUNCTION public.process_audit_log();

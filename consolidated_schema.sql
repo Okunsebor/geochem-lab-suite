@@ -146,10 +146,12 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Create triggers for critical tables
+DROP TRIGGER IF EXISTS audit_samples_changes ON public.samples;
 CREATE TRIGGER audit_samples_changes
     AFTER INSERT OR UPDATE OR DELETE ON public.samples
     FOR EACH ROW EXECUTE FUNCTION public.process_audit_log();
 
+DROP TRIGGER IF EXISTS audit_analytical_results_changes ON public.analytical_results;
 CREATE TRIGGER audit_analytical_results_changes
     AFTER INSERT OR UPDATE OR DELETE ON public.analytical_results
     FOR EACH ROW EXECUTE FUNCTION public.process_audit_log();
@@ -522,6 +524,7 @@ CREATE POLICY "report_logs_delete" ON public.report_logs FOR DELETE USING ((SELE
 -- ─────────────────────────────────────────────
 -- AUDIT TRIGGER LINKAGE
 -- ─────────────────────────────────────────────
+DROP TRIGGER IF EXISTS audit_reports_changes ON public.reports;
 CREATE TRIGGER audit_reports_changes
     AFTER INSERT OR UPDATE OR DELETE ON public.reports
     FOR EACH ROW EXECUTE FUNCTION public.process_audit_log();
