@@ -190,6 +190,7 @@ export function useSamplesCore(
           const { error: sampleErr } = await supabase.from("samples").insert({
             id: newSampleId,
             client_org_id: sampleData.client === "Barrick Gold" ? "org-barrick" : "org-auric",
+            client_name: sampleData.client,
             project_name: sampleData.project,
             sample_type: sampleData.type,
             status: "Received",
@@ -197,6 +198,7 @@ export function useSamplesCore(
             priority: sampleData.priority,
             storage_location: sampleData.location,
             registered_by_user_id: currentUser?.id?.toString() || "1",
+            technician: currentName,
             matrix: newSample.matrix,
             container: newSample.container,
             received_from: newSample.receivedFrom,
