@@ -11,7 +11,7 @@
 
 -- 1. ENUMS
 CREATE TYPE user_role AS ENUM ('admin', 'manager', 'technician', 'customer');
-CREATE TYPE sample_status AS ENUM ('Received', 'Prep', 'Analysis', 'Verified', 'Completed', 'Report Ready');
+CREATE TYPE sample_status AS ENUM ('Received', 'Verified', 'In Preparation', 'In Analysis', 'Completed', 'Report Ready');
 CREATE TYPE priority_level AS ENUM ('Standard', 'Rush', 'Urgent');
 CREATE TYPE qa_status AS ENUM ('Pending', 'Passed', 'Failed', 'Retest');
 
@@ -50,6 +50,8 @@ CREATE TABLE public.samples (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     project_id UUID REFERENCES public.projects(id) ON DELETE CASCADE,
     registered_by UUID REFERENCES public.users(id),
+    tracking_code VARCHAR(100) UNIQUE,
+    barcode_id VARCHAR(100) UNIQUE,
     sample_type VARCHAR(100) NOT NULL,
     matrix VARCHAR(100) NOT NULL,
     container VARCHAR(100),
@@ -153,81 +155,6 @@ ALTER TABLE public.sample_notes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.analytical_results ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
 
--- Organizations: users can read their own organization, managers/admins can read all
-CREATE POLICY "Users can view their own organization"
-ON public.organizations FOR SELECT
-USING (id = (SELECT organization_id FROM public.users WHERE users.id = auth.uid()));
-
-CREATE POLICY "Admins and Managers can view all organizations"
-ON public.organizations FOR SELECT
-USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin', 'manager'));
-
--- Users: view own profile, or if admin/manager view all
-CREATE POLICY "Users can view their own profile"
-ON public.users FOR SELECT
-USING (id = auth.uid());
-
-CREATE POLICY "Admins and Managers can view all users"
-ON public.users FOR SELECT
-USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin', 'manager'));
-
-CREATE POLICY "Admins can update user roles"
-ON public.users FOR UPDATE
-USING ((SELECT role FROM public.users WHERE id = auth.uid()) = 'admin');
-
--- Projects: Customers can view projects for their org, lab staff can view all
-CREATE POLICY "Customers view org projects"
-ON public.projects FOR SELECT
-USING (organization_id = (SELECT organization_id FROM public.users WHERE users.id = auth.uid()));
-
-CREATE POLICY "Lab staff view all projects"
-ON public.projects FOR SELECT
-USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin', 'manager', 'technician'));
-
--- Samples: Customers view org samples, lab staff view/update all
-CREATE POLICY "Customers view org samples"
-ON public.samples FOR SELECT
-USING (project_id IN (SELECT id FROM public.projects WHERE organization_id = (SELECT organization_id FROM public.users WHERE users.id = auth.uid())));
-
-CREATE POLICY "Lab staff view all samples"
-ON public.samples FOR SELECT
-USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin', 'manager', 'technician'));
-
-CREATE POLICY "Lab staff can insert/update samples"
-ON public.samples FOR ALL
-USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin', 'manager', 'technician'));
-
--- Custody Logs: Lab staff only can manage, customers can view for their samples
-CREATE POLICY "Customers view org custody logs"
-ON public.custody_logs FOR SELECT
-USING (sample_id IN (SELECT id FROM public.samples WHERE project_id IN (SELECT id FROM public.projects WHERE organization_id = (SELECT organization_id FROM public.users WHERE users.id = auth.uid()))));
-
-CREATE POLICY "Lab staff manage custody logs"
-ON public.custody_logs FOR ALL
-USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin', 'manager', 'technician'));
-
--- Sample Notes
-CREATE POLICY "Customers view org sample notes"
-ON public.sample_notes FOR SELECT
-USING (sample_id IN (SELECT id FROM public.samples WHERE project_id IN (SELECT id FROM public.projects WHERE organization_id = (SELECT organization_id FROM public.users WHERE users.id = auth.uid()))));
-
-CREATE POLICY "Lab staff manage sample notes"
-ON public.sample_notes FOR ALL
-USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin', 'manager', 'technician'));
-
--- Analytical Results: Customers view verified/completed only, lab staff all
-CREATE POLICY "Customers view passed/completed analytical results"
-ON public.analytical_results FOR SELECT
-USING (qa_status = 'Passed' AND sample_id IN (SELECT id FROM public.samples WHERE project_id IN (SELECT id FROM public.projects WHERE organization_id = (SELECT organization_id FROM public.users WHERE users.id = auth.uid()))));
-
-CREATE POLICY "Lab staff view and manage analytical results"
-ON public.analytical_results FOR ALL
-USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin', 'manager', 'technician'));
-
--- Audit Logs: Admin/Manager only
-CREATE POLICY "Admins and Managers can view audit logs"
-ON public.audit_logs FOR SELECT
-USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin', 'manager'));
 
 
 -- ==========================================
@@ -245,7 +172,7 @@ ALTER TABLE public.samples ADD COLUMN IF NOT EXISTS verification_notes TEXT;
 -- 2. Create sample_attachments table
 CREATE TABLE IF NOT EXISTS public.sample_attachments (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    sample_id VARCHAR(100) NOT NULL, -- Matches UI custom serial string (e.g. GCS-24001)
+    sample_id UUID NOT NULL REFERENCES public.samples(id) ON DELETE CASCADE,
     name VARCHAR(255) NOT NULL,
     file_path TEXT NOT NULL,
     size_bytes BIGINT,
@@ -260,23 +187,20 @@ ALTER TABLE public.sample_attachments ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Customers view org sample attachments"
 ON public.sample_attachments FOR SELECT
 USING (sample_id IN (
-    SELECT id::text FROM public.samples 
+    SELECT id FROM public.samples 
     WHERE project_id IN (
         SELECT id FROM public.projects 
-        WHERE organization_id = (
-            SELECT organization_id FROM public.users 
-            WHERE users.id = auth.uid()
-        )
+        WHERE organization_id = public.current_user_org_id()
     )
 ));
 
 CREATE POLICY "Lab staff view all attachments"
 ON public.sample_attachments FOR SELECT
-USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin', 'manager', 'technician'));
+USING (public.is_lab_coordinator());
 
 CREATE POLICY "Lab staff manage sample attachments"
 ON public.sample_attachments FOR ALL
-USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin', 'manager', 'technician'));
+USING (public.is_lab_coordinator());
 
 
 -- ==========================================
@@ -378,16 +302,6 @@ CREATE TRIGGER trg_prep_job_updated_at
 ALTER TABLE preparation_jobs  ENABLE ROW LEVEL SECURITY;
 ALTER TABLE preparation_steps ENABLE ROW LEVEL SECURITY;
 
--- Explicit lab staff policies for prep records
-CREATE POLICY "prep_jobs_select" ON preparation_jobs FOR SELECT USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin','manager','technician'));
-CREATE POLICY "prep_jobs_insert" ON preparation_jobs FOR INSERT WITH CHECK ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin','manager','technician'));
-CREATE POLICY "prep_jobs_update" ON preparation_jobs FOR UPDATE USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin','manager','technician'));
-CREATE POLICY "prep_jobs_delete" ON preparation_jobs FOR DELETE USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin','manager','technician'));
-
-CREATE POLICY "prep_steps_select" ON preparation_steps FOR SELECT USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin','manager','technician'));
-CREATE POLICY "prep_steps_insert" ON preparation_steps FOR INSERT WITH CHECK ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin','manager','technician'));
-CREATE POLICY "prep_steps_update" ON preparation_steps FOR UPDATE USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin','manager','technician'));
-CREATE POLICY "prep_steps_delete" ON preparation_steps FOR DELETE USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin','manager','technician'));
 
 
 -- ==========================================
@@ -511,46 +425,6 @@ ALTER TABLE calibration_records ENABLE ROW LEVEL SECURITY;
 ALTER TABLE qa_flags            ENABLE ROW LEVEL SECURITY;
 ALTER TABLE analytical_methods  ENABLE ROW LEVEL SECURITY;
 
--- Explicit lab staff policies for analysis, QA/QC and methods
-CREATE POLICY "runs_select" ON analytical_runs FOR SELECT USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin','manager','technician'));
-CREATE POLICY "runs_insert" ON analytical_runs FOR INSERT WITH CHECK ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin','manager','technician'));
-CREATE POLICY "runs_update" ON analytical_runs FOR UPDATE USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin','manager','technician'));
-CREATE POLICY "runs_delete" ON analytical_runs FOR DELETE USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin','manager','technician'));
-
-CREATE POLICY "cal_select" ON calibration_records FOR SELECT USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin','manager','technician'));
-CREATE POLICY "cal_insert" ON calibration_records FOR INSERT WITH CHECK ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin','manager','technician'));
-CREATE POLICY "cal_update" ON calibration_records FOR UPDATE USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin','manager','technician'));
-CREATE POLICY "cal_delete" ON calibration_records FOR DELETE USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin','manager','technician'));
-
-CREATE POLICY "flags_select" ON qa_flags FOR SELECT USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin','manager','technician'));
-CREATE POLICY "flags_insert" ON qa_flags FOR INSERT WITH CHECK ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin','manager','technician'));
-CREATE POLICY "flags_update" ON qa_flags FOR UPDATE USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin','manager','technician'));
-CREATE POLICY "flags_delete" ON qa_flags FOR DELETE USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin','manager','technician'));
-
-CREATE POLICY "methods_select" ON analytical_methods FOR SELECT USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin','manager','technician'));
-CREATE POLICY "methods_insert" ON analytical_methods FOR INSERT WITH CHECK ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin','manager','technician'));
-CREATE POLICY "methods_update" ON analytical_methods FOR UPDATE USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin','manager','technician'));
-CREATE POLICY "methods_delete" ON analytical_methods FOR DELETE USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin','manager','technician'));
-
--- ─────────────────────────────────────────────
--- SEED: ANALYTICAL METHODS LIBRARY
--- ─────────────────────────────────────────────
-INSERT INTO analytical_methods (code, name, description, elements_targeted, instrument_types, detection_limits, duplicate_rpd_pct, blank_multiplier, crm_tolerance_pct)
-VALUES
-  ('FA-AAS',       'Fire Assay AAS',               'Fire assay with AAS finish for gold determination',
-   ARRAY['Au'], ARRAY['AAS'], '{"Au": 0.001}', 10, 1.0, 5),
-  ('ICP-MS-51E',   'ICP-MS 51-Element Package',    '51-element trace package by ICP-MS',
-   ARRAY['Ag','As','Ba','Bi','Cd','Co','Cr','Cu','Hg','Mo','Ni','Pb','Sb','Se','Sn','Sr','Te','Tl','U','V','W','Zn'],
-   ARRAY['ICP-MS'], '{"Au":0.001,"Ag":0.01,"Cu":0.01}', 15, 1.0, 5),
-  ('ICP-OES-4A',   'ICP-OES 4-Acid Digestion',    'Major and minor element analysis via 4-acid digestion',
-   ARRAY['Al','Ca','Fe','K','Mg','Mn','Na','P','Ti','Cu','Pb','Zn'],
-   ARRAY['ICP-OES'], '{"Cu":0.01,"Pb":0.01,"Zn":0.01}', 10, 1.0, 5),
-  ('LECO-CS',      'LECO Carbon/Sulfur',           'Total carbon and sulfur determination',
-   ARRAY['C','S'], ARRAY['LECO'], '{"C":0.01,"S":0.01}', 10, 1.0, 5),
-  ('AR-ICP-MS',    'Aqua Regia ICP-MS',            'Multi-element by aqua regia digestion and ICP-MS',
-   ARRAY['Au','Ag','As','Bi','Cd','Co','Cu','Fe','Hg','Mo','Ni','Pb','Sb','Se','Sn','Te','Zn'],
-   ARRAY['ICP-MS'], '{"Au":0.001,"Ag":0.01,"Cu":0.01}', 15, 1.0, 5)
-ON CONFLICT (code) DO NOTHING;
 
 
 -- ==========================================
@@ -912,38 +786,6 @@ CREATE TRIGGER trg_audit_user_lifecycle_events
 -- ?????????????????????????????????????????????????????????????????????????????
 -- Replace permissive RLS policies with role/org policies
 -- ?????????????????????????????????????????????????????????????????????????????
-
--- Reports / Report logs
-DROP POLICY IF EXISTS "lab_access_reports" ON public.reports;
-DROP POLICY IF EXISTS "lab_access_report_logs" ON public.report_logs;
-
--- Lab coordinators (incl. admin) can manage all reports and logs
-CREATE POLICY "lab_manage_reports"
-ON public.reports
-FOR ALL
-USING (public.is_lab_coordinator())
-WITH CHECK (public.is_lab_coordinator());
-
-CREATE POLICY "lab_manage_report_logs"
-ON public.report_logs
-FOR ALL
-USING (public.is_lab_coordinator())
-WITH CHECK (public.is_lab_coordinator());
-
--- Customers may read *delivered* reports for their own org (derived via sample -> project -> org)
-CREATE POLICY "customer_read_delivered_reports"
-ON public.reports
-FOR SELECT
-USING (
-  public.current_user_role() = 'customer'
-  AND status IN ('Delivered')
-  AND sample_id IN (
-    SELECT s.id
-    FROM public.samples s
-    JOIN public.projects p ON p.id = s.project_id
-    WHERE p.organization_id = public.current_user_org_id()
-  )
-);
 
 -- Preparation workflow (lab only)
 DROP POLICY IF EXISTS "prep_jobs_lab_access" ON public.preparation_jobs;

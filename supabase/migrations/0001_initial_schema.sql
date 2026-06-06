@@ -3,7 +3,7 @@
 
 -- 1. ENUMS
 CREATE TYPE user_role AS ENUM ('admin', 'manager', 'technician', 'customer');
-CREATE TYPE sample_status AS ENUM ('Received', 'Prep', 'Analysis', 'Verified', 'Completed', 'Report Ready');
+CREATE TYPE sample_status AS ENUM ('Received', 'Verified', 'In Preparation', 'In Analysis', 'Completed', 'Report Ready');
 CREATE TYPE priority_level AS ENUM ('Standard', 'Rush', 'Urgent');
 CREATE TYPE qa_status AS ENUM ('Pending', 'Passed', 'Failed', 'Retest');
 
@@ -42,6 +42,8 @@ CREATE TABLE public.samples (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     project_id UUID REFERENCES public.projects(id) ON DELETE CASCADE,
     registered_by UUID REFERENCES public.users(id),
+    tracking_code VARCHAR(100) UNIQUE,
+    barcode_id VARCHAR(100) UNIQUE,
     sample_type VARCHAR(100) NOT NULL,
     matrix VARCHAR(100) NOT NULL,
     container VARCHAR(100),
@@ -145,78 +147,3 @@ ALTER TABLE public.sample_notes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.analytical_results ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
 
--- Organizations: users can read their own organization, managers/admins can read all
-CREATE POLICY "Users can view their own organization"
-ON public.organizations FOR SELECT
-USING (id = (SELECT organization_id FROM public.users WHERE users.id = auth.uid()));
-
-CREATE POLICY "Admins and Managers can view all organizations"
-ON public.organizations FOR SELECT
-USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin', 'manager'));
-
--- Users: view own profile, or if admin/manager view all
-CREATE POLICY "Users can view their own profile"
-ON public.users FOR SELECT
-USING (id = auth.uid());
-
-CREATE POLICY "Admins and Managers can view all users"
-ON public.users FOR SELECT
-USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin', 'manager'));
-
-CREATE POLICY "Admins can update user roles"
-ON public.users FOR UPDATE
-USING ((SELECT role FROM public.users WHERE id = auth.uid()) = 'admin');
-
--- Projects: Customers can view projects for their org, lab staff can view all
-CREATE POLICY "Customers view org projects"
-ON public.projects FOR SELECT
-USING (organization_id = (SELECT organization_id FROM public.users WHERE users.id = auth.uid()));
-
-CREATE POLICY "Lab staff view all projects"
-ON public.projects FOR SELECT
-USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin', 'manager', 'technician'));
-
--- Samples: Customers view org samples, lab staff view/update all
-CREATE POLICY "Customers view org samples"
-ON public.samples FOR SELECT
-USING (project_id IN (SELECT id FROM public.projects WHERE organization_id = (SELECT organization_id FROM public.users WHERE users.id = auth.uid())));
-
-CREATE POLICY "Lab staff view all samples"
-ON public.samples FOR SELECT
-USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin', 'manager', 'technician'));
-
-CREATE POLICY "Lab staff can insert/update samples"
-ON public.samples FOR ALL
-USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin', 'manager', 'technician'));
-
--- Custody Logs: Lab staff only can manage, customers can view for their samples
-CREATE POLICY "Customers view org custody logs"
-ON public.custody_logs FOR SELECT
-USING (sample_id IN (SELECT id FROM public.samples WHERE project_id IN (SELECT id FROM public.projects WHERE organization_id = (SELECT organization_id FROM public.users WHERE users.id = auth.uid()))));
-
-CREATE POLICY "Lab staff manage custody logs"
-ON public.custody_logs FOR ALL
-USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin', 'manager', 'technician'));
-
--- Sample Notes
-CREATE POLICY "Customers view org sample notes"
-ON public.sample_notes FOR SELECT
-USING (sample_id IN (SELECT id FROM public.samples WHERE project_id IN (SELECT id FROM public.projects WHERE organization_id = (SELECT organization_id FROM public.users WHERE users.id = auth.uid()))));
-
-CREATE POLICY "Lab staff manage sample notes"
-ON public.sample_notes FOR ALL
-USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin', 'manager', 'technician'));
-
--- Analytical Results: Customers view verified/completed only, lab staff all
-CREATE POLICY "Customers view passed/completed analytical results"
-ON public.analytical_results FOR SELECT
-USING (qa_status = 'Passed' AND sample_id IN (SELECT id FROM public.samples WHERE project_id IN (SELECT id FROM public.projects WHERE organization_id = (SELECT organization_id FROM public.users WHERE users.id = auth.uid()))));
-
-CREATE POLICY "Lab staff view and manage analytical results"
-ON public.analytical_results FOR ALL
-USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin', 'manager', 'technician'));
-
--- Audit Logs: Admin/Manager only
-CREATE POLICY "Admins and Managers can view audit logs"
-ON public.audit_logs FOR SELECT
-USING ((SELECT role FROM public.users WHERE id = auth.uid()) IN ('admin', 'manager'));

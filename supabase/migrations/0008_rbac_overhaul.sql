@@ -190,38 +190,6 @@ CREATE TRIGGER trg_audit_user_lifecycle_events
 -- Replace permissive RLS policies with role/org policies
 -- ?????????????????????????????????????????????????????????????????????????????
 
--- Reports / Report logs
-DROP POLICY IF EXISTS "lab_access_reports" ON public.reports;
-DROP POLICY IF EXISTS "lab_access_report_logs" ON public.report_logs;
-
--- Lab coordinators (incl. admin) can manage all reports and logs
-CREATE POLICY "lab_manage_reports"
-ON public.reports
-FOR ALL
-USING (public.is_lab_coordinator())
-WITH CHECK (public.is_lab_coordinator());
-
-CREATE POLICY "lab_manage_report_logs"
-ON public.report_logs
-FOR ALL
-USING (public.is_lab_coordinator())
-WITH CHECK (public.is_lab_coordinator());
-
--- Customers may read *delivered* reports for their own org (derived via sample -> project -> org)
-CREATE POLICY "customer_read_delivered_reports"
-ON public.reports
-FOR SELECT
-USING (
-  public.current_user_role() = 'customer'
-  AND status IN ('Delivered')
-  AND sample_id IN (
-    SELECT s.id
-    FROM public.samples s
-    JOIN public.projects p ON p.id = s.project_id
-    WHERE p.organization_id = public.current_user_org_id()
-  )
-);
-
 -- Preparation workflow (lab only)
 DROP POLICY IF EXISTS "prep_jobs_lab_access" ON public.preparation_jobs;
 DROP POLICY IF EXISTS "prep_steps_lab_access" ON public.preparation_steps;
