@@ -47,6 +47,71 @@ CREATE TABLE IF NOT EXISTS public.users (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Drop helper functions if they exist (with CASCADE to handle type changes)
+DROP FUNCTION IF EXISTS public.current_user_role() CASCADE;
+DROP FUNCTION IF EXISTS public.current_user_org_id() CASCADE;
+DROP FUNCTION IF EXISTS public.is_lab_coordinator() CASCADE;
+DROP FUNCTION IF EXISTS public.is_admin() CASCADE;
+
+-- Create helper functions early so they are available for all RLS policies
+CREATE OR REPLACE FUNCTION public.current_user_role()
+RETURNS public.user_role
+LANGUAGE plpgsql
+SECURITY DEFINER
+STABLE
+SET search_path = public
+AS $$
+DECLARE
+  v_role public.user_role;
+BEGIN
+  SELECT role INTO v_role
+  FROM public.users
+  WHERE id = auth.uid();
+  RETURN v_role;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.current_user_org_id()
+RETURNS uuid
+LANGUAGE plpgsql
+SECURITY DEFINER
+STABLE
+SET search_path = public
+AS $$
+DECLARE
+  v_org_id uuid;
+BEGIN
+  SELECT organization_id INTO v_org_id
+  FROM public.users
+  WHERE id = auth.uid();
+  RETURN v_org_id;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.is_lab_coordinator()
+RETURNS boolean
+LANGUAGE plpgsql
+SECURITY DEFINER
+STABLE
+SET search_path = public
+AS $$
+BEGIN
+  RETURN public.current_user_role() IN ('admin', 'manager', 'technician');
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS boolean
+LANGUAGE plpgsql
+SECURITY DEFINER
+STABLE
+SET search_path = public
+AS $$
+BEGIN
+  RETURN public.current_user_role() = 'admin';
+END;
+$$;
+
 -- Projects
 CREATE TABLE IF NOT EXISTS public.projects (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -193,10 +258,30 @@ CREATE TABLE IF NOT EXISTS public.sample_attachments (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Ensure sample_id is type UUID (if table already existed with type varchar)
+-- We must drop the RLS policies first because Postgres doesn't allow altering the type of a column used in a policy.
+DROP POLICY IF EXISTS "Customers view org sample attachments" ON public.sample_attachments;
+DROP POLICY IF EXISTS "Lab staff view all attachments" ON public.sample_attachments;
+DROP POLICY IF EXISTS "Lab staff manage sample attachments" ON public.sample_attachments;
+
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+      AND table_name = 'sample_attachments' 
+      AND column_name = 'sample_id' 
+      AND data_type = 'character varying'
+  ) THEN
+    ALTER TABLE public.sample_attachments ALTER COLUMN sample_id TYPE UUID USING sample_id::uuid;
+  END IF;
+END $$;
+
 -- 3. Enable RLS on sample_attachments
 ALTER TABLE public.sample_attachments ENABLE ROW LEVEL SECURITY;
 
 -- 4. RLS Policies for sample_attachments
+DROP POLICY IF EXISTS "Customers view org sample attachments" ON public.sample_attachments;
 CREATE POLICY "Customers view org sample attachments"
 ON public.sample_attachments FOR SELECT
 USING (sample_id IN (
@@ -207,10 +292,12 @@ USING (sample_id IN (
     )
 ));
 
+DROP POLICY IF EXISTS "Lab staff view all attachments" ON public.sample_attachments;
 CREATE POLICY "Lab staff view all attachments"
 ON public.sample_attachments FOR SELECT
 USING (public.is_lab_coordinator());
 
+DROP POLICY IF EXISTS "Lab staff manage sample attachments" ON public.sample_attachments;
 CREATE POLICY "Lab staff manage sample attachments"
 ON public.sample_attachments FOR ALL
 USING (public.is_lab_coordinator());
@@ -502,23 +589,31 @@ ALTER TABLE public.reports ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.report_logs ENABLE ROW LEVEL SECURITY;
 
 -- Explicit policies for reports with organization-level scoping for customers
+DROP POLICY IF EXISTS "reports_select" ON public.reports;
 CREATE POLICY "reports_select" ON public.reports FOR SELECT USING (
   (SELECT role FROM public.users WHERE users.id = auth.uid()) IN ('admin','manager','technician')
   OR
   (client_org_id = (SELECT organization_id::text FROM public.users WHERE users.id = auth.uid()))
 );
+DROP POLICY IF EXISTS "reports_insert" ON public.reports;
 CREATE POLICY "reports_insert" ON public.reports FOR INSERT WITH CHECK ((SELECT role FROM public.users WHERE users.id = auth.uid()) IN ('admin','manager','technician'));
+DROP POLICY IF EXISTS "reports_update" ON public.reports;
 CREATE POLICY "reports_update" ON public.reports FOR UPDATE USING ((SELECT role FROM public.users WHERE users.id = auth.uid()) IN ('admin','manager','technician'));
+DROP POLICY IF EXISTS "reports_delete" ON public.reports;
 CREATE POLICY "reports_delete" ON public.reports FOR DELETE USING ((SELECT role FROM public.users WHERE users.id = auth.uid()) IN ('admin','manager','technician'));
 
 -- Explicit policies for report logs
+DROP POLICY IF EXISTS "report_logs_select" ON public.report_logs;
 CREATE POLICY "report_logs_select" ON public.report_logs FOR SELECT USING (
   (SELECT role FROM public.users WHERE users.id = auth.uid()) IN ('admin','manager','technician')
   OR
   (report_id IN (SELECT id FROM public.reports WHERE client_org_id = (SELECT organization_id::text FROM public.users WHERE users.id = auth.uid())))
 );
+DROP POLICY IF EXISTS "report_logs_insert" ON public.report_logs;
 CREATE POLICY "report_logs_insert" ON public.report_logs FOR INSERT WITH CHECK ((SELECT role FROM public.users WHERE users.id = auth.uid()) IN ('admin','manager','technician'));
+DROP POLICY IF EXISTS "report_logs_update" ON public.report_logs;
 CREATE POLICY "report_logs_update" ON public.report_logs FOR UPDATE USING ((SELECT role FROM public.users WHERE users.id = auth.uid()) IN ('admin','manager','technician'));
+DROP POLICY IF EXISTS "report_logs_delete" ON public.report_logs;
 CREATE POLICY "report_logs_delete" ON public.report_logs FOR DELETE USING ((SELECT role FROM public.users WHERE users.id = auth.uid()) IN ('admin','manager','technician'));
 
 -- ─────────────────────────────────────────────
@@ -541,6 +636,7 @@ ALTER TABLE public.users
   ADD COLUMN IF NOT EXISTS phone_number VARCHAR(50);
 
 -- Allow users to update their own profile (name, phone)
+DROP POLICY IF EXISTS "Users can update own profile" ON public.users;
 CREATE POLICY "Users can update own profile"
 ON public.users FOR UPDATE
 USING (id = auth.uid())
@@ -636,63 +732,7 @@ CREATE TRIGGER on_auth_user_created
 -- Helpers
 -- ?????????????????????????????????????????????????????????????????????????????
 
-CREATE OR REPLACE FUNCTION public.current_user_role()
-RETURNS public.user_role
-LANGUAGE plpgsql
-SECURITY DEFINER
-STABLE
-SET search_path = public
-AS $$
-DECLARE
-  v_role public.user_role;
-BEGIN
-  SELECT role INTO v_role
-  FROM public.users
-  WHERE id = auth.uid();
-  RETURN v_role;
-END;
-$$;
-
-CREATE OR REPLACE FUNCTION public.current_user_org_id()
-RETURNS uuid
-LANGUAGE plpgsql
-SECURITY DEFINER
-STABLE
-SET search_path = public
-AS $$
-DECLARE
-  v_org_id uuid;
-BEGIN
-  SELECT organization_id INTO v_org_id
-  FROM public.users
-  WHERE id = auth.uid();
-  RETURN v_org_id;
-END;
-$$;
-
-CREATE OR REPLACE FUNCTION public.is_lab_coordinator()
-RETURNS boolean
-LANGUAGE plpgsql
-SECURITY DEFINER
-STABLE
-SET search_path = public
-AS $$
-BEGIN
-  RETURN public.current_user_role() IN ('admin', 'manager', 'technician');
-END;
-$$;
-
-CREATE OR REPLACE FUNCTION public.is_admin()
-RETURNS boolean
-LANGUAGE plpgsql
-SECURITY DEFINER
-STABLE
-SET search_path = public
-AS $$
-BEGIN
-  RETURN public.current_user_role() = 'admin';
-END;
-$$;
+-- (Helper functions moved to initial schema section)
 
 -- ?????????????????????????????????????????????????????????????????????????????
 -- Auth/Admin audit events
@@ -842,12 +882,14 @@ DROP POLICY IF EXISTS "lab_access_reports" ON public.reports;
 DROP POLICY IF EXISTS "lab_access_report_logs" ON public.report_logs;
 
 -- Lab coordinators (incl. admin) can manage all reports and logs
+DROP POLICY IF EXISTS "lab_manage_reports" ON public.reports;
 CREATE POLICY "lab_manage_reports"
 ON public.reports
 FOR ALL
 USING (public.is_lab_coordinator())
 WITH CHECK (public.is_lab_coordinator());
 
+DROP POLICY IF EXISTS "lab_manage_report_logs" ON public.report_logs;
 CREATE POLICY "lab_manage_report_logs"
 ON public.report_logs
 FOR ALL
@@ -855,6 +897,7 @@ USING (public.is_lab_coordinator())
 WITH CHECK (public.is_lab_coordinator());
 
 -- Customers may read *delivered* reports for their own org (derived via sample -> project -> org)
+DROP POLICY IF EXISTS "customer_read_delivered_reports" ON public.reports;
 CREATE POLICY "customer_read_delivered_reports"
 ON public.reports
 FOR SELECT
@@ -873,12 +916,14 @@ USING (
 DROP POLICY IF EXISTS "prep_jobs_lab_access" ON public.preparation_jobs;
 DROP POLICY IF EXISTS "prep_steps_lab_access" ON public.preparation_steps;
 
+DROP POLICY IF EXISTS "lab_manage_preparation_jobs" ON public.preparation_jobs;
 CREATE POLICY "lab_manage_preparation_jobs"
 ON public.preparation_jobs
 FOR ALL
 USING (public.is_lab_coordinator())
 WITH CHECK (public.is_lab_coordinator());
 
+DROP POLICY IF EXISTS "lab_manage_preparation_steps" ON public.preparation_steps;
 CREATE POLICY "lab_manage_preparation_steps"
 ON public.preparation_steps
 FOR ALL
@@ -891,24 +936,28 @@ DROP POLICY IF EXISTS "lab_access_cal" ON public.calibration_records;
 DROP POLICY IF EXISTS "lab_access_flags" ON public.qa_flags;
 DROP POLICY IF EXISTS "lab_read_methods" ON public.analytical_methods;
 
+DROP POLICY IF EXISTS "lab_manage_analytical_runs" ON public.analytical_runs;
 CREATE POLICY "lab_manage_analytical_runs"
 ON public.analytical_runs
 FOR ALL
 USING (public.is_lab_coordinator())
 WITH CHECK (public.is_lab_coordinator());
 
+DROP POLICY IF EXISTS "lab_manage_calibration_records" ON public.calibration_records;
 CREATE POLICY "lab_manage_calibration_records"
 ON public.calibration_records
 FOR ALL
 USING (public.is_lab_coordinator())
 WITH CHECK (public.is_lab_coordinator());
 
+DROP POLICY IF EXISTS "lab_manage_qa_flags" ON public.qa_flags;
 CREATE POLICY "lab_manage_qa_flags"
 ON public.qa_flags
 FOR ALL
 USING (public.is_lab_coordinator())
 WITH CHECK (public.is_lab_coordinator());
 
+DROP POLICY IF EXISTS "lab_read_analytical_methods" ON public.analytical_methods;
 CREATE POLICY "lab_read_analytical_methods"
 ON public.analytical_methods
 FOR SELECT
@@ -959,7 +1008,8 @@ ALTER TABLE public.tracking_updates ENABLE ROW LEVEL SECURITY;
 
 DO $$
 BEGIN
-  CREATE POLICY "sample_logs_select"
+  DROP POLICY IF EXISTS "sample_logs_select" ON public.sample_logs;
+CREATE POLICY "sample_logs_select"
     ON public.sample_logs FOR SELECT TO authenticated
     USING (
       public.is_lab_coordinator()
@@ -974,7 +1024,8 @@ END $$;
 
 DO $$
 BEGIN
-  CREATE POLICY "sample_logs_insert"
+  DROP POLICY IF EXISTS "sample_logs_insert" ON public.sample_logs;
+CREATE POLICY "sample_logs_insert"
     ON public.sample_logs FOR INSERT TO authenticated
     WITH CHECK (public.is_lab_coordinator());
 EXCEPTION WHEN duplicate_object THEN NULL;
@@ -982,7 +1033,8 @@ END $$;
 
 DO $$
 BEGIN
-  CREATE POLICY "sample_logs_update"
+  DROP POLICY IF EXISTS "sample_logs_update" ON public.sample_logs;
+CREATE POLICY "sample_logs_update"
     ON public.sample_logs FOR UPDATE TO authenticated
     USING (public.is_lab_coordinator());
 EXCEPTION WHEN duplicate_object THEN NULL;
@@ -990,7 +1042,8 @@ END $$;
 
 DO $$
 BEGIN
-  CREATE POLICY "sample_logs_delete"
+  DROP POLICY IF EXISTS "sample_logs_delete" ON public.sample_logs;
+CREATE POLICY "sample_logs_delete"
     ON public.sample_logs FOR DELETE TO authenticated
     USING (public.is_lab_coordinator());
 EXCEPTION WHEN duplicate_object THEN NULL;
@@ -998,7 +1051,8 @@ END $$;
 
 DO $$
 BEGIN
-  CREATE POLICY "tracking_updates_select"
+  DROP POLICY IF EXISTS "tracking_updates_select" ON public.tracking_updates;
+CREATE POLICY "tracking_updates_select"
     ON public.tracking_updates FOR SELECT TO authenticated
     USING (
       public.is_lab_coordinator()
@@ -1013,7 +1067,8 @@ END $$;
 
 DO $$
 BEGIN
-  CREATE POLICY "tracking_updates_insert"
+  DROP POLICY IF EXISTS "tracking_updates_insert" ON public.tracking_updates;
+CREATE POLICY "tracking_updates_insert"
     ON public.tracking_updates FOR INSERT TO authenticated
     WITH CHECK (public.is_lab_coordinator());
 EXCEPTION WHEN duplicate_object THEN NULL;
@@ -1021,7 +1076,8 @@ END $$;
 
 DO $$
 BEGIN
-  CREATE POLICY "tracking_updates_update"
+  DROP POLICY IF EXISTS "tracking_updates_update" ON public.tracking_updates;
+CREATE POLICY "tracking_updates_update"
     ON public.tracking_updates FOR UPDATE TO authenticated
     USING (public.is_lab_coordinator());
 EXCEPTION WHEN duplicate_object THEN NULL;
@@ -1029,7 +1085,8 @@ END $$;
 
 DO $$
 BEGIN
-  CREATE POLICY "tracking_updates_delete"
+  DROP POLICY IF EXISTS "tracking_updates_delete" ON public.tracking_updates;
+CREATE POLICY "tracking_updates_delete"
     ON public.tracking_updates FOR DELETE TO authenticated
     USING (public.is_lab_coordinator());
 EXCEPTION WHEN duplicate_object THEN NULL;
@@ -1366,7 +1423,8 @@ ALTER TABLE public.notification_emails ENABLE ROW LEVEL SECURITY;
 
 DO $$
 BEGIN
-  CREATE POLICY "notification_emails_admin_read"
+  DROP POLICY IF EXISTS "notification_emails_admin_read" ON public.notification_emails;
+CREATE POLICY "notification_emails_admin_read"
     ON public.notification_emails FOR SELECT
     USING (public.is_admin());
 EXCEPTION WHEN duplicate_object THEN NULL;
@@ -1374,7 +1432,8 @@ END $$;
 
 DO $$
 BEGIN
-  CREATE POLICY "notification_emails_lab_insert"
+  DROP POLICY IF EXISTS "notification_emails_lab_insert" ON public.notification_emails;
+CREATE POLICY "notification_emails_lab_insert"
     ON public.notification_emails FOR INSERT
     WITH CHECK (public.is_lab_coordinator() OR public.is_admin());
 EXCEPTION WHEN duplicate_object THEN NULL;
@@ -1382,7 +1441,8 @@ END $$;
 
 DO $$
 BEGIN
-  CREATE POLICY "notifications_self_or_role_read"
+  DROP POLICY IF EXISTS "notifications_self_or_role_read" ON public.notifications;
+CREATE POLICY "notifications_self_or_role_read"
     ON public.notifications FOR SELECT
     USING (
       target_user_id = auth.uid()
@@ -1394,7 +1454,8 @@ END $$;
 
 DO $$
 BEGIN
-  CREATE POLICY "notifications_self_update_read_state"
+  DROP POLICY IF EXISTS "notifications_self_update_read_state" ON public.notifications;
+CREATE POLICY "notifications_self_update_read_state"
     ON public.notifications FOR UPDATE
     USING (target_user_id = auth.uid() OR public.is_admin())
     WITH CHECK (target_user_id = auth.uid() OR public.is_admin());
@@ -1403,7 +1464,8 @@ END $$;
 
 DO $$
 BEGIN
-  CREATE POLICY "notifications_system_insert"
+  DROP POLICY IF EXISTS "notifications_system_insert" ON public.notifications;
+CREATE POLICY "notifications_system_insert"
     ON public.notifications FOR INSERT
     WITH CHECK (auth.role() = 'authenticated');
 EXCEPTION WHEN duplicate_object THEN NULL;
@@ -1802,13 +1864,17 @@ DROP POLICY IF EXISTS "reports_delete" ON public.reports;
 DROP POLICY IF EXISTS "lab_manage_reports" ON public.reports;
 DROP POLICY IF EXISTS "customer_read_delivered_reports" ON public.reports;
 
+DROP POLICY IF EXISTS "reports_select" ON public.reports;
 CREATE POLICY "reports_select" ON public.reports FOR SELECT USING (
   public.is_lab_coordinator()
   OR
   (client_org_id = public.current_user_org_id()::text)
 );
+DROP POLICY IF EXISTS "reports_insert" ON public.reports;
 CREATE POLICY "reports_insert" ON public.reports FOR INSERT WITH CHECK (public.is_lab_coordinator());
+DROP POLICY IF EXISTS "reports_update" ON public.reports;
 CREATE POLICY "reports_update" ON public.reports FOR UPDATE USING (public.is_lab_coordinator());
+DROP POLICY IF EXISTS "reports_delete" ON public.reports;
 CREATE POLICY "reports_delete" ON public.reports FOR DELETE USING (public.is_lab_coordinator());
 
 -- Report Logs policies
@@ -1818,13 +1884,17 @@ DROP POLICY IF EXISTS "report_logs_update" ON public.report_logs;
 DROP POLICY IF EXISTS "report_logs_delete" ON public.report_logs;
 DROP POLICY IF EXISTS "lab_manage_report_logs" ON public.report_logs;
 
+DROP POLICY IF EXISTS "report_logs_select" ON public.report_logs;
 CREATE POLICY "report_logs_select" ON public.report_logs FOR SELECT USING (
   public.is_lab_coordinator()
   OR
   (report_id IN (SELECT id FROM public.reports WHERE client_org_id = public.current_user_org_id()::text))
 );
+DROP POLICY IF EXISTS "report_logs_insert" ON public.report_logs;
 CREATE POLICY "report_logs_insert" ON public.report_logs FOR INSERT WITH CHECK (public.is_lab_coordinator());
+DROP POLICY IF EXISTS "report_logs_update" ON public.report_logs;
 CREATE POLICY "report_logs_update" ON public.report_logs FOR UPDATE USING (public.is_lab_coordinator());
+DROP POLICY IF EXISTS "report_logs_delete" ON public.report_logs;
 CREATE POLICY "report_logs_delete" ON public.report_logs FOR DELETE USING (public.is_lab_coordinator());
 
 
