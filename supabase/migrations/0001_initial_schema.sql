@@ -21,7 +21,7 @@ EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 -- 2. TABLES
 
 -- Organizations (Customers or internal lab groups)
-CREATE TABLE public.organizations (
+CREATE TABLE IF NOT EXISTS public.organizations (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(255) NOT NULL,
     contact_email VARCHAR(255),
@@ -30,7 +30,7 @@ CREATE TABLE public.organizations (
 );
 
 -- Users (Linked to Supabase Auth)
-CREATE TABLE public.users (
+CREATE TABLE IF NOT EXISTS public.users (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     organization_id UUID REFERENCES public.organizations(id),
     full_name VARCHAR(255) NOT NULL,
@@ -40,7 +40,7 @@ CREATE TABLE public.users (
 );
 
 -- Projects
-CREATE TABLE public.projects (
+CREATE TABLE IF NOT EXISTS public.projects (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     organization_id UUID REFERENCES public.organizations(id) ON DELETE CASCADE,
     name VARCHAR(255) NOT NULL,
@@ -49,7 +49,7 @@ CREATE TABLE public.projects (
 );
 
 -- Samples
-CREATE TABLE public.samples (
+CREATE TABLE IF NOT EXISTS public.samples (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     project_id UUID REFERENCES public.projects(id) ON DELETE CASCADE,
     registered_by UUID REFERENCES public.users(id),
@@ -68,7 +68,7 @@ CREATE TABLE public.samples (
 );
 
 -- Custody Logs
-CREATE TABLE public.custody_logs (
+CREATE TABLE IF NOT EXISTS public.custody_logs (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     sample_id UUID REFERENCES public.samples(id) ON DELETE CASCADE,
     technician_id UUID REFERENCES public.users(id),
@@ -78,7 +78,7 @@ CREATE TABLE public.custody_logs (
 );
 
 -- Sample Notes
-CREATE TABLE public.sample_notes (
+CREATE TABLE IF NOT EXISTS public.sample_notes (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     sample_id UUID REFERENCES public.samples(id) ON DELETE CASCADE,
     author_id UUID REFERENCES public.users(id),
@@ -87,7 +87,7 @@ CREATE TABLE public.sample_notes (
 );
 
 -- Analytical Results
-CREATE TABLE public.analytical_results (
+CREATE TABLE IF NOT EXISTS public.analytical_results (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     sample_id UUID REFERENCES public.samples(id) ON DELETE CASCADE,
     technician_id UUID REFERENCES public.users(id),
@@ -102,7 +102,7 @@ CREATE TABLE public.analytical_results (
 );
 
 -- Audit Logs
-CREATE TABLE public.audit_logs (
+CREATE TABLE IF NOT EXISTS public.audit_logs (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     table_name VARCHAR(255) NOT NULL,
     record_id UUID NOT NULL,
