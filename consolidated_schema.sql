@@ -538,52 +538,66 @@ RETURNS TRIGGER
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
-AS $$
+AS $
 DECLARE
-  v_org_id UUID;
-  v_org_name TEXT;
-  v_full_name TEXT;
-  v_first_name TEXT;
-  v_last_name TEXT;
-  v_phone TEXT;
-  v_role public.user_role;
-  v_db_role TEXT;
+  v_org_id      UUID;
+  v_org_name    TEXT;
+  v_full_name   TEXT;
+  v_first_name  TEXT;
+  v_last_name   TEXT;
+  v_phone       TEXT;
+  v_role        public.user_role;
+  v_db_role     TEXT;
 BEGIN
+  -- Extract metadata safely
   v_first_name := COALESCE(NEW.raw_user_meta_data->>'first_name', '');
-  v_last_name := COALESCE(NEW.raw_user_meta_data->>'last_name', '');
-  v_full_name := COALESCE(
+  v_last_name  := COALESCE(NEW.raw_user_meta_data->>'last_name',  '');
+  v_full_name  := COALESCE(
     NULLIF(TRIM(NEW.raw_user_meta_data->>'full_name'), ''),
-    NULLIF(TRIM(v_first_name || ' ' || v_last_name), ''),
+    NULLIF(TRIM(v_first_name || ' ' || v_last_name),  ''),
     split_part(NEW.email, '@', 1)
   );
-  v_phone := NULLIF(TRIM(NEW.raw_user_meta_data->>'phone'), '');
-  v_org_name := NULLIF(TRIM(NEW.raw_user_meta_data->>'organization_name'), '');
-  v_db_role := LOWER(COALESCE(NEW.raw_user_meta_data->>'role', 'customer'));
+  v_phone    := NULLIF(TRIM(COALESCE(NEW.raw_user_meta_data->>'phone', '')), '');
+  v_org_name := NULLIF(TRIM(COALESCE(NEW.raw_user_meta_data->>'organization_name', '')), '');
+  v_db_role  := LOWER(COALESCE(NEW.raw_user_meta_data->>'role', 'customer'));
 
   v_role := CASE v_db_role
-    WHEN 'admin' THEN 'admin'::public.user_role
-    WHEN 'manager' THEN 'manager'::public.user_role
+    WHEN 'admin'      THEN 'admin'::public.user_role
+    WHEN 'manager'    THEN 'manager'::public.user_role
     WHEN 'technician' THEN 'technician'::public.user_role
-    ELSE 'customer'::public.user_role
+    ELSE                   'customer'::public.user_role
   END;
 
-  IF v_org_name IS NOT NULL THEN
-    INSERT INTO public.organizations (name, contact_email)
-    VALUES (v_org_name, NEW.email)
-    RETURNING id INTO v_org_id;
-  END IF;
+  BEGIN
+    -- Create org if provided
+    IF v_org_name IS NOT NULL THEN
+      INSERT INTO public.organizations (name, contact_email)
+      VALUES (v_org_name, NEW.email)
+      ON CONFLICT DO NOTHING
+      RETURNING id INTO v_org_id;
+    END IF;
 
-  INSERT INTO public.users (id, full_name, role, organization_id, phone_number)
-  VALUES (NEW.id, v_full_name, v_role, v_org_id, v_phone)
-  ON CONFLICT (id) DO UPDATE SET
-    full_name = EXCLUDED.full_name,
-    phone_number = COALESCE(EXCLUDED.phone_number, public.users.phone_number),
-    organization_id = COALESCE(EXCLUDED.organization_id, public.users.organization_id),
-    updated_at = NOW();
+    -- Upsert profile (ON CONFLICT ensures idempotency)
+    INSERT INTO public.users (id, full_name, role, organization_id, phone_number, updated_at)
+    VALUES (NEW.id, v_full_name, v_role, v_org_id, v_phone, NOW())
+    ON CONFLICT (id) DO UPDATE SET
+      full_name       = COALESCE(NULLIF(EXCLUDED.full_name, ''), public.users.full_name),
+      phone_number    = COALESCE(EXCLUDED.phone_number,  public.users.phone_number),
+      organization_id = COALESCE(EXCLUDED.organization_id, public.users.organization_id),
+      role = CASE
+        WHEN public.users.role = 'customer' AND EXCLUDED.role <> 'customer'
+          THEN EXCLUDED.role
+        ELSE public.users.role
+      END,
+      updated_at = NOW();
+
+  EXCEPTION WHEN OTHERS THEN
+    RAISE WARNING 'handle_new_user: profile upsert failed for % — %', NEW.id, SQLERRM;
+  END;
 
   RETURN NEW;
 END;
-$$;
+$;
 
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
@@ -610,172 +624,61 @@ CREATE TRIGGER on_auth_user_created
 
 CREATE OR REPLACE FUNCTION public.current_user_role()
 RETURNS public.user_role
-LANGUAGE sql
+LANGUAGE plpgsql
+SECURITY DEFINER
 STABLE
-AS $$
-  SELECT u.role
-  FROM public.users u
-  WHERE u.id = auth.uid()
-$$;
-
-CREATE OR REPLACE FUNCTION public.is_lab_coordinator()
-RETURNS boolean
-LANGUAGE sql
-STABLE
-AS $$
-  SELECT public.current_user_role() IN ('admin', 'manager', 'technician')
-$$;
-
-CREATE OR REPLACE FUNCTION public.is_admin()
-RETURNS boolean
-LANGUAGE sql
-STABLE
-AS $$
-  SELECT public.current_user_role() = 'admin'
-$$;
+SET search_path = public
+AS $
+DECLARE
+  v_role public.user_role;
+BEGIN
+  SELECT role INTO v_role
+  FROM public.users
+  WHERE id = auth.uid();
+  RETURN v_role;
+END;
+$;
 
 CREATE OR REPLACE FUNCTION public.current_user_org_id()
 RETURNS uuid
-LANGUAGE sql
+LANGUAGE plpgsql
+SECURITY DEFINER
 STABLE
-AS $$
-  SELECT u.organization_id
-  FROM public.users u
-  WHERE u.id = auth.uid()
-$$;
-
--- ?????????????????????????????????????????????????????????????????????????????
--- Auth/Admin audit events
--- ?????????????????????????????????????????????????????????????????????????????
-
-DO $$ BEGIN
-  CREATE TYPE public.auth_audit_event_type AS ENUM (
-    'login',
-    'logout',
-    'user_created',
-    'user_deleted',
-    'role_changed'
-  );
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-CREATE TABLE IF NOT EXISTS public.auth_audit_events (
-  id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  event_type   public.auth_audit_event_type NOT NULL,
-  actor_user_id uuid REFERENCES auth.users(id),
-  target_user_id uuid REFERENCES auth.users(id),
-  old_role     public.user_role,
-  new_role     public.user_role,
-  ip          text,
-  user_agent  text,
-  meta        jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_at  timestamptz NOT NULL DEFAULT now()
-);
-
-ALTER TABLE public.auth_audit_events ENABLE ROW LEVEL SECURITY;
-
--- Only admins can read audit events
-DROP POLICY IF EXISTS "admin_read_auth_audit_events" ON public.auth_audit_events;
-CREATE POLICY "admin_read_auth_audit_events"
-ON public.auth_audit_events
-FOR SELECT
-USING (public.is_admin());
-
--- Any authenticated user may insert their own login/logout events (actor must be self)
-DROP POLICY IF EXISTS "self_insert_auth_audit_events" ON public.auth_audit_events;
-CREATE POLICY "self_insert_auth_audit_events"
-ON public.auth_audit_events
-FOR INSERT
-WITH CHECK (
-  auth.role() = 'authenticated'
-  AND actor_user_id = auth.uid()
-  AND event_type IN ('login', 'logout')
-);
-
--- Inserts from triggers are allowed when actor is an admin coordinator (role changes),
--- or actor is null (system-triggered provisioning).
-DROP POLICY IF EXISTS "trigger_insert_auth_audit_events" ON public.auth_audit_events;
-CREATE POLICY "trigger_insert_auth_audit_events"
-ON public.auth_audit_events
-FOR INSERT
-WITH CHECK (
-  auth.role() = 'authenticated'
-  AND (public.is_admin() OR public.is_lab_coordinator())
-);
-
--- ?????????????????????????????????????????????????????????????????????????????
--- Prevent role escalation (non-admins cannot change role/org fields)
--- ?????????????????????????????????????????????????????????????????????????????
-
-CREATE OR REPLACE FUNCTION public.prevent_user_privilege_escalation()
-RETURNS trigger
-LANGUAGE plpgsql
-SECURITY DEFINER
 SET search_path = public
-AS $$
+AS $
 DECLARE
-  v_actor_role public.user_role;
+  v_org_id uuid;
 BEGIN
-  SELECT public.current_user_role() INTO v_actor_role;
-
-  -- Allow system/background updates with no auth context (v_actor_role is NULL).
-  IF v_actor_role IS NULL THEN
-    RETURN NEW;
-  END IF;
-
-  -- Only admin may change another user's role or organization_id, and may not change their own
-  -- role away from admin via client calls by accident.
-  IF (NEW.role IS DISTINCT FROM OLD.role) THEN
-    IF v_actor_role <> 'admin' THEN
-      RAISE EXCEPTION 'Only Admin may change user roles';
-    END IF;
-  END IF;
-
-  IF (NEW.organization_id IS DISTINCT FROM OLD.organization_id) THEN
-    IF v_actor_role <> 'admin' THEN
-      RAISE EXCEPTION 'Only Admin may change user organization';
-    END IF;
-  END IF;
-
-  RETURN NEW;
+  SELECT organization_id INTO v_org_id
+  FROM public.users
+  WHERE id = auth.uid();
+  RETURN v_org_id;
 END;
-$$;
+$;
 
-DROP TRIGGER IF EXISTS trg_prevent_user_privilege_escalation ON public.users;
-CREATE TRIGGER trg_prevent_user_privilege_escalation
-  BEFORE UPDATE ON public.users
-  FOR EACH ROW
-  EXECUTE FUNCTION public.prevent_user_privilege_escalation();
-
--- ?????????????????????????????????????????????????????????????????????????????
--- Audit triggers for user lifecycle events
--- ?????????????????????????????????????????????????????????????????????????????
-
-CREATE OR REPLACE FUNCTION public.audit_user_lifecycle_events()
-RETURNS trigger
+CREATE OR REPLACE FUNCTION public.is_lab_coordinator()
+RETURNS boolean
 LANGUAGE plpgsql
 SECURITY DEFINER
+STABLE
 SET search_path = public
-AS $$
+AS $
 BEGIN
-  IF (TG_OP = 'INSERT') THEN
-    INSERT INTO public.auth_audit_events (event_type, actor_user_id, target_user_id, meta)
-    VALUES ('user_created', auth.uid(), NEW.id, jsonb_build_object('email', (SELECT email FROM auth.users WHERE id = NEW.id)));
-    RETURN NEW;
-  ELSIF (TG_OP = 'DELETE') THEN
-    INSERT INTO public.auth_audit_events (event_type, actor_user_id, target_user_id, meta)
-    VALUES ('user_deleted', auth.uid(), OLD.id, jsonb_build_object('email', (SELECT email FROM auth.users WHERE id = OLD.id)));
-    RETURN OLD;
-  ELSIF (TG_OP = 'UPDATE') THEN
-    IF NEW.role IS DISTINCT FROM OLD.role THEN
-      INSERT INTO public.auth_audit_events (event_type, actor_user_id, target_user_id, old_role, new_role)
-      VALUES ('role_changed', auth.uid(), NEW.id, OLD.role, NEW.role);
-    END IF;
-    RETURN NEW;
-  END IF;
-  RETURN NULL;
+  RETURN public.current_user_role() IN ('admin', 'manager', 'technician');
 END;
-$$;
+$;
+
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS boolean
+LANGUAGE plpgsql
+SECURITY DEFINER
+STABLE
+SET search_path = public
+AS $
+BEGIN
+  RETURN public.current_user_role() = 'admin';
+END;
+$;
 
 DROP TRIGGER IF EXISTS trg_audit_user_lifecycle_events ON public.users;
 CREATE TRIGGER trg_audit_user_lifecycle_events
@@ -875,33 +778,83 @@ CREATE INDEX IF NOT EXISTS idx_tracking_updates_sample_created
 ALTER TABLE public.sample_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.tracking_updates ENABLE ROW LEVEL SECURITY;
 
-DO $$
+DO $
 BEGIN
-  CREATE POLICY "sample_logs_select_authenticated"
-    ON public.sample_logs FOR SELECT TO authenticated USING (true);
+  CREATE POLICY "sample_logs_select"
+    ON public.sample_logs FOR SELECT TO authenticated
+    USING (
+      public.is_lab_coordinator()
+      OR sample_id IN (
+        SELECT s.id FROM public.samples s
+        JOIN public.projects p ON s.project_id = p.id
+        WHERE p.organization_id = public.current_user_org_id()
+      )
+    );
 EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+END $;
 
-DO $$
+DO $
 BEGIN
-  CREATE POLICY "sample_logs_insert_authenticated"
-    ON public.sample_logs FOR INSERT TO authenticated WITH CHECK (true);
+  CREATE POLICY "sample_logs_insert"
+    ON public.sample_logs FOR INSERT TO authenticated
+    WITH CHECK (public.is_lab_coordinator());
 EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+END $;
 
-DO $$
+DO $
 BEGIN
-  CREATE POLICY "tracking_updates_select_authenticated"
-    ON public.tracking_updates FOR SELECT TO authenticated USING (true);
+  CREATE POLICY "sample_logs_update"
+    ON public.sample_logs FOR UPDATE TO authenticated
+    USING (public.is_lab_coordinator());
 EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+END $;
 
-DO $$
+DO $
 BEGIN
-  CREATE POLICY "tracking_updates_insert_authenticated"
-    ON public.tracking_updates FOR INSERT TO authenticated WITH CHECK (true);
+  CREATE POLICY "sample_logs_delete"
+    ON public.sample_logs FOR DELETE TO authenticated
+    USING (public.is_lab_coordinator());
 EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+END $;
+
+DO $
+BEGIN
+  CREATE POLICY "tracking_updates_select"
+    ON public.tracking_updates FOR SELECT TO authenticated
+    USING (
+      public.is_lab_coordinator()
+      OR sample_id IN (
+        SELECT s.id FROM public.samples s
+        JOIN public.projects p ON s.project_id = p.id
+        WHERE p.organization_id = public.current_user_org_id()
+      )
+    );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $;
+
+DO $
+BEGIN
+  CREATE POLICY "tracking_updates_insert"
+    ON public.tracking_updates FOR INSERT TO authenticated
+    WITH CHECK (public.is_lab_coordinator());
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $;
+
+DO $
+BEGIN
+  CREATE POLICY "tracking_updates_update"
+    ON public.tracking_updates FOR UPDATE TO authenticated
+    USING (public.is_lab_coordinator());
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $;
+
+DO $
+BEGIN
+  CREATE POLICY "tracking_updates_delete"
+    ON public.tracking_updates FOR DELETE TO authenticated
+    USING (public.is_lab_coordinator());
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $;
 
 CREATE OR REPLACE FUNCTION public.gcs_insert_tracking_event(
   p_sample_id UUID,
@@ -966,7 +919,7 @@ CREATE OR REPLACE FUNCTION public.gcs_on_samples_tracking()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 SECURITY DEFINER
-AS $$
+AS $
 DECLARE
   v_event_label TEXT;
   v_summary TEXT;
@@ -980,7 +933,7 @@ BEGIN
       NULL,
       NEW.status::TEXT,
       'Intake',
-      NEW.technician,
+      NULL,
       jsonb_build_object('source', 'samples.insert')
     );
     RETURN NEW;
@@ -989,7 +942,6 @@ BEGIN
   IF TG_OP = 'UPDATE' AND NEW.status IS DISTINCT FROM OLD.status THEN
     v_event_label := CASE NEW.status::TEXT
       WHEN 'Verified' THEN 'Sample Verified'
-      WHEN 'Registered' THEN 'Sample Registered'
       WHEN 'In Preparation' THEN 'Preparation Started'
       WHEN 'In Analysis' THEN 'Analysis Started'
       WHEN 'Completed' THEN 'Sample Completed'
@@ -1007,14 +959,14 @@ BEGIN
       OLD.status::TEXT,
       NEW.status::TEXT,
       'Workflow',
-      NEW.technician,
+      NULL,
       jsonb_build_object('source', 'samples.update', 'from', OLD.status, 'to', NEW.status)
     );
   END IF;
 
   RETURN NEW;
 END;
-$$;
+$;
 
 DROP TRIGGER IF EXISTS trg_gcs_samples_tracking ON public.samples;
 CREATE TRIGGER trg_gcs_samples_tracking
@@ -1614,65 +1566,6 @@ END $$;
 -- 1. Overhaul helper functions to use SECURITY DEFINER so they execute with owner privileges.
 -- This bypasses Row Level Security checks during role/org resolution, preventing recursion.
 
-CREATE OR REPLACE FUNCTION public.current_user_role()
-RETURNS public.user_role
-LANGUAGE plpgsql
-SECURITY DEFINER
-STABLE
-SET search_path = public
-AS $$
-DECLARE
-  v_role public.user_role;
-BEGIN
-  SELECT role INTO v_role
-  FROM public.users
-  WHERE id = auth.uid();
-  RETURN v_role;
-END;
-$$;
-
-CREATE OR REPLACE FUNCTION public.current_user_org_id()
-RETURNS uuid
-LANGUAGE plpgsql
-SECURITY DEFINER
-STABLE
-SET search_path = public
-AS $$
-DECLARE
-  v_org_id uuid;
-BEGIN
-  SELECT organization_id INTO v_org_id
-  FROM public.users
-  WHERE id = auth.uid();
-  RETURN v_org_id;
-END;
-$$;
-
-CREATE OR REPLACE FUNCTION public.is_lab_coordinator()
-RETURNS boolean
-LANGUAGE plpgsql
-SECURITY DEFINER
-STABLE
-SET search_path = public
-AS $$
-BEGIN
-  RETURN public.current_user_role() IN ('admin', 'manager', 'technician');
-END;
-$$;
-
-CREATE OR REPLACE FUNCTION public.is_admin()
-RETURNS boolean
-LANGUAGE plpgsql
-SECURITY DEFINER
-STABLE
-SET search_path = public
-AS $$
-BEGIN
-  RETURN public.current_user_role() = 'admin';
-END;
-$$;
-
-
 -- 2. Drop and recreate policies that directly query public.users recursively in their USING clauses.
 
 -- Organizations policies
@@ -1844,86 +1737,6 @@ CREATE TRIGGER trg_sync_user_role_to_auth
 --   5. get_users_with_email RPC  — admin-only, returns public.users joined with auth.users.email
 --   6. admin_update_user_role RPC — admin-only, updates role in public.users (metadata sync
 --      is handled by the existing trg_sync_user_role_to_auth trigger from migration 0011)
-
--- ─────────────────────────────────────────────────────────────────────────────
--- 1. HARDENED handle_new_user (AFTER INSERT on auth.users)
---    Wraps everything in EXCEPTION so a profile-creation error NEVER blocks auth.
--- ─────────────────────────────────────────────────────────────────────────────
-CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-DECLARE
-  v_org_id      UUID;
-  v_org_name    TEXT;
-  v_full_name   TEXT;
-  v_first_name  TEXT;
-  v_last_name   TEXT;
-  v_phone       TEXT;
-  v_role        public.user_role;
-  v_db_role     TEXT;
-BEGIN
-  -- Extract metadata safely
-  v_first_name := COALESCE(NEW.raw_user_meta_data->>'first_name', '');
-  v_last_name  := COALESCE(NEW.raw_user_meta_data->>'last_name',  '');
-  v_full_name  := COALESCE(
-    NULLIF(TRIM(NEW.raw_user_meta_data->>'full_name'), ''),
-    NULLIF(TRIM(v_first_name || ' ' || v_last_name),  ''),
-    split_part(NEW.email, '@', 1)
-  );
-  v_phone    := NULLIF(TRIM(COALESCE(NEW.raw_user_meta_data->>'phone', '')), '');
-  v_org_name := NULLIF(TRIM(COALESCE(NEW.raw_user_meta_data->>'organization_name', '')), '');
-  v_db_role  := LOWER(COALESCE(NEW.raw_user_meta_data->>'role', 'customer'));
-
-  v_role := CASE v_db_role
-    WHEN 'admin'      THEN 'admin'::public.user_role
-    WHEN 'manager'    THEN 'manager'::public.user_role
-    WHEN 'technician' THEN 'technician'::public.user_role
-    ELSE                   'customer'::public.user_role
-  END;
-
-  BEGIN
-    -- Create org if provided
-    IF v_org_name IS NOT NULL THEN
-      INSERT INTO public.organizations (name, contact_email)
-      VALUES (v_org_name, NEW.email)
-      ON CONFLICT DO NOTHING
-      RETURNING id INTO v_org_id;
-    END IF;
-
-    -- Upsert profile (ON CONFLICT ensures idempotency)
-    INSERT INTO public.users (id, full_name, role, organization_id, phone_number, updated_at)
-    VALUES (NEW.id, v_full_name, v_role, v_org_id, v_phone, NOW())
-    ON CONFLICT (id) DO UPDATE SET
-      full_name       = COALESCE(NULLIF(EXCLUDED.full_name, ''), public.users.full_name),
-      phone_number    = COALESCE(EXCLUDED.phone_number,  public.users.phone_number),
-      organization_id = COALESCE(EXCLUDED.organization_id, public.users.organization_id),
-      -- Only promote role from default if the current stored role is still 'customer'
-      -- and the new metadata specifies something else (prevents accidental downgrades)
-      role = CASE
-        WHEN public.users.role = 'customer' AND EXCLUDED.role <> 'customer'
-          THEN EXCLUDED.role
-        ELSE public.users.role
-      END,
-      updated_at = NOW();
-
-  EXCEPTION WHEN OTHERS THEN
-    -- Log but never block the auth INSERT
-    RAISE WARNING 'handle_new_user: profile upsert failed for % — %', NEW.id, SQLERRM;
-  END;
-
-  RETURN NEW;
-END;
-$$;
-
--- Re-attach trigger (idempotent)
-DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
-CREATE TRIGGER on_auth_user_created
-  AFTER INSERT ON auth.users
-  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
-
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- 2. NEW TRIGGER: handle_user_confirmed (AFTER UPDATE on auth.users)

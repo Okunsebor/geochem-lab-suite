@@ -1,7 +1,6 @@
 export type SampleStatus =
   | "Received"
   | "Verified"
-  | "Registered"
   | "In Preparation"
   | "In Analysis"
   | "Completed"
@@ -9,7 +8,6 @@ export type SampleStatus =
 export const SAMPLE_STATUSES: SampleStatus[] = [
   "Received",
   "Verified",
-  "Registered",
   "In Preparation",
   "In Analysis",
   "Completed",

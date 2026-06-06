@@ -35,33 +35,83 @@ CREATE INDEX IF NOT EXISTS idx_tracking_updates_sample_created
 ALTER TABLE public.sample_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.tracking_updates ENABLE ROW LEVEL SECURITY;
 
-DO $$
+DO $
 BEGIN
-  CREATE POLICY "sample_logs_select_authenticated"
-    ON public.sample_logs FOR SELECT TO authenticated USING (true);
+  CREATE POLICY "sample_logs_select"
+    ON public.sample_logs FOR SELECT TO authenticated
+    USING (
+      public.is_lab_coordinator()
+      OR sample_id IN (
+        SELECT s.id FROM public.samples s
+        JOIN public.projects p ON s.project_id = p.id
+        WHERE p.organization_id = public.current_user_org_id()
+      )
+    );
 EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+END $;
 
-DO $$
+DO $
 BEGIN
-  CREATE POLICY "sample_logs_insert_authenticated"
-    ON public.sample_logs FOR INSERT TO authenticated WITH CHECK (true);
+  CREATE POLICY "sample_logs_insert"
+    ON public.sample_logs FOR INSERT TO authenticated
+    WITH CHECK (public.is_lab_coordinator());
 EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+END $;
 
-DO $$
+DO $
 BEGIN
-  CREATE POLICY "tracking_updates_select_authenticated"
-    ON public.tracking_updates FOR SELECT TO authenticated USING (true);
+  CREATE POLICY "sample_logs_update"
+    ON public.sample_logs FOR UPDATE TO authenticated
+    USING (public.is_lab_coordinator());
 EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+END $;
 
-DO $$
+DO $
 BEGIN
-  CREATE POLICY "tracking_updates_insert_authenticated"
-    ON public.tracking_updates FOR INSERT TO authenticated WITH CHECK (true);
+  CREATE POLICY "sample_logs_delete"
+    ON public.sample_logs FOR DELETE TO authenticated
+    USING (public.is_lab_coordinator());
 EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+END $;
+
+DO $
+BEGIN
+  CREATE POLICY "tracking_updates_select"
+    ON public.tracking_updates FOR SELECT TO authenticated
+    USING (
+      public.is_lab_coordinator()
+      OR sample_id IN (
+        SELECT s.id FROM public.samples s
+        JOIN public.projects p ON s.project_id = p.id
+        WHERE p.organization_id = public.current_user_org_id()
+      )
+    );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $;
+
+DO $
+BEGIN
+  CREATE POLICY "tracking_updates_insert"
+    ON public.tracking_updates FOR INSERT TO authenticated
+    WITH CHECK (public.is_lab_coordinator());
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $;
+
+DO $
+BEGIN
+  CREATE POLICY "tracking_updates_update"
+    ON public.tracking_updates FOR UPDATE TO authenticated
+    USING (public.is_lab_coordinator());
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $;
+
+DO $
+BEGIN
+  CREATE POLICY "tracking_updates_delete"
+    ON public.tracking_updates FOR DELETE TO authenticated
+    USING (public.is_lab_coordinator());
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $;
 
 CREATE OR REPLACE FUNCTION public.gcs_insert_tracking_event(
   p_sample_id UUID,
@@ -126,7 +176,7 @@ CREATE OR REPLACE FUNCTION public.gcs_on_samples_tracking()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 SECURITY DEFINER
-AS $$
+AS $
 DECLARE
   v_event_label TEXT;
   v_summary TEXT;
@@ -140,7 +190,7 @@ BEGIN
       NULL,
       NEW.status::TEXT,
       'Intake',
-      NEW.technician,
+      NULL,
       jsonb_build_object('source', 'samples.insert')
     );
     RETURN NEW;
@@ -149,7 +199,6 @@ BEGIN
   IF TG_OP = 'UPDATE' AND NEW.status IS DISTINCT FROM OLD.status THEN
     v_event_label := CASE NEW.status::TEXT
       WHEN 'Verified' THEN 'Sample Verified'
-      WHEN 'Registered' THEN 'Sample Registered'
       WHEN 'In Preparation' THEN 'Preparation Started'
       WHEN 'In Analysis' THEN 'Analysis Started'
       WHEN 'Completed' THEN 'Sample Completed'
@@ -167,14 +216,14 @@ BEGIN
       OLD.status::TEXT,
       NEW.status::TEXT,
       'Workflow',
-      NEW.technician,
+      NULL,
       jsonb_build_object('source', 'samples.update', 'from', OLD.status, 'to', NEW.status)
     );
   END IF;
 
   RETURN NEW;
 END;
-$$;
+$;
 
 DROP TRIGGER IF EXISTS trg_gcs_samples_tracking ON public.samples;
 CREATE TRIGGER trg_gcs_samples_tracking
