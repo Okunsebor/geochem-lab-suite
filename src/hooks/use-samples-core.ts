@@ -209,9 +209,8 @@ export function useSamplesCore(
 
           await supabase.from("custody_logs").insert({
             sample_id: newSampleId,
-            performed_by_user_id: currentUser?.id?.toString() || "1",
             action: "Received at intake",
-            comments: "Intake registered in database",
+            notes: "Intake registered in database",
           });
 
           syncSamplesFromDb();
@@ -348,9 +347,8 @@ export function useSamplesCore(
 
         await supabase.from("custody_logs").insert({
           sample_id: sampleId,
-          performed_by_user_id: currentUser?.id?.toString() || "1",
           action: `Status updated to ${status}`,
-          comments: `Moved through workflow step by ${currentName}`,
+          notes: `Moved through workflow step by ${currentName}`,
         });
 
         syncSamplesFromDb();
@@ -419,9 +417,8 @@ export function useSamplesCore(
 
       await supabase.from("custody_logs").insert({
         sample_id: sampleId,
-        performed_by_user_id: currentUser?.id?.toString() || "1",
         action: "Verified & Accepted",
-        comments: notes,
+        notes: notes,
       });
 
       syncSamplesFromDb();
@@ -479,9 +476,8 @@ export function useSamplesCore(
 
       await supabase.from("custody_logs").insert({
         sample_id: sampleId,
-        performed_by_user_id: currentUser?.id?.toString() || "1",
         action: "Sample Rejected",
-        comments: reason,
+        notes: reason,
       });
 
       syncSamplesFromDb();
@@ -535,9 +531,8 @@ export function useSamplesCore(
 
       await supabase.from("custody_logs").insert({
         sample_id: sampleId,
-        performed_by_user_id: currentUser?.id?.toString() || "1",
         action: "Storage Location Assigned",
-        comments: `Moved to rack/shelf ${location}`,
+        notes: `Moved to rack/shelf ${location}`,
       });
 
       syncSamplesFromDb();
@@ -648,9 +643,8 @@ export function useSamplesCore(
 
       await supabase.from("custody_logs").insert({
         sample_id: sampleId,
-        performed_by_user_id: currentUser?.id?.toString() || "1",
         action: `Barcode Scanned: ${actionDetails}`,
-        comments: `Scanned at: ${location || "Assigned station"}`,
+        notes: `Scanned at: ${location || "Assigned station"}`,
       });
 
       syncSamplesFromDb();
