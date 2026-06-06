@@ -211,13 +211,11 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Create triggers for critical tables
-DROP TRIGGER IF EXISTS audit_samples_changes ON public.samples;
-CREATE TRIGGER audit_samples_changes
+CREATE OR REPLACE TRIGGER audit_samples_changes
     AFTER INSERT OR UPDATE OR DELETE ON public.samples
     FOR EACH ROW EXECUTE FUNCTION public.process_audit_log();
 
-DROP TRIGGER IF EXISTS audit_analytical_results_changes ON public.analytical_results;
-CREATE TRIGGER audit_analytical_results_changes
+CREATE OR REPLACE TRIGGER audit_analytical_results_changes
     AFTER INSERT OR UPDATE OR DELETE ON public.analytical_results
     FOR EACH ROW EXECUTE FUNCTION public.process_audit_log();
 
@@ -391,8 +389,7 @@ BEGIN
 END;
 $$;
 
-DROP TRIGGER IF EXISTS trg_prep_job_updated_at ON preparation_jobs;
-CREATE TRIGGER trg_prep_job_updated_at
+CREATE OR REPLACE TRIGGER trg_prep_job_updated_at
   BEFORE UPDATE ON preparation_jobs
   FOR EACH ROW EXECUTE FUNCTION update_prep_job_updated_at();
 
@@ -619,8 +616,7 @@ CREATE POLICY "report_logs_delete" ON public.report_logs FOR DELETE USING ((SELE
 -- ─────────────────────────────────────────────
 -- AUDIT TRIGGER LINKAGE
 -- ─────────────────────────────────────────────
-DROP TRIGGER IF EXISTS audit_reports_changes ON public.reports;
-CREATE TRIGGER audit_reports_changes
+CREATE OR REPLACE TRIGGER audit_reports_changes
     AFTER INSERT OR UPDATE OR DELETE ON public.reports
     FOR EACH ROW EXECUTE FUNCTION public.process_audit_log();
 
@@ -709,8 +705,7 @@ BEGIN
 END;
 $$;
 
-DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
-CREATE TRIGGER on_auth_user_created
+CREATE OR REPLACE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
@@ -831,8 +826,7 @@ BEGIN
 END;
 $$;
 
-DROP TRIGGER IF EXISTS trg_prevent_user_privilege_escalation ON public.users;
-CREATE TRIGGER trg_prevent_user_privilege_escalation
+CREATE OR REPLACE TRIGGER trg_prevent_user_privilege_escalation
   BEFORE UPDATE ON public.users
   FOR EACH ROW
   EXECUTE FUNCTION public.prevent_user_privilege_escalation();
@@ -867,8 +861,7 @@ BEGIN
 END;
 $$;
 
-DROP TRIGGER IF EXISTS trg_audit_user_lifecycle_events ON public.users;
-CREATE TRIGGER trg_audit_user_lifecycle_events
+CREATE OR REPLACE TRIGGER trg_audit_user_lifecycle_events
   AFTER INSERT OR UPDATE OR DELETE ON public.users
   FOR EACH ROW
   EXECUTE FUNCTION public.audit_user_lifecycle_events();
@@ -1158,8 +1151,7 @@ BEGIN
 END;
 $$;
 
-DROP TRIGGER IF EXISTS trg_gcs_samples_tracking ON public.samples;
-CREATE TRIGGER trg_gcs_samples_tracking
+CREATE OR REPLACE TRIGGER trg_gcs_samples_tracking
   AFTER INSERT OR UPDATE ON public.samples
   FOR EACH ROW
   EXECUTE FUNCTION public.gcs_on_samples_tracking();
@@ -1206,8 +1198,7 @@ BEGIN
 END;
 $$;
 
-DROP TRIGGER IF EXISTS trg_gcs_prep_steps_tracking ON public.preparation_steps;
-CREATE TRIGGER trg_gcs_prep_steps_tracking
+CREATE OR REPLACE TRIGGER trg_gcs_prep_steps_tracking
   AFTER UPDATE ON public.preparation_steps
   FOR EACH ROW
   EXECUTE FUNCTION public.gcs_on_prep_steps_tracking();
@@ -1252,8 +1243,7 @@ BEGIN
 END;
 $$;
 
-DROP TRIGGER IF EXISTS trg_gcs_analysis_runs_tracking ON public.analytical_runs;
-CREATE TRIGGER trg_gcs_analysis_runs_tracking
+CREATE OR REPLACE TRIGGER trg_gcs_analysis_runs_tracking
   AFTER UPDATE ON public.analytical_runs
   FOR EACH ROW
   EXECUTE FUNCTION public.gcs_on_analysis_runs_tracking();
@@ -1287,8 +1277,7 @@ BEGIN
 END;
 $$;
 
-DROP TRIGGER IF EXISTS trg_gcs_results_tracking ON public.analytical_results;
-CREATE TRIGGER trg_gcs_results_tracking
+CREATE OR REPLACE TRIGGER trg_gcs_results_tracking
   AFTER INSERT OR UPDATE ON public.analytical_results
   FOR EACH ROW
   EXECUTE FUNCTION public.gcs_on_results_tracking();
@@ -1346,8 +1335,7 @@ BEGIN
 END;
 $$;
 
-DROP TRIGGER IF EXISTS trg_gcs_reports_tracking ON public.reports;
-CREATE TRIGGER trg_gcs_reports_tracking
+CREATE OR REPLACE TRIGGER trg_gcs_reports_tracking
   AFTER INSERT OR UPDATE ON public.reports
   FOR EACH ROW
   EXECUTE FUNCTION public.gcs_on_reports_tracking();
@@ -1664,8 +1652,7 @@ BEGIN
 END;
 $$;
 
-DROP TRIGGER IF EXISTS trg_gcs_tracking_notification_fanout ON public.tracking_updates;
-CREATE TRIGGER trg_gcs_tracking_notification_fanout
+CREATE OR REPLACE TRIGGER trg_gcs_tracking_notification_fanout
   AFTER INSERT ON public.tracking_updates
   FOR EACH ROW
   EXECUTE FUNCTION public.gcs_notify_users_for_tracking_event();
@@ -1692,8 +1679,7 @@ BEGIN
 END;
 $$;
 
-DROP TRIGGER IF EXISTS trg_gcs_account_approved_notify ON public.users;
-CREATE TRIGGER trg_gcs_account_approved_notify
+CREATE OR REPLACE TRIGGER trg_gcs_account_approved_notify
   AFTER INSERT ON public.users
   FOR EACH ROW
   EXECUTE FUNCTION public.gcs_notify_account_approved();
@@ -1733,8 +1719,7 @@ BEGIN
 END;
 $$;
 
-DROP TRIGGER IF EXISTS trg_gcs_auth_security_notify ON public.auth_audit_events;
-CREATE TRIGGER trg_gcs_auth_security_notify
+CREATE OR REPLACE TRIGGER trg_gcs_auth_security_notify
   AFTER INSERT ON public.auth_audit_events
   FOR EACH ROW
   EXECUTE FUNCTION public.gcs_notify_admin_security_events();
@@ -1918,8 +1903,7 @@ BEGIN
 END;
 $$;
 
-DROP TRIGGER IF EXISTS trg_sync_user_role_to_auth ON public.users;
-CREATE TRIGGER trg_sync_user_role_to_auth
+CREATE OR REPLACE TRIGGER trg_sync_user_role_to_auth
   AFTER INSERT OR UPDATE ON public.users
   FOR EACH ROW
   EXECUTE FUNCTION public.sync_user_role_to_auth_metadata();
@@ -1991,8 +1975,7 @@ BEGIN
 END;
 $$;
 
-DROP TRIGGER IF EXISTS on_auth_user_confirmed ON auth.users;
-CREATE TRIGGER on_auth_user_confirmed
+CREATE OR REPLACE TRIGGER on_auth_user_confirmed
   AFTER UPDATE ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_user_confirmed();
 
