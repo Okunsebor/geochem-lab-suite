@@ -53,7 +53,9 @@ export function ReportsFeature() {
 
   // Eligible samples for compilation (completed samples that don't have a report yet)
   const compileEligibleSamples = samples.filter(
-    (s) => s.status === "Completed" && !reports.some((r) => r.sample === s.id),
+    (s) =>
+      (s.status === "Completed" || s.status === "Report Ready") &&
+      !reports.some((r) => r.sample === s.id),
   );
 
   const handleApprove = async (id: string) => {
@@ -118,12 +120,7 @@ export function ReportsFeature() {
 
   // Find sample info for preview
   const previewSample = activeReport ? samples.find((s) => s.id === activeReport.sample) : null;
-  const previewResults = previewSample?.results || [
-    { element: "Au", value: "2.41", unit: "g/t", method: "FA-AAS", qa: "Pass" },
-    { element: "Ag", value: "18.2", unit: "g/t", method: "ICP-MS", qa: "Pass" },
-    { element: "Cu", value: "1.24", unit: "%", method: "ICP-OES", qa: "Pass" },
-    { element: "Pb", value: "0.34", unit: "%", method: "ICP-OES", qa: "Pass" },
-  ];
+  const previewResults = previewSample?.results || [];
 
   // Filtering reports
   const filteredReports = reports.filter((r) => {
@@ -397,16 +394,24 @@ export function ReportsFeature() {
                       </tr>
                     </thead>
                     <tbody>
-                      {previewResults.map((r: any) => (
-                        <tr key={r.element} className="border-b border-slate-100">
-                          <td className="py-1 px-1 font-semibold">{r.element}</td>
-                          <td className="py-1 px-1 font-mono font-bold text-slate-900">
-                            {r.value}
+                      {previewResults.length === 0 ? (
+                        <tr>
+                          <td colSpan={4} className="py-2 px-1 text-center text-slate-400 italic">
+                            No analytical results recorded
                           </td>
-                          <td className="py-1 px-1">{r.unit}</td>
-                          <td className="py-1 px-1 text-right text-slate-500">{r.method}</td>
                         </tr>
-                      ))}
+                      ) : (
+                        previewResults.map((r: any) => (
+                          <tr key={r.element} className="border-b border-slate-100">
+                            <td className="py-1 px-1 font-semibold">{r.element}</td>
+                            <td className="py-1 px-1 font-mono font-bold text-slate-900">
+                              {r.value}
+                            </td>
+                            <td className="py-1 px-1">{r.unit}</td>
+                            <td className="py-1 px-1 text-right text-slate-500">{r.method}</td>
+                          </tr>
+                        ))
+                      )}
                     </tbody>
                   </table>
                 </div>

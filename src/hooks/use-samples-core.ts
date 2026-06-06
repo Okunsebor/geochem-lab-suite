@@ -98,7 +98,11 @@ export function useSamplesCore(
           special_instructions,
           acceptance_status,
           rejection_reason,
-          verification_notes
+          verification_notes,
+          sample_notes (*),
+          analytical_results (*),
+          custody_logs (*),
+          sample_attachments (*)
         `);
 
       if (error) {
@@ -111,10 +115,10 @@ export function useSamplesCore(
             const existing = prev.find((x) => x.id === s.id);
             return mapDbSampleToUi(
               s,
-              existing?.notes || [],
-              existing?.results || [],
-              existing?.custody || [],
-              existing?.attachments || [],
+              s.sample_notes || existing?.notes || [],
+              s.analytical_results || existing?.results || [],
+              s.custody_logs || existing?.custody || [],
+              s.sample_attachments || existing?.attachments || [],
             );
           });
           localStorage.setItem("gcs_samples", JSON.stringify(mapped));
@@ -177,10 +181,7 @@ export function useSamplesCore(
         receivedFrom: sampleData.receivedFrom || "Field Courier",
         specialInstructions: sampleData.specialInstructions,
         notes: [],
-        results: [
-          { element: "Au", value: "—", unit: "g/t", method: "FA-AAS", qa: "Pending Approval" },
-          { element: "Ag", value: "—", unit: "g/t", method: "ICP-MS", qa: "Pending Approval" },
-        ],
+        results: [],
         custody: [{ action: "Received at intake", technician: currentName, time: "Just now" }],
       };
 
@@ -210,25 +211,6 @@ export function useSamplesCore(
             action: "Received at intake",
             comments: "Intake registered in database",
           });
-
-          await supabase.from("analytical_results").insert([
-            {
-              sample_id: newSampleId,
-              element: "Au",
-              value: "—",
-              unit: "g/t",
-              method: "FA-AAS",
-              qa_status: "Pending Approval",
-            },
-            {
-              sample_id: newSampleId,
-              element: "Ag",
-              value: "—",
-              unit: "g/t",
-              method: "ICP-MS",
-              qa_status: "Pending Approval",
-            },
-          ]);
 
           syncSamplesFromDb();
         } catch (err: any) {
@@ -277,6 +259,7 @@ export function useSamplesCore(
       container: sampleData.container || "Calico Bag",
       receivedFrom: sampleData.receivedFrom || "Field Courier",
       specialInstructions: sampleData.specialInstructions,
+      results: [],
     } as Sample;
   };
 

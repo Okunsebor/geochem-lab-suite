@@ -133,11 +133,17 @@ export function ResultEntryModal({
                 <tr key={idx} className="[&>td]:py-2">
                   <td className="pr-3">
                     <input
+                      list={`elements-${idx}`}
                       value={row.element}
                       onChange={(e) => updateRow(idx, "element", e.target.value)}
                       placeholder="Au"
                       className="w-20 rounded border border-border bg-background px-2 py-1.5 text-xs font-mono focus:outline-none focus:ring-1 focus:ring-primary/40"
                     />
+                    <datalist id={`elements-${idx}`}>
+                      {method.elementsTargeted.map((el) => (
+                        <option key={el} value={el} />
+                      ))}
+                    </datalist>
                   </td>
                   <td className="pr-3">
                     <input
