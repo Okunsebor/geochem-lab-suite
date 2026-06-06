@@ -17,7 +17,7 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 STABLE
 SET search_path = public
-AS $
+AS $$
 DECLARE
   v_role public.user_role;
 BEGIN
@@ -26,7 +26,31 @@ BEGIN
   WHERE id = auth.uid();
   RETURN v_role;
 END;
-$;
+$$;
+
+CREATE OR REPLACE FUNCTION public.is_lab_coordinator()
+RETURNS boolean
+LANGUAGE plpgsql
+SECURITY DEFINER
+STABLE
+SET search_path = public
+AS $$
+BEGIN
+  RETURN public.current_user_role() IN ('admin', 'manager', 'technician');
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS boolean
+LANGUAGE plpgsql
+SECURITY DEFINER
+STABLE
+SET search_path = public
+AS $$
+BEGIN
+  RETURN public.current_user_role() = 'admin';
+END;
+$$;
 
 CREATE OR REPLACE FUNCTION public.current_user_org_id()
 RETURNS uuid
@@ -34,7 +58,7 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 STABLE
 SET search_path = public
-AS $
+AS $$
 DECLARE
   v_org_id uuid;
 BEGIN
@@ -43,7 +67,7 @@ BEGIN
   WHERE id = auth.uid();
   RETURN v_org_id;
 END;
-$;
+$$;
 
 CREATE OR REPLACE FUNCTION public.is_lab_coordinator()
 RETURNS boolean
@@ -51,7 +75,7 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 STABLE
 SET search_path = public
-AS $
+AS $$
 BEGIN
   RETURN public.current_user_role() IN ('admin', 'manager', 'technician');
 END;
@@ -63,7 +87,7 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 STABLE
 SET search_path = public
-AS $
+AS $$
 BEGIN
   RETURN public.current_user_role() = 'admin';
 END;

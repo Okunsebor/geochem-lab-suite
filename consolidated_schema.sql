@@ -538,7 +538,7 @@ RETURNS TRIGGER
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
-AS $
+AS $$
 DECLARE
   v_org_id      UUID;
   v_org_name    TEXT;
@@ -597,7 +597,7 @@ BEGIN
 
   RETURN NEW;
 END;
-$;
+$$;
 
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
@@ -628,7 +628,7 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 STABLE
 SET search_path = public
-AS $
+AS $$
 DECLARE
   v_role public.user_role;
 BEGIN
@@ -637,7 +637,31 @@ BEGIN
   WHERE id = auth.uid();
   RETURN v_role;
 END;
-$;
+$$;
+
+CREATE OR REPLACE FUNCTION public.is_lab_coordinator()
+RETURNS boolean
+LANGUAGE plpgsql
+SECURITY DEFINER
+STABLE
+SET search_path = public
+AS $$
+BEGIN
+  RETURN public.current_user_role() IN ('admin', 'manager', 'technician');
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS boolean
+LANGUAGE plpgsql
+SECURITY DEFINER
+STABLE
+SET search_path = public
+AS $$
+BEGIN
+  RETURN public.current_user_role() = 'admin';
+END;
+$$;
 
 CREATE OR REPLACE FUNCTION public.current_user_org_id()
 RETURNS uuid
@@ -645,7 +669,7 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 STABLE
 SET search_path = public
-AS $
+AS $$
 DECLARE
   v_org_id uuid;
 BEGIN
@@ -654,7 +678,7 @@ BEGIN
   WHERE id = auth.uid();
   RETURN v_org_id;
 END;
-$;
+$$;
 
 CREATE OR REPLACE FUNCTION public.is_lab_coordinator()
 RETURNS boolean
@@ -662,7 +686,7 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 STABLE
 SET search_path = public
-AS $
+AS $$
 BEGIN
   RETURN public.current_user_role() IN ('admin', 'manager', 'technician');
 END;
@@ -674,7 +698,7 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 STABLE
 SET search_path = public
-AS $
+AS $$
 BEGIN
   RETURN public.current_user_role() = 'admin';
 END;
@@ -778,7 +802,7 @@ CREATE INDEX IF NOT EXISTS idx_tracking_updates_sample_created
 ALTER TABLE public.sample_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.tracking_updates ENABLE ROW LEVEL SECURITY;
 
-DO $
+DO $$
 BEGIN
   CREATE POLICY "sample_logs_select"
     ON public.sample_logs FOR SELECT TO authenticated
@@ -791,33 +815,33 @@ BEGIN
       )
     );
 EXCEPTION WHEN duplicate_object THEN NULL;
-END $;
+END $$;
 
-DO $
+DO $$
 BEGIN
   CREATE POLICY "sample_logs_insert"
     ON public.sample_logs FOR INSERT TO authenticated
     WITH CHECK (public.is_lab_coordinator());
 EXCEPTION WHEN duplicate_object THEN NULL;
-END $;
+END $$;
 
-DO $
+DO $$
 BEGIN
   CREATE POLICY "sample_logs_update"
     ON public.sample_logs FOR UPDATE TO authenticated
     USING (public.is_lab_coordinator());
 EXCEPTION WHEN duplicate_object THEN NULL;
-END $;
+END $$;
 
-DO $
+DO $$
 BEGIN
   CREATE POLICY "sample_logs_delete"
     ON public.sample_logs FOR DELETE TO authenticated
     USING (public.is_lab_coordinator());
 EXCEPTION WHEN duplicate_object THEN NULL;
-END $;
+END $$;
 
-DO $
+DO $$
 BEGIN
   CREATE POLICY "tracking_updates_select"
     ON public.tracking_updates FOR SELECT TO authenticated
@@ -830,31 +854,31 @@ BEGIN
       )
     );
 EXCEPTION WHEN duplicate_object THEN NULL;
-END $;
+END $$;
 
-DO $
+DO $$
 BEGIN
   CREATE POLICY "tracking_updates_insert"
     ON public.tracking_updates FOR INSERT TO authenticated
     WITH CHECK (public.is_lab_coordinator());
 EXCEPTION WHEN duplicate_object THEN NULL;
-END $;
+END $$;
 
-DO $
+DO $$
 BEGIN
   CREATE POLICY "tracking_updates_update"
     ON public.tracking_updates FOR UPDATE TO authenticated
     USING (public.is_lab_coordinator());
 EXCEPTION WHEN duplicate_object THEN NULL;
-END $;
+END $$;
 
-DO $
+DO $$
 BEGIN
   CREATE POLICY "tracking_updates_delete"
     ON public.tracking_updates FOR DELETE TO authenticated
     USING (public.is_lab_coordinator());
 EXCEPTION WHEN duplicate_object THEN NULL;
-END $;
+END $$;
 
 CREATE OR REPLACE FUNCTION public.gcs_insert_tracking_event(
   p_sample_id UUID,
@@ -872,7 +896,14 @@ RETURNS VOID
 LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
+DECLARE
+  v_name TEXT;
 BEGIN
+  v_name := p_technician_name;
+  IF v_name IS NULL AND p_performed_by_user_id IS NOT NULL THEN
+    SELECT name INTO v_name FROM public.users WHERE id = p_performed_by_user_id;
+  END IF;
+
   INSERT INTO public.sample_logs (
     sample_id,
     event_type,
@@ -889,7 +920,7 @@ BEGIN
     p_status_before,
     p_status_after,
     p_performed_by_user_id,
-    p_technician_name,
+    v_name,
     COALESCE(p_metadata, '{}'::jsonb)
   );
 
@@ -909,64 +940,11 @@ BEGIN
     p_summary,
     p_stage,
     COALESCE(p_status_after, p_status_before),
-    p_technician_name,
+    v_name,
     COALESCE(p_metadata, '{}'::jsonb)
   );
 END;
 $$;
-
-CREATE OR REPLACE FUNCTION public.gcs_on_samples_tracking()
-RETURNS TRIGGER
-LANGUAGE plpgsql
-SECURITY DEFINER
-AS $
-DECLARE
-  v_event_label TEXT;
-  v_summary TEXT;
-BEGIN
-  IF TG_OP = 'INSERT' THEN
-    PERFORM public.gcs_insert_tracking_event(
-      NEW.id,
-      'status',
-      'Sample Received',
-      format('Sample %s received by GeoChem intake', NEW.id),
-      NULL,
-      NEW.status::TEXT,
-      'Intake',
-      NULL,
-      jsonb_build_object('source', 'samples.insert')
-    );
-    RETURN NEW;
-  END IF;
-
-  IF TG_OP = 'UPDATE' AND NEW.status IS DISTINCT FROM OLD.status THEN
-    v_event_label := CASE NEW.status::TEXT
-      WHEN 'Verified' THEN 'Sample Verified'
-      WHEN 'In Preparation' THEN 'Preparation Started'
-      WHEN 'In Analysis' THEN 'Analysis Started'
-      WHEN 'Completed' THEN 'Sample Completed'
-      WHEN 'Report Ready' THEN 'Report Generated'
-      ELSE format('Status Updated: %s', NEW.status::TEXT)
-    END;
-
-    v_summary := format('Status changed from %s to %s', OLD.status::TEXT, NEW.status::TEXT);
-
-    PERFORM public.gcs_insert_tracking_event(
-      NEW.id,
-      'status',
-      v_event_label,
-      v_summary,
-      OLD.status::TEXT,
-      NEW.status::TEXT,
-      'Workflow',
-      NULL,
-      jsonb_build_object('source', 'samples.update', 'from', OLD.status, 'to', NEW.status)
-    );
-  END IF;
-
-  RETURN NEW;
-END;
-$;
 
 DROP TRIGGER IF EXISTS trg_gcs_samples_tracking ON public.samples;
 CREATE TRIGGER trg_gcs_samples_tracking
