@@ -33,12 +33,12 @@ export function useSampleTracking(sampleId?: string) {
       const mapped: TrackingEvent[] = (data || []).map((row: any) => ({
         id: row.id,
         sampleId: row.sample_id,
-        eventType: row.event_type,
-        eventLabel: row.event_label,
-        summary: row.summary,
+        eventType: row.event_type || row.update_type || "Update",
+        eventLabel: row.event_label || row.summary || "Workflow",
+        summary: row.summary || "Status updated",
         stage: row.stage || undefined,
         status: row.status || undefined,
-        technicianName: row.technician_name || undefined,
+        technicianName: row.technician_name || row.performed_by || undefined,
         createdAt: row.created_at,
         metadata: row.metadata || {},
       }));
