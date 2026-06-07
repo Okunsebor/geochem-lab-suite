@@ -69,6 +69,7 @@ interface LimsStateContextType {
   uploadSampleAttachment: (sampleId: string, file: File) => Promise<any>;
   logBarcodeScan: (sampleId: string, location: string, actionDetails: string) => Promise<void>;
   fetchSampleDetails: (sampleId: string) => Promise<void>;
+  fetchSamplePage: (page: number, limit: number, filters?: any) => Promise<{ data: Sample[]; totalCount: number }>;
   addSupportTicket: (ticket: any) => void;
   updateSettings: (newSettings: any) => void;
 }
@@ -143,6 +144,7 @@ export function LimsStateProvider({ children }: { children: React.ReactNode }) {
     uploadSampleAttachment,
     logBarcodeScan,
     fetchSampleDetails,
+    fetchSamplePage,
   } = useSamplesCore(currentUser, currentName, addActivityHelper, addNotificationHelper, (id) =>
     generateReportRef.current(id),
   );
@@ -256,6 +258,7 @@ export function LimsStateProvider({ children }: { children: React.ReactNode }) {
         uploadSampleAttachment,
         logBarcodeScan,
         fetchSampleDetails,
+        fetchSamplePage,
         addSupportTicket,
         updateSettings,
       }}

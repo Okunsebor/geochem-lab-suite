@@ -164,7 +164,7 @@ const SampleTableRow = React.memo(
 SampleTableRow.displayName = "SampleTableRow";
 
 export function SamplesFilterTable() {
-  const { samples, registerSample, updateSampleStatus, logBarcodeScan } = useLimsState();
+  const { samples, registerSample, updateSampleStatus, logBarcodeScan, fetchSamplePage } = useLimsState();
   const navigate = useNavigate();
 
   // Search & Filter state
@@ -209,9 +209,34 @@ export function SamplesFilterTable() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isImporting, setIsImporting] = useState(false);
 
-  // Pagination state
+  // Pagination & Server State
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
+  const [serverData, setServerData] = useState<any[]>([]);
+  const [serverTotalCount, setServerTotalCount] = useState<number | null>(null);
+  const [isLoadingData, setIsLoadingData] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    const load = async () => {
+      setIsLoadingData(true);
+      const { data, totalCount } = await fetchSamplePage(currentPage, itemsPerPage, {
+        q,
+        status,
+        type: filterType,
+        priority: filterPriority,
+        sortField,
+        sortDirection,
+      });
+      if (active) {
+        setServerData(data);
+        setServerTotalCount(totalCount);
+        setIsLoadingData(false);
+      }
+    };
+    load();
+    return () => { active = false; };
+  }, [currentPage, itemsPerPage, q, status, filterType, filterPriority, sortField, sortDirection, fetchSamplePage]);
 
   // Sorting handler
   const handleSort = (field: string) => {
@@ -255,11 +280,15 @@ export function SamplesFilterTable() {
     });
   }, [filtered, sortField, sortDirection]);
 
-  // 3. Pagination
-  const totalPages = Math.ceil(sortedData.length / itemsPerPage);
+  // 3. Pagination & Final Data Resolution
+  const totalPages = serverTotalCount !== null 
+    ? Math.ceil(serverTotalCount / itemsPerPage) 
+    : Math.ceil(sortedData.length / itemsPerPage);
+    
   const paginatedData = useMemo(() => {
+    if (serverTotalCount !== null) return serverData;
     return sortedData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-  }, [sortedData, currentPage]);
+  }, [sortedData, currentPage, serverData, serverTotalCount, itemsPerPage]);
 
   // Bulk selectors
   const handleSelectAll = (checked: boolean) => {
@@ -697,11 +726,11 @@ export function SamplesFilterTable() {
         filters={filtersSlot}
         pagination={{
           currentPage,
-          totalPages,
+          totalPages: totalPages || 1,
           onPageChange: setCurrentPage,
         }}
-        totalCount={samples.length}
-        filteredCount={filtered.length}
+        totalCount={serverTotalCount !== null ? serverTotalCount : samples.length}
+        filteredCount={serverTotalCount !== null ? serverTotalCount : filtered.length}
       />
 
       {/* Floating Bulk Actions Bar */}

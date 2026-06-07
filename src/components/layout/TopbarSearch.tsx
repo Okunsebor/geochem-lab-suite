@@ -338,7 +338,7 @@ export function TopbarSearch() {
         className="group interactive-lift interactive-motion flex w-full max-w-md items-center gap-2 rounded-lg border border-border bg-card px-3 py-1.5 text-sm text-muted-foreground hover:border-primary/40"
       >
         <Search className="size-4" />
-        <span className="flex-1 text-left truncate">Search samples, reports, instruments...</span>
+        <span className="hidden sm:block flex-1 text-left truncate">Search samples, reports, instruments...</span>
         <kbd className="hidden sm:inline-flex items-center gap-0.5 rounded border border-border bg-muted px-1.5 py-0.5 text-[10px] font-mono shrink-0">
           <Command className="size-3" />K
         </kbd>

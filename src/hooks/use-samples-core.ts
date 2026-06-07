@@ -708,6 +708,52 @@ export function useSamplesCore(
     }
   };
 
+  const fetchSamplePage = async (page: number, limit: number, filters?: any) => {
+    try {
+      let query = supabase.from("samples").select(`
+          id, client_name, project_name, sample_type, status, priority, storage_location, weight_kg, created_at, technician, matrix, container, received_from, special_instructions, acceptance_status, rejection_reason, verification_notes, sample_notes (*), analytical_results (*), custody_logs (*), sample_attachments (*)
+        `, { count: "exact" });
+      
+      if (filters?.q) {
+        query = query.or(`id.ilike.%${filters.q}%,client_name.ilike.%${filters.q}%,project_name.ilike.%${filters.q}%`);
+      }
+      if (filters?.status && filters.status !== "All") {
+        query = query.eq("status", filters.status);
+      }
+      if (filters?.type && filters.type !== "All") {
+        query = query.eq("sample_type", filters.type);
+      }
+      if (filters?.priority && filters.priority !== "All") {
+        query = query.eq("priority", filters.priority);
+      }
+
+      if (filters?.sortField) {
+         let sf = filters.sortField;
+         if (sf === 'client') sf = 'client_name';
+         if (sf === 'project') sf = 'project_name';
+         if (sf === 'type') sf = 'sample_type';
+         query = query.order(sf, { ascending: filters.sortDirection === 'asc' });
+      } else {
+         query = query.order("created_at", { ascending: false });
+      }
+
+      const from = (page - 1) * limit;
+      const to = from + limit - 1;
+      query = query.range(from, to);
+
+      const { data, count, error } = await query;
+      if (error) throw error;
+
+      if (data) {
+        const mapped = data.map((s: any) => mapDbSampleToUi(s, s.sample_notes || [], s.analytical_results || [], s.custody_logs || [], s.sample_attachments || []));
+        return { data: mapped, totalCount: count || 0 };
+      }
+    } catch (e: any) {
+      console.warn("fetchSamplePage failed:", e.message);
+    }
+    return { data: [], totalCount: 0 };
+  };
+
   return {
     samples,
     setSamples,
@@ -722,5 +768,6 @@ export function useSamplesCore(
     uploadSampleAttachment,
     logBarcodeScan,
     fetchSampleDetails,
+    fetchSamplePage,
   };
 }

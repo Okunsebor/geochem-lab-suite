@@ -102,7 +102,7 @@ export function AppTopbar() {
           <Menu className="size-5" />
         </button>
 
-        <div className="flex flex-1 items-center gap-3">
+        <div className="flex flex-1 items-center gap-3 min-w-0">
           <TopbarSearch />
         </div>
 
