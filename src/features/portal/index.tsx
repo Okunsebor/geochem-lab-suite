@@ -313,23 +313,27 @@ export function PortalSubmitFeature() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const registered = registerSample({
-      client: tenantClient,
-      project: formData.project,
-      type: formData.type,
-      weight: formData.weight,
-      priority: priority,
-      location: "Inbound Bin",
-      matrix: formData.matrix,
-      container: "Poly Envelope",
-      receivedFrom: currentUser?.name ? `${currentUser.name} (Portal)` : "Jane Chen (Portal)",
-      specialInstructions: formData.specialInstructions,
-    });
+    try {
+      const registered = await registerSample({
+        client: tenantClient,
+        project: formData.project,
+        type: formData.type,
+        weight: formData.weight,
+        priority: priority,
+        location: "Inbound Bin",
+        matrix: formData.matrix,
+        container: "Poly Envelope",
+        receivedFrom: currentUser?.name ? `${currentUser.name} (Portal)` : "Jane Chen (Portal)",
+        specialInstructions: formData.specialInstructions,
+      });
 
-    toast.success(`Analytical job successfully ordered! Allocated LIMS ID: ${registered.id}`);
-    setSubmittedId(registered.id);
+      toast.success(`Analytical job successfully ordered! Allocated LIMS ID: ${registered.id}`);
+      setSubmittedId(registered.id);
+    } catch (err) {
+      // Error is toasted inside registerSample
+    }
   };
 
   if (submittedId) {

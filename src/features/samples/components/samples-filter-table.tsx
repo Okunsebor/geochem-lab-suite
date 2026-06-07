@@ -404,7 +404,7 @@ export function SamplesFilterTable() {
           const priority = (parts[4] as Priority) || "Normal";
           const location = parts[5] || "Inbound Bin";
 
-          registerSample({
+          await registerSample({
             client,
             project,
             type,

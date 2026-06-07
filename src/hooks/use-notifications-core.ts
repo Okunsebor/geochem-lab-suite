@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { SystemNotification } from "../types";
 import { supabase } from "@/lib/supabase";
 import { mapUiRoleToDb } from "@/lib/auth-utils";
+import { toast } from "sonner";
 
 export function useNotificationsCore(
   currentRole?: "Admin" | "Lab Coordinator" | "Customer",
@@ -68,26 +69,6 @@ export function useNotificationsCore(
           sendEmail?: boolean;
         },
     ) => {
-      const fallback: SystemNotification = {
-        id: Date.now().toString(),
-        title: newNotif.title,
-        body: newNotif.body,
-        kind: newNotif.kind,
-        isRead: false,
-        time: "Just now",
-        createdAt: new Date().toISOString(),
-        eventType: newNotif.eventType,
-        audienceRole: newNotif.audienceRole,
-        channel: newNotif.channel || "in-app",
-        metadata: newNotif.metadata,
-      };
-
-      setNotifications((prev) => {
-        const updated = [fallback, ...prev];
-        localStorage.setItem("gcs_notifications", JSON.stringify(updated));
-        return updated;
-      });
-
       try {
         const { data, error } = await supabase
           .from("notifications" as any)
@@ -110,7 +91,7 @@ export function useNotificationsCore(
 
         if (newNotif.sendEmail && (newNotif.targetUserId || sessionUserId)) {
           const recipient = newNotif.targetUserId || sessionUserId;
-          await supabase.from("notification_emails" as any).insert({
+          const { error: emailErr } = await supabase.from("notification_emails" as any).insert({
             notification_id: data?.id || null,
             recipient_user_id: recipient,
             recipient_email: "queued@geochem.local",
@@ -118,50 +99,77 @@ export function useNotificationsCore(
             body: newNotif.body || newNotif.title,
             status: "queued",
           });
+          if (emailErr) throw emailErr;
         }
-      } catch {
-        // silent fallback to local
+
+        const fallback: SystemNotification = {
+          id: data?.id || Date.now().toString(),
+          title: newNotif.title,
+          body: newNotif.body,
+          kind: newNotif.kind,
+          isRead: false,
+          time: "Just now",
+          createdAt: new Date().toISOString(),
+          eventType: newNotif.eventType,
+          audienceRole: newNotif.audienceRole,
+          channel: newNotif.channel || "in-app",
+          metadata: newNotif.metadata,
+        };
+
+        setNotifications((prev) => {
+          const updated = [fallback, ...prev];
+          localStorage.setItem("gcs_notifications", JSON.stringify(updated));
+          return updated;
+        });
+      } catch (err: any) {
+        toast.error(`Failed to add notification: ${err.message || "Unknown error"}`);
+        throw err;
       }
     },
     [currentRole, sessionUserId],
   );
 
   const markNotificationRead = useCallback(async (notificationId: string | number) => {
-    setNotifications((prev) => {
-      const updated = prev.map((n) =>
-        n.id === notificationId ? { ...n, isRead: true, readAt: new Date().toISOString() } : n,
-      );
-      localStorage.setItem("gcs_notifications", JSON.stringify(updated));
-      return updated;
-    });
-
     try {
-      await supabase
+      const { error } = await supabase
         .from("notifications" as any)
         .update({ is_read: true, read_at: new Date().toISOString() })
         .eq("id", notificationId as any);
-    } catch {
-      // local fallback only
+
+      if (error) throw error;
+
+      setNotifications((prev) => {
+        const updated = prev.map((n) =>
+          n.id === notificationId ? { ...n, isRead: true, readAt: new Date().toISOString() } : n,
+        );
+        localStorage.setItem("gcs_notifications", JSON.stringify(updated));
+        return updated;
+      });
+    } catch (err: any) {
+      toast.error(`Failed to mark notification read: ${err.message || "Unknown error"}`);
+      throw err;
     }
   }, []);
 
-  const markAllNotificationsRead = () => {
-    setNotifications((prev) => {
-      const updated = prev.map((n) => ({ ...n, isRead: true }));
-      localStorage.setItem("gcs_notifications", JSON.stringify(updated));
-      return updated;
-    });
-    void (async () => {
-      try {
-        await supabase
-          .from("notifications" as any)
-          .update({ is_read: true, read_at: new Date().toISOString() })
-          .eq("target_user_id", sessionUserId as any);
-      } catch {
-        // local fallback only
-      }
-    })();
-  };
+  const markAllNotificationsRead = useCallback(async () => {
+    try {
+      const { error } = await supabase
+        .from("notifications" as any)
+        .update({ is_read: true, read_at: new Date().toISOString() })
+        .eq("target_user_id", sessionUserId as any);
+
+      if (error) throw error;
+
+      setNotifications((prev) => {
+        const updated = prev.map((n) => ({ ...n, isRead: true }));
+        localStorage.setItem("gcs_notifications", JSON.stringify(updated));
+        return updated;
+      });
+    } catch (err: any) {
+      toast.error(`Failed to mark all notifications read: ${err.message || "Unknown error"}`);
+      throw err;
+    }
+  }, [sessionUserId]);
 
   const clearNotifications = () => {
     setNotifications([]);

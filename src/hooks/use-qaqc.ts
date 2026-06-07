@@ -186,70 +186,72 @@ export function useQaqc(): UseQaqcReturn {
 
   // ── Actions ───────────────────────────────────────────────────────────────
   const resolveFlag = useCallback(
-    (flagId: string, resolution: string, action: "Approved" | "Revised") => {
+    async (flagId: string, resolution: string, action: "Approved" | "Revised") => {
       const now = new Date().toISOString();
-      const updated = qaFlags.map((f) =>
-        f.id === flagId
-          ? {
-              ...f,
-              status: action as FlagStatus,
-              resolvedBy: currentName,
-              resolvedAt: now,
-              resolution,
-            }
-          : f,
-      );
-      updateFlags(updated);
-      (async () => {
-        try {
-          await supabase
-            .from("qa_flags" as any)
-            .update({
-              status: action,
-              resolved_by: currentName,
-              resolved_at: now,
-              resolution,
-            })
-            .eq("id", flagId);
-        } catch (e: any) {
-          console.warn("Flag resolve DB write failed:", e.message);
-        }
-      })();
+      try {
+        const { error } = await supabase
+          .from("qa_flags" as any)
+          .update({
+            status: action,
+            resolved_by: currentName,
+            resolved_at: now,
+            resolution,
+          })
+          .eq("id", flagId);
+        if (error) throw error;
+
+        const updated = qaFlags.map((f) =>
+          f.id === flagId
+            ? {
+                ...f,
+                status: action as FlagStatus,
+                resolvedBy: currentName,
+                resolvedAt: now,
+                resolution,
+              }
+            : f,
+        );
+        updateFlags(updated);
+      } catch (e: any) {
+        toast.error(`Error resolving flag: ${e.message}`);
+        throw e;
+      }
     },
     [qaFlags, currentName],
   );
 
   const raiseFlag = useCallback(
-    (flag: Omit<QaFlag, "id" | "raisedAt" | "raisedBy">): QaFlag => {
+    async (flag: Omit<QaFlag, "id" | "raisedAt" | "raisedBy">): Promise<QaFlag> => {
       const newFlag: QaFlag = {
         ...flag,
         id: `QF-${(Date.now() % 100000).toString().padStart(3, "0")}`,
         raisedBy: currentName,
         raisedAt: new Date().toISOString(),
       };
-      const updated = [newFlag, ...qaFlags];
-      updateFlags(updated);
-      (async () => {
-        try {
-          await supabase.from("qa_flags" as any).insert({
-            id: newFlag.id,
-            sample_id: newFlag.sampleId,
-            run_id: newFlag.runId,
-            element: newFlag.element,
-            check_type: newFlag.checkType,
-            observed_value: newFlag.observedValue,
-            expected_value: newFlag.expectedValue,
-            tolerance: newFlag.tolerance,
-            percent_deviation: newFlag.percentDeviation,
-            severity: newFlag.severity,
-            status: newFlag.status,
-            raised_by: newFlag.raisedBy,
-          });
-        } catch (e: any) {
-          console.warn("Raise flag DB write failed:", e.message);
-        }
-      })();
-      return newFlag;
+      try {
+        const { error } = await supabase.from("qa_flags" as any).insert({
+          id: newFlag.id,
+          sample_id: newFlag.sampleId,
+          run_id: newFlag.runId,
+          element: newFlag.element,
+          check_type: newFlag.checkType,
+          observed_value: newFlag.observedValue,
+          expected_value: newFlag.expectedValue,
+          tolerance: newFlag.tolerance,
+          percent_deviation: newFlag.percentDeviation,
+          severity: newFlag.severity,
+          status: newFlag.status,
+          raised_by: newFlag.raisedBy,
+        });
+        if (error) throw error;
+
+        const updated = [newFlag, ...qaFlags];
+        updateFlags(updated);
+        return newFlag;
+      } catch (e: any) {
+        toast.error(`Error raising flag: ${e.message}`);
+        throw e;
+      }
     },
     [qaFlags, currentName],
   );

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { AnalyticalReport, Sample, SampleStatus } from "../types";
 import { supabase, supabaseHelpers } from "../lib/supabase";
+import { toast } from "sonner";
 
 export function useReportsCore(
   currentName: string,
@@ -84,115 +85,83 @@ export function useReportsCore(
     const sample = samples.find((s) => s.id === sampleId);
     if (!sample) return;
 
-    setReports((prevReports) => {
-      const reportId = `RPT-${2030 + prevReports.length}`;
+    const reportId = `RPT-${2030 + reports.length}`;
 
-      const newReport: AnalyticalReport = {
+    const newReport: AnalyticalReport = {
+      id: reportId,
+      sample: sampleId,
+      client: sample.client,
+      status: "Pending Approval",
+      createdAt: new Date().toISOString(),
+      pages: 1,
+      history: [],
+    };
+
+    let pdfUrl = "";
+    try {
+      const { generateReportPdfBlob } = await import("../lib/report-service");
+      const pdfBlob = await generateReportPdfBlob(newReport, sample, sample.results || []);
+
+      try {
+        pdfUrl = await supabaseHelpers.uploadReportPdf(
+          reportId,
+          new File([pdfBlob], `${reportId}.pdf`, { type: "application/pdf" }),
+        );
+        newReport.pdfUrl = pdfUrl;
+      } catch (uploadErr) {
+        console.warn("Storage upload failed, fallback to local URL:", uploadErr);
+        pdfUrl = URL.createObjectURL(pdfBlob);
+        newReport.pdfUrl = pdfUrl;
+      }
+    } catch (pdfErr) {
+      console.warn("PDF generation failed:", pdfErr);
+    }
+
+    try {
+      const { error: insertErr } = await supabase.from("reports" as any).insert({
         id: reportId,
-        sample: sampleId,
+        sample_id: sampleId,
         client: sample.client,
+        client_org_id: sample.client === "Barrick Gold" ? "org-barrick" : "org-auric",
         status: "Pending Approval",
-        createdAt: new Date().toISOString(),
         pages: 1,
-        history: [],
-      };
+        pdf_url: pdfUrl || null,
+      });
+      if (insertErr) throw insertErr;
 
-      const doGenerate = async () => {
-        let pdfUrl = "";
-        try {
-          const { generateReportPdfBlob } = await import("../lib/report-service");
-          const pdfBlob = await generateReportPdfBlob(newReport, sample, sample.results || []);
+      const { error: logErr } = await supabase.from("report_logs" as any).insert({
+        report_id: reportId,
+        status: "Pending Approval",
+        action: "Generated",
+        performed_by: currentName,
+        comments: "Report compiled and draft generated awaiting approval.",
+      });
+      if (logErr) throw logErr;
 
-          try {
-            pdfUrl = await supabaseHelpers.uploadReportPdf(
-              reportId,
-              new File([pdfBlob], `${reportId}.pdf`, { type: "application/pdf" }),
-            );
-            newReport.pdfUrl = pdfUrl;
-          } catch (uploadErr) {
-            console.warn("Storage upload failed, fallback to local URL:", uploadErr);
-            pdfUrl = URL.createObjectURL(pdfBlob);
-            newReport.pdfUrl = pdfUrl;
-          }
-        } catch (pdfErr) {
-          console.warn("PDF generation failed:", pdfErr);
-        }
-
-        try {
-          await supabase.from("reports" as any).insert({
-            id: reportId,
-            sample_id: sampleId,
-            client: sample.client,
-            client_org_id: sample.client === "Barrick Gold" ? "org-barrick" : "org-auric",
-            status: "Pending Approval",
-            pages: 1,
-            pdf_url: pdfUrl || null,
-          });
-
-          await supabase.from("report_logs" as any).insert({
-            report_id: reportId,
-            status: "Pending Approval",
-            action: "Generated",
-            performed_by: currentName,
-            comments: "Report compiled and draft generated awaiting approval.",
-          });
-
-          syncReportsFromDb();
-        } catch (err) {
-          console.warn("Offline report creation fallback:", err);
-          // If offline, we update the state directly
-          setReports((current) => {
-            const withUrl = current.map((r) => (r.id === reportId ? { ...r, pdfUrl } : r));
-            localStorage.setItem("gcs_reports", JSON.stringify(withUrl));
-            return withUrl;
-          });
-        }
-      };
-
-      doGenerate();
-
-      const updated = [newReport, ...prevReports];
-      localStorage.setItem("gcs_reports", JSON.stringify(updated));
+      setReports((prevReports) => {
+        const updated = [newReport, ...prevReports];
+        localStorage.setItem("gcs_reports", JSON.stringify(updated));
+        return updated;
+      });
 
       addActivity(currentName, "compiled report draft", reportId);
       addNotification(`Report ${reportId} awaiting approval for GCS-${sampleId}`, "approval");
 
-      return updated;
-    });
+      await syncReportsFromDb();
+    } catch (err: any) {
+      toast.error(`LIMS Database Write Failed: ${err.message || "Could not generate report."}`);
+      throw err;
+    }
   };
 
   const approveReport = async (reportId: string, comments?: string) => {
-    let reportSampleId: string | undefined;
-
-    setReports((prev) => {
-      const now = new Date().toISOString();
-      const report = prev.find((r) => r.id === reportId);
-      if (report) {
-        reportSampleId = report.sample;
-      }
-      const updated = prev.map((r) => {
-        if (r.id === reportId) {
-          return {
-            ...r,
-            status: "Approved" as const,
-            approvedBy: currentName,
-            approvedAt: now,
-            comments: comments || undefined,
-          };
-        }
-        return r;
-      });
-      localStorage.setItem("gcs_reports", JSON.stringify(updated));
-      return updated;
-    });
-
-    if (reportSampleId) {
-      updateSampleStatusLocally(reportSampleId, "Report Ready");
-    }
+    const report = reports.find((r) => r.id === reportId);
+    if (!report) throw new Error("Report not found in LIMS registry.");
+    const reportSampleId = report.sample;
 
     try {
       const now = new Date().toISOString();
-      await supabase
+      const { error: reportErr } = await supabase
         .from("reports" as any)
         .update({
           status: "Approved",
@@ -202,51 +171,62 @@ export function useReportsCore(
         })
         .eq("id", reportId);
 
-      await supabase.from("report_logs" as any).insert({
+      if (reportErr) throw reportErr;
+
+      const { error: logErr } = await supabase.from("report_logs" as any).insert({
         report_id: reportId,
         status: "Approved",
         action: "Approved",
         performed_by: currentName,
         comments: comments || "Report verified, signed, and certified.",
       });
+      if (logErr) throw logErr;
 
       if (reportSampleId) {
-        await supabase
+        const { error: sampleErr } = await supabase
           .from("samples")
           .update({
             status: "Report Ready",
           })
           .eq("id", reportSampleId);
+        if (sampleErr) throw sampleErr;
       }
 
-      syncReportsFromDb();
-      syncSamplesFromDb();
-    } catch (err) {
-      console.warn("DB update failed for report approval:", err);
-    }
+      setReports((prev) => {
+        const updated = prev.map((r) => {
+          if (r.id === reportId) {
+            return {
+              ...r,
+              status: "Approved" as const,
+              approvedBy: currentName,
+              approvedAt: now,
+              comments: comments || undefined,
+            };
+          }
+          return r;
+        });
+        localStorage.setItem("gcs_reports", JSON.stringify(updated));
+        return updated;
+      });
 
-    addActivity(currentName, "approved report", reportId);
-    addNotification(`Report ${reportId} has been approved and signed`, "info");
+      if (reportSampleId) {
+        updateSampleStatusLocally(reportSampleId, "Report Ready");
+      }
+
+      addActivity(currentName, "approved report", reportId);
+      addNotification(`Report ${reportId} has been approved and signed`, "info");
+
+      await syncReportsFromDb();
+      await syncSamplesFromDb();
+    } catch (err: any) {
+      toast.error(`LIMS Database Write Failed: ${err.message || "Could not approve report."}`);
+      throw err;
+    }
   };
 
   const rejectReport = async (reportId: string, comments?: string) => {
-    setReports((prev) => {
-      const updated = prev.map((r) => {
-        if (r.id === reportId) {
-          return {
-            ...r,
-            status: "Revised" as const,
-            comments: comments || undefined,
-          };
-        }
-        return r;
-      });
-      localStorage.setItem("gcs_reports", JSON.stringify(updated));
-      return updated;
-    });
-
     try {
-      await supabase
+      const { error: reportErr } = await supabase
         .from("reports" as any)
         .update({
           status: "Revised",
@@ -254,43 +234,44 @@ export function useReportsCore(
         })
         .eq("id", reportId);
 
-      await supabase.from("report_logs" as any).insert({
+      if (reportErr) throw reportErr;
+
+      const { error: logErr } = await supabase.from("report_logs" as any).insert({
         report_id: reportId,
         status: "Revised",
         action: "Rejected",
         performed_by: currentName,
         comments: comments || "Report rejected back to draft.",
       });
+      if (logErr) throw logErr;
 
-      syncReportsFromDb();
-    } catch (err) {
-      console.warn("DB update failed for report rejection:", err);
+      setReports((prev) => {
+        const updated = prev.map((r) => {
+          if (r.id === reportId) {
+            return {
+              ...r,
+              status: "Revised" as const,
+              comments: comments || undefined,
+            };
+          }
+          return r;
+        });
+        localStorage.setItem("gcs_reports", JSON.stringify(updated));
+        return updated;
+      });
+
+      addActivity(currentName, "rejected report", reportId);
+      await syncReportsFromDb();
+    } catch (err: any) {
+      toast.error(`LIMS Database Write Failed: ${err.message || "Could not reject report."}`);
+      throw err;
     }
-
-    addActivity(currentName, "rejected report", reportId);
   };
 
   const deliverReport = async (reportId: string, recipientEmail: string) => {
-    setReports((prev) => {
-      const now = new Date().toISOString();
-      const updated = prev.map((r) => {
-        if (r.id === reportId) {
-          return {
-            ...r,
-            status: "Delivered" as const,
-            deliveredBy: currentName,
-            deliveredAt: now,
-          };
-        }
-        return r;
-      });
-      localStorage.setItem("gcs_reports", JSON.stringify(updated));
-      return updated;
-    });
-
     try {
       const now = new Date().toISOString();
-      await supabase
+      const { error: reportErr } = await supabase
         .from("reports" as any)
         .update({
           status: "Delivered",
@@ -299,20 +280,39 @@ export function useReportsCore(
         })
         .eq("id", reportId);
 
-      await supabase.from("report_logs" as any).insert({
+      if (reportErr) throw reportErr;
+
+      const { error: logErr } = await supabase.from("report_logs" as any).insert({
         report_id: reportId,
         status: "Delivered",
         action: "Delivered",
         performed_by: currentName,
         comments: `Report delivered via Portal/Email to ${recipientEmail}`,
       });
+      if (logErr) throw logErr;
 
-      syncReportsFromDb();
-    } catch (err) {
-      console.warn("DB update failed for report delivery:", err);
+      setReports((prev) => {
+        const updated = prev.map((r) => {
+          if (r.id === reportId) {
+            return {
+              ...r,
+              status: "Delivered" as const,
+              deliveredBy: currentName,
+              deliveredAt: now,
+            };
+          }
+          return r;
+        });
+        localStorage.setItem("gcs_reports", JSON.stringify(updated));
+        return updated;
+      });
+
+      addActivity(currentName, "delivered report", reportId);
+      await syncReportsFromDb();
+    } catch (err: any) {
+      toast.error(`LIMS Database Write Failed: ${err.message || "Could not deliver report."}`);
+      throw err;
     }
-
-    addActivity(currentName, "delivered report", reportId);
   };
 
   const downloadReportPdf = async (reportId: string) => {

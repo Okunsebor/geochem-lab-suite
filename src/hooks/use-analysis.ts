@@ -259,7 +259,7 @@ export function useAnalysis(): UseAnalysisReturn {
 
   // ── Actions ───────────────────────────────────────────────────────────────
   const assignSampleToInstrument = useCallback(
-    (sampleId: string, instrumentId: string, method: string, analyst: string): AnalyticalRun => {
+    async (sampleId: string, instrumentId: string, method: string, analyst: string): Promise<AnalyticalRun> => {
       const newRun: AnalyticalRun = {
         id: nextRunId(analysisRuns),
         sampleId,
@@ -269,87 +269,93 @@ export function useAnalysis(): UseAnalysisReturn {
         status: "Queued",
         results: [],
       };
-      updateRuns([newRun, ...analysisRuns]);
-      (async () => {
-        try {
-          await supabase.from("analytical_runs" as any).insert({
-            id: newRun.id,
-            sample_id: sampleId,
-            instrument_id: instrumentId,
-            method,
-            analyst_name: newRun.analystName,
-            status: "Queued",
-          });
-        } catch (e: any) {
-          console.warn("Assign run DB write failed:", e.message);
-        }
-      })();
-      return newRun;
+      try {
+        const { error } = await supabase.from("analytical_runs" as any).insert({
+          id: newRun.id,
+          sample_id: sampleId,
+          instrument_id: instrumentId,
+          method,
+          analyst_name: newRun.analystName,
+          status: "Queued",
+        });
+        if (error) throw error;
+
+        updateRuns([newRun, ...analysisRuns]);
+        return newRun;
+      } catch (e: any) {
+        toast.error(`Error assigning run: ${e.message}`);
+        throw e;
+      }
     },
     [analysisRuns, currentName],
   );
 
-  const setRunStatus = (runId: string, status: RunStatus, extra: Partial<AnalyticalRun> = {}) => {
-    const updated = analysisRuns.map((r) => (r.id === runId ? { ...r, status, ...extra } : r));
-    updateRuns(updated);
-    (async () => {
-      try {
-        await supabase
-          .from("analytical_runs" as any)
-          .update({ status, ...extra })
-          .eq("id", runId);
-      } catch (e: any) {
-        console.warn("Run status DB update failed:", e.message);
-      }
-    })();
+  const setRunStatus = async (runId: string, status: RunStatus, extra: Partial<AnalyticalRun> = {}) => {
+    try {
+      const { error } = await supabase
+        .from("analytical_runs" as any)
+        .update({ status, ...extra })
+        .eq("id", runId);
+      if (error) throw error;
+
+      const updated = analysisRuns.map((r) => (r.id === runId ? { ...r, status, ...extra } : r));
+      updateRuns(updated);
+    } catch (e: any) {
+      toast.error(`Error updating run status: ${e.message}`);
+      throw e;
+    }
   };
 
   const startRun = useCallback(
-    (runId: string) => setRunStatus(runId, "Running", { startedAt: new Date().toISOString() }),
+    async (runId: string) => await setRunStatus(runId, "Running", { startedAt: new Date().toISOString() }),
     [analysisRuns],
   );
   const completeRun = useCallback(
-    (runId: string) => setRunStatus(runId, "Complete", { completedAt: new Date().toISOString() }),
+    async (runId: string) => await setRunStatus(runId, "Complete", { completedAt: new Date().toISOString() }),
     [analysisRuns],
   );
-  const failRun = useCallback((runId: string) => setRunStatus(runId, "Failed"), [analysisRuns]);
+  const failRun = useCallback(async (runId: string) => await setRunStatus(runId, "Failed"), [analysisRuns]);
 
   const submitResults = useCallback(
-    (runId: string, results: AnalyticalResultFull[]) => {
-      const updated = analysisRuns.map((r) =>
-        r.id === runId
-          ? {
-              ...r,
-              results,
-              status: "Complete" as RunStatus,
-              completedAt: new Date().toISOString(),
-            }
-          : r,
-      );
-      updateRuns(updated);
-      (async () => {
-        try {
-          const payload = results.map((res) => ({
-            sample_id: res.sampleId,
-            element: res.element,
-            value: String(res.value),
-            unit: res.unit,
-            method: res.method,
-            instrument_id: res.instrumentId,
-            analyst_name: res.analystName,
-            qa_status: res.qaStatus,
-            flag_reason: res.flagReason,
-            run_id: runId,
-          }));
-          await supabase.from("analytical_results").insert(payload);
-          await supabase
-            .from("analytical_runs" as any)
-            .update({ status: "Complete", completed_at: new Date().toISOString() })
-            .eq("id", runId);
-        } catch (e: any) {
-          console.warn("Submit results DB write failed:", e.message);
-        }
-      })();
+    async (runId: string, results: AnalyticalResultFull[]) => {
+      try {
+        const payload = results.map((res) => ({
+          sample_id: res.sampleId,
+          element: res.element,
+          value: String(res.value),
+          unit: res.unit,
+          method: res.method,
+          instrument_id: res.instrumentId,
+          analyst_name: res.analystName,
+          qa_status: res.qaStatus,
+          flag_reason: res.flagReason,
+          run_id: runId,
+        }));
+        
+        const { error: err1 } = await supabase.from("analytical_results").insert(payload);
+        if (err1) throw err1;
+
+        const { error: err2 } = await supabase
+          .from("analytical_runs" as any)
+          .update({ status: "Complete", completed_at: new Date().toISOString() })
+          .eq("id", runId);
+        if (err2) throw err2;
+
+        const updated = analysisRuns.map((r) =>
+          r.id === runId
+            ? {
+                ...r,
+                results,
+                status: "Complete" as RunStatus,
+                completedAt: new Date().toISOString(),
+              }
+            : r,
+        );
+        updateRuns(updated);
+      } catch (e: any) {
+        toast.error(`Error submitting results: ${e.message}`);
+        throw e;
+      }
     },
     [analysisRuns],
   );
@@ -361,63 +367,67 @@ export function useAnalysis(): UseAnalysisReturn {
       let url: string | null = null;
       let results: AnalyticalResultFull[] = [];
 
-      // Parse CSV client-side
       if (file.name.endsWith(".csv") || file.type === "text/csv") {
         const text = await file.text();
         const rows = parseCsv(text);
         results = csvRowsToResults(rows, runId, run?.instrumentId || "", method, currentName);
       }
 
-      // Upload to Supabase Storage
       try {
         const filePath = `raw-data/${runId}-${file.name}`;
         const { error } = await supabase.storage
           .from("raw-data")
           .upload(filePath, file, { upsert: true });
-        if (!error) {
-          const {
-            data: { publicUrl },
-          } = supabase.storage.from("raw-data").getPublicUrl(filePath);
-          url = publicUrl;
-        }
-      } catch (e: any) {
-        console.warn("Raw file upload failed:", e.message);
-      }
+        if (error) throw error;
 
-      const updated = analysisRuns.map((r) =>
-        r.id === runId
-          ? { ...r, rawFileUrl: url || undefined, rawFileName: file.name, results }
-          : r,
-      );
-      updateRuns(updated);
-      if (results.length > 0) submitResults(runId, results);
-      return { url, results };
+        const {
+          data: { publicUrl },
+        } = supabase.storage.from("raw-data").getPublicUrl(filePath);
+        url = publicUrl;
+
+        const updated = analysisRuns.map((r) =>
+          r.id === runId
+            ? { ...r, rawFileUrl: url || undefined, rawFileName: file.name, results }
+            : r,
+        );
+        updateRuns(updated);
+
+        if (results.length > 0) {
+           await submitResults(runId, results);
+        }
+
+        return { url, results };
+      } catch (e: any) {
+        toast.error(`Error uploading raw file: ${e.message}`);
+        throw e;
+      }
     },
     [analysisRuns, currentName, submitResults],
   );
 
   const addCalibrationRecord = useCallback(
-    (record: Omit<CalibrationRecord, "id">) => {
+    async (record: Omit<CalibrationRecord, "id">) => {
       const newRec: CalibrationRecord = { ...record, id: `cal-${Date.now()}` };
-      const updated = [newRec, ...calibrationRecords];
-      setCalibrationRecords(updated);
-      saveLocal(STORAGE_CAL, updated);
-      (async () => {
-        try {
-          await supabase.from("calibration_records" as any).insert({
-            instrument_id: record.instrumentId,
-            performed_by: record.performedBy,
-            calibration_date: record.calibrationDate,
-            next_due_date: record.nextDueDate,
-            standard_used: record.standardUsed,
-            r2_value: record.r2Value,
-            pass_status: record.passStatus,
-            notes: record.notes,
-          });
-        } catch (e: any) {
-          console.warn("Calibration record DB write failed:", e.message);
-        }
-      })();
+      try {
+        const { error } = await supabase.from("calibration_records" as any).insert({
+          instrument_id: record.instrumentId,
+          performed_by: record.performedBy,
+          calibration_date: record.calibrationDate,
+          next_due_date: record.nextDueDate,
+          standard_used: record.standardUsed,
+          r2_value: record.r2Value,
+          pass_status: record.passStatus,
+          notes: record.notes,
+        });
+        if (error) throw error;
+
+        const updated = [newRec, ...calibrationRecords];
+        setCalibrationRecords(updated);
+        saveLocal(STORAGE_CAL, updated);
+      } catch (e: any) {
+        toast.error(`Error adding calibration record: ${e.message}`);
+        throw e;
+      }
     },
     [calibrationRecords],
   );

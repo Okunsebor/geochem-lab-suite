@@ -145,7 +145,7 @@ export function useSamplesCore(
     }
   };
 
-  const registerSample = (sampleData: {
+  const registerSample = async (sampleData: {
     client: string;
     project: string;
     type: string;
@@ -157,95 +157,14 @@ export function useSamplesCore(
     receivedFrom?: string;
     specialInstructions?: string;
   }) => {
-    setSamples((currentSamples) => {
-      const nextIdNum = 24000 + currentSamples.length;
-      const newSampleId = `GCS-${nextIdNum}`;
-      const cleanWeight = sampleData.weight.endsWith(" kg")
-        ? sampleData.weight
-        : `${sampleData.weight} kg`;
-      const numericWeight = parseFloat(sampleData.weight) || 2.5;
+    const nextIdNum = 24000 + samples.length;
+    const newSampleId = `GCS-${nextIdNum}`;
+    const cleanWeight = sampleData.weight.endsWith(" kg")
+      ? sampleData.weight
+      : `${sampleData.weight} kg`;
+    const numericWeight = parseFloat(sampleData.weight) || 2.5;
 
-      const newSample: Sample = {
-        id: newSampleId,
-        client: sampleData.client,
-        project: sampleData.project,
-        type: sampleData.type,
-        status: "Received",
-        receivedAt: new Date().toISOString(),
-        technician: currentName,
-        priority: sampleData.priority,
-        location: sampleData.location,
-        weight: cleanWeight,
-        matrix: sampleData.matrix || "Sulphide",
-        container: sampleData.container || "Calico Bag",
-        receivedFrom: sampleData.receivedFrom || "Field Courier",
-        specialInstructions: sampleData.specialInstructions,
-        notes: [],
-        results: [],
-        custody: [{ action: "Received at intake", technician: currentName, time: "Just now" }],
-      };
-
-      const writeToDb = async () => {
-        try {
-          const { error: sampleErr } = await supabase.from("samples").insert({
-            id: newSampleId,
-            client_org_id: sampleData.client === "Barrick Gold" ? "org-barrick" : "org-auric",
-            client_name: sampleData.client,
-            project_name: sampleData.project,
-            sample_type: sampleData.type,
-            status: "Received",
-            weight_kg: numericWeight,
-            priority: sampleData.priority,
-            storage_location: sampleData.location,
-            registered_by_user_id: currentUser?.id?.toString() || "1",
-            technician: currentName,
-            matrix: newSample.matrix,
-            container: newSample.container,
-            received_from: newSample.receivedFrom,
-            special_instructions: sampleData.specialInstructions || null,
-          });
-
-          if (sampleErr) throw sampleErr;
-
-          await supabase.from("custody_logs").insert({
-            sample_id: newSampleId,
-            action: "Received at intake",
-            notes: "Intake registered in database",
-          });
-
-          syncSamplesFromDb();
-        } catch (err: any) {
-          if (
-            err.message?.includes("schema cache") ||
-            err.message?.includes("relation") ||
-            err.message?.includes("fetch") ||
-            err.message?.includes("table") ||
-            err.message?.includes("database")
-          ) {
-            toast.info("Database offline: saved to LIMS Sandbox memory");
-          } else {
-            toast.error(
-              `LIMS Database Write Failed: ${err.message || "Could not register sample."}`,
-            );
-          }
-        }
-      };
-
-      writeToDb();
-
-      const updated = [newSample, ...currentSamples];
-      localStorage.setItem("gcs_samples", JSON.stringify(updated));
-
-      addActivity(currentName, "registered sample", newSampleId);
-      addNotification(`Sample ${newSampleId} registered for ${newSample.client}`, "info");
-
-      return updated;
-    });
-
-    // We return a mock/placeholder to satisfy typing if consumers depend on the return value immediately.
-    // In actual implementation it might be better to return the generated newSample by refactoring.
-    const newSampleId = `GCS-${24000 + samples.length}`;
-    return {
+    const newSample: Sample = {
       id: newSampleId,
       client: sampleData.client,
       project: sampleData.project,
@@ -255,16 +174,63 @@ export function useSamplesCore(
       technician: currentName,
       priority: sampleData.priority,
       location: sampleData.location,
-      weight: sampleData.weight.endsWith(" kg") ? sampleData.weight : `${sampleData.weight} kg`,
+      weight: cleanWeight,
       matrix: sampleData.matrix || "Sulphide",
       container: sampleData.container || "Calico Bag",
       receivedFrom: sampleData.receivedFrom || "Field Courier",
       specialInstructions: sampleData.specialInstructions,
+      notes: [],
       results: [],
-    } as Sample;
+      custody: [{ action: "Received at intake", technician: currentName, time: "Just now" }],
+    };
+
+    try {
+      const { error: sampleErr } = await supabase.from("samples").insert({
+        id: newSampleId,
+        client_org_id: sampleData.client === "Barrick Gold" ? "org-barrick" : "org-auric",
+        client_name: sampleData.client,
+        project_name: sampleData.project,
+        sample_type: sampleData.type,
+        status: "Received",
+        weight_kg: numericWeight,
+        priority: sampleData.priority,
+        storage_location: sampleData.location,
+        registered_by_user_id: currentUser?.id?.toString() || "1",
+        technician: currentName,
+        matrix: newSample.matrix,
+        container: newSample.container,
+        received_from: newSample.receivedFrom,
+        special_instructions: sampleData.specialInstructions || null,
+      });
+
+      if (sampleErr) throw sampleErr;
+
+      await supabase.from("custody_logs").insert({
+        sample_id: newSampleId,
+        action: "Received at intake",
+        notes: "Intake registered in database",
+      });
+
+      setSamples((currentSamples) => {
+        const updated = [newSample, ...currentSamples];
+        localStorage.setItem("gcs_samples", JSON.stringify(updated));
+        return updated;
+      });
+
+      addActivity(currentName, "registered sample", newSampleId);
+      addNotification(`Sample ${newSampleId} registered for ${newSample.client}`, "info");
+
+      await syncSamplesFromDb();
+      return newSample;
+    } catch (err: any) {
+      toast.error(
+        `LIMS Database Write Failed: ${err.message || "Could not register sample."}`,
+      );
+      throw err;
+    }
   };
 
-  const addSampleNote = (sampleId: string, comment: string) => {
+  const addSampleNote = async (sampleId: string, comment: string) => {
     const newNote: SampleNote = {
       id: Date.now().toString(),
       author: currentName,
@@ -272,136 +238,89 @@ export function useSamplesCore(
       timestamp: new Date().toISOString(),
     };
 
-    setSamples((prev) => {
-      const updated = prev.map((s) => {
-        if (s.id === sampleId) {
-          return {
-            ...s,
-            notes: [newNote, ...(s.notes || [])],
-          };
-        }
-        return s;
+    try {
+      const { error: noteErr } = await supabase.from("sample_notes").insert({
+        sample_id: sampleId,
+        author_user_id: currentUser?.id?.toString() || "1",
+        comment,
       });
-      localStorage.setItem("gcs_samples", JSON.stringify(updated));
-      return updated;
-    });
 
-    const writeNoteToDb = async () => {
-      try {
-        const { error: noteErr } = await supabase.from("sample_notes").insert({
-          sample_id: sampleId,
-          author_user_id: currentUser?.id?.toString() || "1",
-          comment,
+      if (noteErr) throw noteErr;
+
+      setSamples((prev) => {
+        const updated = prev.map((s) => {
+          if (s.id === sampleId) {
+            return {
+              ...s,
+              notes: [newNote, ...(s.notes || [])],
+            };
+          }
+          return s;
         });
+        localStorage.setItem("gcs_samples", JSON.stringify(updated));
+        return updated;
+      });
 
-        if (noteErr) throw noteErr;
-        syncSamplesFromDb();
-      } catch (err: any) {
-        if (
-          err.message?.includes("schema cache") ||
-          err.message?.includes("relation") ||
-          err.message?.includes("fetch") ||
-          err.message?.includes("table") ||
-          err.message?.includes("database")
-        ) {
-          toast.info("Database offline: saved to LIMS Sandbox memory");
-        } else {
-          toast.error(`LIMS Database Write Failed: ${err.message || "Could not add sample note."}`);
-        }
-      }
-    };
-
-    writeNoteToDb();
-    addActivity(currentName, "added a note to", sampleId);
+      addActivity(currentName, "added a note to", sampleId);
+      await syncSamplesFromDb();
+    } catch (err: any) {
+      toast.error(`LIMS Database Write Failed: ${err.message || "Could not add sample note."}`);
+      throw err;
+    }
   };
 
-  const updateSampleStatus = (sampleId: string, status: SampleStatus) => {
-    setSamples((prev) => {
-      const updated = prev.map((s) => {
-        if (s.id === sampleId) {
-          const newCustody: CustodyLogEntry = {
-            action: `Status updated to ${status}`,
-            technician: currentName,
-            time: "Just now",
-          };
-          return {
-            ...s,
-            status,
-            custody: [newCustody, ...(s.custody || [])],
-          };
-        }
-        return s;
+  const updateSampleStatus = async (sampleId: string, status: SampleStatus) => {
+    try {
+      const { error: sampleErr } = await supabase
+        .from("samples")
+        .update({ status })
+        .eq("id", sampleId);
+
+      if (sampleErr) throw sampleErr;
+
+      await supabase.from("custody_logs").insert({
+        sample_id: sampleId,
+        action: `Status updated to ${status}`,
+        notes: `Moved through workflow step by ${currentName}`,
       });
-      localStorage.setItem("gcs_samples", JSON.stringify(updated));
-      return updated;
-    });
 
-    const updateDb = async () => {
-      try {
-        const { error: sampleErr } = await supabase
-          .from("samples")
-          .update({ status })
-          .eq("id", sampleId);
+      const newCustody: CustodyLogEntry = {
+        action: `Status updated to ${status}`,
+        technician: currentName,
+        time: "Just now",
+      };
 
-        if (sampleErr) throw sampleErr;
-
-        await supabase.from("custody_logs").insert({
-          sample_id: sampleId,
-          action: `Status updated to ${status}`,
-          notes: `Moved through workflow step by ${currentName}`,
+      setSamples((prev) => {
+        const updated = prev.map((s) => {
+          if (s.id === sampleId) {
+            return {
+              ...s,
+              status,
+              custody: [newCustody, ...(s.custody || [])],
+            };
+          }
+          return s;
         });
+        localStorage.setItem("gcs_samples", JSON.stringify(updated));
+        return updated;
+      });
 
-        syncSamplesFromDb();
-      } catch (err: any) {
-        if (
-          err.message?.includes("schema cache") ||
-          err.message?.includes("relation") ||
-          err.message?.includes("fetch") ||
-          err.message?.includes("table") ||
-          err.message?.includes("database")
-        ) {
-          toast.info("Database offline: saved to LIMS Sandbox memory");
-        } else {
-          toast.error(
-            `LIMS Database Write Failed: ${err.message || "Could not update sample status."}`,
-          );
-        }
+      addActivity(currentName, `moved to ${status}`, sampleId);
+
+      if (status === "Completed") {
+        generateReportCallback(sampleId);
       }
-    };
 
-    updateDb();
-
-    if (status === "Completed") {
-      generateReportCallback(sampleId);
+      await syncSamplesFromDb();
+    } catch (err: any) {
+      toast.error(
+        `LIMS Database Write Failed: ${err.message || "Could not update sample status."}`,
+      );
+      throw err;
     }
-
-    addActivity(currentName, `moved to ${status}`, sampleId);
   };
 
   const verifySample = async (sampleId: string, notes: string, storageLocation: string) => {
-    setSamples((prev) => {
-      const updated = prev.map((s) => {
-        if (s.id === sampleId) {
-          const newCustodyEntry: CustodyLogEntry = {
-            action: "Verified & Accepted",
-            technician: currentName,
-            time: "Just now",
-          };
-          return {
-            ...s,
-            status: "Verified" as SampleStatus,
-            acceptanceStatus: "Accepted" as const,
-            verificationNotes: notes,
-            location: storageLocation,
-            custody: [newCustodyEntry, ...(s.custody || [])],
-          };
-        }
-        return s;
-      });
-      localStorage.setItem("gcs_samples", JSON.stringify(updated));
-      return updated;
-    });
-
     try {
       const { error: sampleErr } = await supabase
         .from("samples")
@@ -421,48 +340,41 @@ export function useSamplesCore(
         notes: notes,
       });
 
-      syncSamplesFromDb();
-    } catch (err: any) {
-      if (
-        err.message?.includes("schema cache") ||
-        err.message?.includes("relation") ||
-        err.message?.includes("fetch") ||
-        err.message?.includes("table") ||
-        err.message?.includes("database")
-      ) {
-        toast.info("Database offline: saved to LIMS Sandbox memory");
-      } else {
-        toast.error(
-          `LIMS Database Write Failed: ${err.message || "Could not accept and verify sample."}`,
-        );
-      }
-    }
+      const newCustodyEntry: CustodyLogEntry = {
+        action: "Verified & Accepted",
+        technician: currentName,
+        time: "Just now",
+      };
 
-    addActivity(currentName, "verified sample", sampleId);
+      setSamples((prev) => {
+        const updated = prev.map((s) => {
+          if (s.id === sampleId) {
+            return {
+              ...s,
+              status: "Verified" as SampleStatus,
+              acceptanceStatus: "Accepted" as const,
+              verificationNotes: notes,
+              location: storageLocation,
+              custody: [newCustodyEntry, ...(s.custody || [])],
+            };
+          }
+          return s;
+        });
+        localStorage.setItem("gcs_samples", JSON.stringify(updated));
+        return updated;
+      });
+
+      addActivity(currentName, "verified sample", sampleId);
+      await syncSamplesFromDb();
+    } catch (err: any) {
+      toast.error(
+        `LIMS Database Write Failed: ${err.message || "Could not accept and verify sample."}`,
+      );
+      throw err;
+    }
   };
 
   const rejectSample = async (sampleId: string, reason: string) => {
-    setSamples((prev) => {
-      const updated = prev.map((s) => {
-        if (s.id === sampleId) {
-          const newCustodyEntry: CustodyLogEntry = {
-            action: "Sample Rejected",
-            technician: currentName,
-            time: "Just now",
-          };
-          return {
-            ...s,
-            acceptanceStatus: "Rejected" as const,
-            rejectionReason: reason,
-            custody: [newCustodyEntry, ...(s.custody || [])],
-          };
-        }
-        return s;
-      });
-      localStorage.setItem("gcs_samples", JSON.stringify(updated));
-      return updated;
-    });
-
     try {
       const { error: sampleErr } = await supabase
         .from("samples")
@@ -480,45 +392,37 @@ export function useSamplesCore(
         notes: reason,
       });
 
-      syncSamplesFromDb();
-    } catch (err: any) {
-      if (
-        err.message?.includes("schema cache") ||
-        err.message?.includes("relation") ||
-        err.message?.includes("fetch") ||
-        err.message?.includes("table") ||
-        err.message?.includes("database")
-      ) {
-        toast.info("Database offline: saved to LIMS Sandbox memory");
-      } else {
-        toast.error(`LIMS Database Write Failed: ${err.message || "Could not reject sample."}`);
-      }
-    }
+      const newCustodyEntry: CustodyLogEntry = {
+        action: "Sample Rejected",
+        technician: currentName,
+        time: "Just now",
+      };
 
-    addActivity(currentName, "rejected sample", sampleId);
+      setSamples((prev) => {
+        const updated = prev.map((s) => {
+          if (s.id === sampleId) {
+            return {
+              ...s,
+              acceptanceStatus: "Rejected" as const,
+              rejectionReason: reason,
+              custody: [newCustodyEntry, ...(s.custody || [])],
+            };
+          }
+          return s;
+        });
+        localStorage.setItem("gcs_samples", JSON.stringify(updated));
+        return updated;
+      });
+
+      addActivity(currentName, "rejected sample", sampleId);
+      await syncSamplesFromDb();
+    } catch (err: any) {
+      toast.error(`LIMS Database Write Failed: ${err.message || "Could not reject sample."}`);
+      throw err;
+    }
   };
 
   const assignStorageLocation = async (sampleId: string, location: string) => {
-    setSamples((prev) => {
-      const updated = prev.map((s) => {
-        if (s.id === sampleId) {
-          const newCustodyEntry: CustodyLogEntry = {
-            action: `Storage assigned: ${location}`,
-            technician: currentName,
-            time: "Just now",
-          };
-          return {
-            ...s,
-            location,
-            custody: [newCustodyEntry, ...(s.custody || [])],
-          };
-        }
-        return s;
-      });
-      localStorage.setItem("gcs_samples", JSON.stringify(updated));
-      return updated;
-    });
-
     try {
       const { error: sampleErr } = await supabase
         .from("samples")
@@ -535,24 +439,35 @@ export function useSamplesCore(
         notes: `Moved to rack/shelf ${location}`,
       });
 
-      syncSamplesFromDb();
-    } catch (err: any) {
-      if (
-        err.message?.includes("schema cache") ||
-        err.message?.includes("relation") ||
-        err.message?.includes("fetch") ||
-        err.message?.includes("table") ||
-        err.message?.includes("database")
-      ) {
-        toast.info("Database offline: saved to LIMS Sandbox memory");
-      } else {
-        toast.error(
-          `LIMS Database Write Failed: ${err.message || "Could not assign storage location."}`,
-        );
-      }
-    }
+      const newCustodyEntry: CustodyLogEntry = {
+        action: `Storage assigned: ${location}`,
+        technician: currentName,
+        time: "Just now",
+      };
 
-    addActivity(currentName, "assigned storage to", sampleId);
+      setSamples((prev) => {
+        const updated = prev.map((s) => {
+          if (s.id === sampleId) {
+            return {
+              ...s,
+              location,
+              custody: [newCustodyEntry, ...(s.custody || [])],
+            };
+          }
+          return s;
+        });
+        localStorage.setItem("gcs_samples", JSON.stringify(updated));
+        return updated;
+      });
+
+      addActivity(currentName, "assigned storage to", sampleId);
+      await syncSamplesFromDb();
+    } catch (err: any) {
+      toast.error(
+        `LIMS Database Write Failed: ${err.message || "Could not assign storage location."}`,
+      );
+      throw err;
+    }
   };
 
   const uploadSampleAttachment = async (sampleId: string, file: File) => {
@@ -583,18 +498,32 @@ export function useSamplesCore(
 
       if (dbErr) throw dbErr;
 
-      syncSamplesFromDb();
+      await syncSamplesFromDb();
       return attachmentData;
     } catch (err: any) {
-      console.warn("uploadSampleAttachment DB write bypassed, creating local mock:", err.message);
+      toast.error(`LIMS Database Write Failed: ${err.message || "Could not upload attachment."}`);
+      throw err;
+    }
+  };
 
-      const mockAttachment = {
-        id: Date.now().toString(),
-        name: file.name,
-        filePath: "#",
-        sizeBytes: file.size,
-        uploadedBy: currentName,
-        createdAt: new Date().toISOString(),
+  const logBarcodeScan = async (sampleId: string, location: string, actionDetails: string) => {
+    try {
+      if (location) {
+        const { error: sampleErr } = await supabase.from("samples").update({ storage_location: location }).eq("id", sampleId);
+        if (sampleErr) throw sampleErr;
+      }
+
+      const { error: logErr } = await supabase.from("custody_logs").insert({
+        sample_id: sampleId,
+        action: `Barcode Scanned: ${actionDetails}`,
+        notes: `Scanned at: ${location || "Assigned station"}`,
+      });
+      if (logErr) throw logErr;
+
+      const newCustodyEntry: CustodyLogEntry = {
+        action: `Barcode Scanned: ${actionDetails}`,
+        technician: currentName,
+        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       };
 
       setSamples((prev) => {
@@ -602,7 +531,8 @@ export function useSamplesCore(
           if (s.id === sampleId) {
             return {
               ...s,
-              attachments: [mockAttachment, ...(s.attachments || [])],
+              location: location || s.location,
+              custody: [newCustodyEntry, ...(s.custody || [])],
             };
           }
           return s;
@@ -611,58 +541,12 @@ export function useSamplesCore(
         return updated;
       });
 
-      return mockAttachment;
-    }
-  };
-
-  const logBarcodeScan = async (sampleId: string, location: string, actionDetails: string) => {
-    setSamples((prev) => {
-      const updated = prev.map((s) => {
-        if (s.id === sampleId) {
-          const newCustodyEntry: CustodyLogEntry = {
-            action: `Barcode Scanned: ${actionDetails}`,
-            technician: currentName,
-            time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-          };
-          return {
-            ...s,
-            location: location || s.location,
-            custody: [newCustodyEntry, ...(s.custody || [])],
-          };
-        }
-        return s;
-      });
-      localStorage.setItem("gcs_samples", JSON.stringify(updated));
-      return updated;
-    });
-
-    try {
-      if (location) {
-        await supabase.from("samples").update({ storage_location: location }).eq("id", sampleId);
-      }
-
-      await supabase.from("custody_logs").insert({
-        sample_id: sampleId,
-        action: `Barcode Scanned: ${actionDetails}`,
-        notes: `Scanned at: ${location || "Assigned station"}`,
-      });
-
-      syncSamplesFromDb();
+      addActivity(currentName, `scanned barcode for ${sampleId}`, sampleId);
+      await syncSamplesFromDb();
     } catch (err: any) {
-      if (
-        err.message?.includes("schema cache") ||
-        err.message?.includes("relation") ||
-        err.message?.includes("fetch") ||
-        err.message?.includes("table") ||
-        err.message?.includes("database")
-      ) {
-        toast.info("Database offline: saved to LIMS Sandbox memory");
-      } else {
-        toast.error(`LIMS Database Write Failed: ${err.message || "Could not log barcode scan."}`);
-      }
+      toast.error(`LIMS Database Write Failed: ${err.message || "Could not log barcode scan."}`);
+      throw err;
     }
-
-    addActivity(currentName, `scanned barcode for ${sampleId}`, sampleId);
   };
 
   const fetchSampleDetails = async (sampleId: string) => {

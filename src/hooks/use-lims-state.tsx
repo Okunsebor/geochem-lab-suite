@@ -50,9 +50,9 @@ interface LimsStateContextType {
     container?: string;
     receivedFrom?: string;
     specialInstructions?: string;
-  }) => Sample;
-  addSampleNote: (sampleId: string, comment: string) => void;
-  updateSampleStatus: (sampleId: string, status: SampleStatus) => void;
+  }) => Promise<Sample>;
+  addSampleNote: (sampleId: string, comment: string) => Promise<void>;
+  updateSampleStatus: (sampleId: string, status: SampleStatus) => Promise<void>;
   generateReport: (sampleId: string) => Promise<void>;
   approveReport: (reportId: string, comments?: string) => Promise<void>;
   rejectReport: (reportId: string, comments?: string) => Promise<void>;
@@ -60,7 +60,7 @@ interface LimsStateContextType {
   downloadReportPdf: (reportId: string) => Promise<void>;
   inviteUser: (name: string, email: string, role: User["role"]) => Promise<void>;
   updateUserRole: (userId: string, newRole: User["role"]) => Promise<void>;
-  toggleInstrumentStatus: (instrumentId: string, status: Instrument["status"]) => void;
+  toggleInstrumentStatus: (instrumentId: string, status: Instrument["status"]) => Promise<void>;
   markAllNotificationsRead: () => void;
   markNotificationRead: (notificationId: string | number) => Promise<void>;
   verifySample: (sampleId: string, notes: string, storageLocation: string) => Promise<void>;
