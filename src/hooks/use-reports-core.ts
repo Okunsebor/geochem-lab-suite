@@ -173,7 +173,7 @@ export function useReportsCore(
 
       if (reportErr) throw reportErr;
 
-      const { error: logErr } = await supabase.from("report_logs" as any).insert({
+      const { error: logErr } = await supabase.from("report_logs").insert({
         report_id: reportId,
         status: "Approved",
         action: "Approved",
@@ -236,7 +236,7 @@ export function useReportsCore(
 
       if (reportErr) throw reportErr;
 
-      const { error: logErr } = await supabase.from("report_logs" as any).insert({
+      const { error: logErr } = await supabase.from("report_logs").insert({
         report_id: reportId,
         status: "Revised",
         action: "Rejected",
@@ -282,7 +282,7 @@ export function useReportsCore(
 
       if (reportErr) throw reportErr;
 
-      const { error: logErr } = await supabase.from("report_logs" as any).insert({
+      const { error: logErr } = await supabase.from("report_logs").insert({
         report_id: reportId,
         status: "Delivered",
         action: "Delivered",
