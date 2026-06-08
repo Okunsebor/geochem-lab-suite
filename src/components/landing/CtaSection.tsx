@@ -17,20 +17,22 @@ export default function CtaSection() {
           Secure Intake Gateway
         </p>
         <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-5xl font-display max-w-3xl mx-auto">
-          Access Authorized Infrastructure
+          Ready to Start Your First Analysis?
         </h2>
-        <p className="text-base sm:text-lg text-white/75 max-w-2xl mx-auto leading-relaxed">
-          GeoChem Suite is a controlled-access enterprise platform. Access is restricted to
-          authorized partners, accredited researchers, and verified institutions.
+        <p className="text-base sm:text-lg text-white/75 max-w-3xl mx-auto leading-relaxed">
+          GeoChem Suite is an institutional platform built for the serious work of geochemical
+          research and analytical reporting. Register your institution today and your team gets
+          full access to sample intake, real-time tracking, certified reporting, and complete
+          analytical intelligence from day one.
         </p>
         <div className="flex flex-wrap justify-center gap-4 pt-2">
           <ThemeLink to="/register" variant="gold" className="px-8 py-4 text-base !rounded-xl">
             Get Started <ArrowRight className="size-4" />
           </ThemeLink>
         </div>
-        <p className="inline-flex items-center gap-2 text-xs text-white/60 max-w-md mx-auto">
+        <p className="inline-flex items-center justify-center gap-2 text-xs text-white/60 max-w-md mx-auto">
           <Lock className="size-3.5 text-accent shrink-0" />
-          Access clearance requires verified cryptographic protocols.
+          Institutional verification completed within 24 hours of registration.
         </p>
       </div>
     </section>

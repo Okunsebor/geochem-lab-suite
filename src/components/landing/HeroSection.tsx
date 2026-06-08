@@ -101,12 +101,11 @@ export default function HeroSection() {
           <div className="h-px w-24 bg-gradient-to-r from-[#00AEEF] to-transparent" />
 
           {/* Subtext */}
-          <div className="space-y-2 max-w-2xl">
-            <p className="text-xl md:text-2xl font-bold text-white">
-              Trusted Analytical Intelligence.
-            </p>
-            <p className="text-base md:text-lg font-semibold text-white/80">
-              Built for Institutions. Designed for Precision.
+          <div className="max-w-2xl">
+            <p className="text-base md:text-lg font-medium text-white/80 leading-relaxed">
+              GeoChem Suite is West Africa's most advanced laboratory management platform,
+              purpose-built for researchers, institutions, and enterprises that demand
+              accurate, traceable, and certified analytical results.
             </p>
           </div>
 

@@ -22,7 +22,7 @@ export const Route = createFileRoute("/app")({
       throw redirect({ href: getVerifyEmailPath(session.user.email) });
     }
 
-    const { profile } = await getUserProfileFromServer({ data: session.user.id });
+    const { profile } = await getUserProfileFromServer();
 
     // Use the DB profile as the authoritative source.
     // If the profile query returned null (RLS timing race or session not yet

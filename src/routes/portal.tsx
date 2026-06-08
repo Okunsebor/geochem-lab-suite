@@ -37,7 +37,7 @@ export const Route = createFileRoute("/portal")({
       throw redirect({ href: getVerifyEmailPath(session.user.email) });
     }
 
-    const { profile } = await getUserProfileFromServer({ data: session.user.id });
+    const { profile } = await getUserProfileFromServer();
 
     const rawRole: string | null =
       profile?.role ?? session.user.user_metadata?.role ?? null;

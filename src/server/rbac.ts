@@ -41,7 +41,7 @@ export async function requireApiUser(request: Request): Promise<{
   if (error || !user) throw new ApiAuthError("Invalid or expired session");
 
   const { data: profile, error: profileErr } = await supabaseServer
-    .from("users" as any)
+    .from("users")
     .select("role")
     .eq("id", user.id)
     .maybeSingle();

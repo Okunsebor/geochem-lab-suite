@@ -65,7 +65,8 @@ export default function ReasonsToChooseSection() {
       <div className="mx-auto max-w-7xl px-6 py-20 lg:py-28">
         <LandingSectionHeader
           eyebrow="Trust & Standards"
-          title="Rigorous Standards. Certified Infrastructure."
+          title="The Standard Others Measure Against."
+          subtitle="GeoChem Suite operates under institutional frameworks trusted by federal agencies, university research programs, and enterprise partners across Nigeria and beyond."
         />
 
         <div className="grid gap-10 lg:grid-cols-12 items-stretch">

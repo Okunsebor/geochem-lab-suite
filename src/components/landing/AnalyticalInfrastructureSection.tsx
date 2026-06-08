@@ -47,8 +47,8 @@ export default function AnalyticalInfrastructureSection() {
       <div className="relative mx-auto max-w-7xl px-6 py-20 lg:py-28">
         <LandingSectionHeader
           eyebrow="Capabilities & Precision"
-          title="World-Class Analytical Infrastructure"
-          subtitle="Powered by industry-standard instrumentation for accurate, reliable, and reproducible geochemical analysis."
+          title="World-Class Instruments. Institutional-Grade Accuracy."
+          subtitle="Every instrument in the GeoChem Suite facility is calibrated, maintained, and operated under strict quality assurance protocols to deliver results you can publish, submit, and defend."
         />
 
         {/* Mobile: CSS Snap Carousel, Desktop: CSS Grid */}

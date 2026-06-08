@@ -5,39 +5,39 @@ import { LandingSectionHeader } from "./shared/LandingSectionHeader";
 const PROVIDE_CARDS = [
   {
     imgSrc: "/capabilities/institutional-trust.png",
-    title: "Institutional Trust & Governance",
+    title: "Institutional Governance.",
     description:
-      "Operating under strict ISO-compliant frameworks with complete role-based clearance protocols.",
+      "Built on ISO-compliant frameworks with full role-based access control. Every action is verified, logged, and accountable to your institutional standards.",
   },
   {
     imgSrc: "/capabilities/research-infrastructure.png",
-    title: "Advanced Research Infrastructure",
+    title: "Advanced Analytical Infrastructure.",
     description:
-      "State-of-the-art analytical apparatus housed in Nasarawa State University's UniPod Innovation Hub.",
+      "State-of-the-art instruments housed within Nasarawa State University's UniPod Innovation Hub, engineered for reproducible, publication-grade results.",
   },
   {
     imgSrc: "/capabilities/confidential.png",
-    title: "Confidential Analytical Intelligence",
+    title: "Confidential Data Pathways.",
     description:
-      "Restricted data pathways designed to protect proprietary institutional and mineralogical findings.",
+      "Restricted data pipelines protect your proprietary findings at every stage, ensuring full client confidentiality and regulatory compliance from intake to delivery.",
   },
   {
     imgSrc: "/capabilities/data-security.png",
-    title: "Sovereign Data Security",
+    title: "Sovereign Data Security.",
     description:
-      "Immutable ledger tracking and secure verification controls ensuring absolute cryptographic data integrity.",
+      "Immutable sample tracking with cryptographic chain-of-custody verification. Every record is tamper-proof, timestamped, and permanently auditable.",
   },
   {
     imgSrc: "/capabilities/industrial-collab.png",
-    title: "Academic & Industrial Collaboration",
+    title: "Academic and Industrial Collaboration.",
     description:
-      "Accelerating the R&D ecosystem through active co-creation with international development partners.",
+      "Designed for co-creation with federal agencies, international development partners, and research institutions accelerating Africa's scientific progress.",
   },
   {
     imgSrc: "/capabilities/precision.png",
-    title: "Precision-Engineered Outcomes",
+    title: "Certified Precision Outcomes.",
     description:
-      "Rigorous standards delivering high-fidelity certified reports for national and global decision-makers.",
+      "Rigorous analytical standards produce high-fidelity certified reports trusted by national regulators, global partners, and independent auditors worldwide.",
   },
 ];
 
@@ -49,8 +49,8 @@ export default function WhatWeProvideSection() {
       <div className="relative mx-auto max-w-7xl px-6 py-20 lg:py-28">
         <LandingSectionHeader
           eyebrow="Capabilities"
-          title="World-Class Geochemistry Infrastructure"
-          subtitle="GeoChem Suite at UniPod Nsuk operates under strict institutional controls, serving top-tier agencies and enterprise research partners."
+          title="Everything Your Institution Needs. Nothing It Does Not."
+          subtitle="From sample intake to final certified report, GeoChem Suite covers the complete analytical workflow with institutional-grade controls at every stage."
         />
         {/* Service cards grid */}
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">

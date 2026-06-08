@@ -13,13 +13,16 @@ export const getSessionFromServer = createServerFn({ method: "GET" }).handler(as
 });
 
 export const getUserProfileFromServer = createServerFn({ method: "GET" })
-  .handler(async ({ data: userId }: { data: string }) => {
+  .handler(async (): Promise<{ profile: { role: string } | null }> => {
     const supabase = getServerSupabase();
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) return { profile: null };
+
     const { data: profile } = await supabase
       .from("users")
       .select("role")
-      .eq("id", userId)
+      .eq("id", session.user.id)
       .maybeSingle();
       
-    return { profile };
+    return { profile: profile as { role: string } | null };
   });
