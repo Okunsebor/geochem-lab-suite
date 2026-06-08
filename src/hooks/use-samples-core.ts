@@ -634,8 +634,8 @@ export function useSamplesCore(
       }
     } catch (e: any) {
       console.warn("fetchSamplePage failed:", e.message);
+      throw e;
     }
-    return { data: [], totalCount: 0 };
   };
 
   return {

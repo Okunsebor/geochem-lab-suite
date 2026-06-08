@@ -215,28 +215,38 @@ export function SamplesFilterTable() {
   const [serverData, setServerData] = useState<any[]>([]);
   const [serverTotalCount, setServerTotalCount] = useState<number | null>(null);
   const [isLoadingData, setIsLoadingData] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+  const [reloadTrigger, setReloadTrigger] = useState(0);
 
   useEffect(() => {
     let active = true;
     const load = async () => {
       setIsLoadingData(true);
-      const { data, totalCount } = await fetchSamplePage(currentPage, itemsPerPage, {
-        q,
-        status,
-        type: filterType,
-        priority: filterPriority,
-        sortField,
-        sortDirection,
-      });
-      if (active) {
-        setServerData(data);
-        setServerTotalCount(totalCount);
-        setIsLoadingData(false);
+      setFetchError(null);
+      try {
+        const { data, totalCount } = await fetchSamplePage(currentPage, itemsPerPage, {
+          q,
+          status,
+          type: filterType,
+          priority: filterPriority,
+          sortField,
+          sortDirection,
+        });
+        if (active) {
+          setServerData(data);
+          setServerTotalCount(totalCount);
+          setIsLoadingData(false);
+        }
+      } catch (err: any) {
+        if (active) {
+          setFetchError(err.message || "Failed to load LIMS samples from database.");
+          setIsLoadingData(false);
+        }
       }
     };
     load();
     return () => { active = false; };
-  }, [currentPage, itemsPerPage, q, status, filterType, filterPriority, sortField, sortDirection, fetchSamplePage]);
+  }, [currentPage, itemsPerPage, q, status, filterType, filterPriority, sortField, sortDirection, fetchSamplePage, reloadTrigger]);
 
   // Sorting handler
   const handleSort = (field: string) => {
@@ -713,25 +723,51 @@ export function SamplesFilterTable() {
         </div>
       )}
 
-      <DataTable
-        data={paginatedData}
-        headers={headers}
-        renderRow={renderRow}
-        searchQuery={q}
-        onSearchChange={(val) => {
-          setQ(val);
-          setCurrentPage(1);
-        }}
-        searchPlaceholder="Search by ID, client or project…"
-        filters={filtersSlot}
-        pagination={{
-          currentPage,
-          totalPages: totalPages || 1,
-          onPageChange: setCurrentPage,
-        }}
-        totalCount={serverTotalCount !== null ? serverTotalCount : samples.length}
-        filteredCount={serverTotalCount !== null ? serverTotalCount : filtered.length}
-      />
+      {fetchError ? (
+        <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-8 text-center text-destructive shadow-sm my-4 flex flex-col items-center justify-center min-h-[300px]">
+          <p className="text-sm font-semibold">LIMS Database Connection Failure</p>
+          <p className="text-xs text-muted-foreground mt-1 max-w-md">{fetchError}</p>
+          <button
+            type="button"
+            onClick={() => setReloadTrigger((prev) => prev + 1)}
+            className="mt-4 rounded-md bg-destructive px-3.5 py-1.5 text-xs text-white font-semibold hover:opacity-90 transition cursor-pointer"
+          >
+            Retry Fetch
+          </button>
+        </div>
+      ) : isLoadingData && serverTotalCount === null ? (
+        <div className="rounded-xl border border-border bg-card p-12 text-center text-muted-foreground shadow-sm flex flex-col items-center justify-center min-h-[300px]">
+          <div className="size-8 animate-spin rounded-full border-4 border-primary border-t-transparent mb-4" />
+          <p className="text-sm font-medium">Fetching verified specimens from UniPod LIMS...</p>
+        </div>
+      ) : (
+        <div className="relative">
+          {isLoadingData && (
+            <div className="absolute inset-0 bg-background/50 backdrop-blur-[1px] z-10 flex items-center justify-center rounded-xl">
+              <div className="size-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+            </div>
+          )}
+          <DataTable
+            data={paginatedData}
+            headers={headers}
+            renderRow={renderRow}
+            searchQuery={q}
+            onSearchChange={(val) => {
+              setQ(val);
+              setCurrentPage(1);
+            }}
+            searchPlaceholder="Search by ID, client or project…"
+            filters={filtersSlot}
+            pagination={{
+              currentPage,
+              totalPages: totalPages || 1,
+              onPageChange: setCurrentPage,
+            }}
+            totalCount={serverTotalCount !== null ? serverTotalCount : samples.length}
+            filteredCount={serverTotalCount !== null ? serverTotalCount : filtered.length}
+          />
+        </div>
+      )}
 
       {/* Floating Bulk Actions Bar */}
       {selectedIds.length > 0 && (
