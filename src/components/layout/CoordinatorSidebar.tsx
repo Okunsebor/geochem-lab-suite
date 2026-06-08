@@ -42,7 +42,7 @@ export function CoordinatorSidebar() {
   return (
     <>
       <div className="hidden lg:block w-[68px] shrink-0 border-r border-sidebar-border/30 bg-sidebar/5" />
-      <aside className="group hidden lg:flex absolute left-0 top-0 bottom-0 w-[68px] hover:w-64 transition-[width] duration-200 ease-in-out z-50 flex-col text-sidebar-foreground border-y-0 border-l-0 border-r border-sidebar-border rounded-none shadow-xl glass overflow-hidden bg-background/95 backdrop-blur-md hover:bg-background">
+      <aside className="group hidden lg:flex fixed left-0 top-0 bottom-0 w-[68px] hover:w-64 transition-[width] duration-200 ease-in-out z-50 flex-col text-sidebar-foreground border-y-0 border-l-0 border-r border-sidebar-border rounded-none shadow-xl glass overflow-hidden bg-background/95 backdrop-blur-md hover:bg-background">
         <div className="w-64 flex flex-col h-full">
           <div className="flex h-14 items-center gap-3 px-5 border-b border-sidebar-border shrink-0">
             <UniPodLogo height={28} linkToHome={false} />

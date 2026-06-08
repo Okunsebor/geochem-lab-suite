@@ -27,7 +27,7 @@ import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { TopbarSearch } from "./TopbarSearch";
 import { TopbarUserMenu } from "./TopbarUserMenu";
-import { TopbarNotifications } from "./TopbarNotifications";
+
 
 // Hierarchical LIMS sidebar menus
 const nav: Array<{
@@ -106,7 +106,6 @@ export function AppTopbar() {
           <TopbarSearch />
         </div>
 
-        <TopbarNotifications />
         <TopbarUserMenu />
       </header>
 
