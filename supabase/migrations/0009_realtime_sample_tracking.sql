@@ -134,7 +134,7 @@ DECLARE
 BEGIN
   v_name := p_technician_name;
   IF v_name IS NULL AND p_performed_by_user_id IS NOT NULL THEN
-    SELECT name INTO v_name FROM public.users WHERE id = p_performed_by_user_id;
+    SELECT full_name INTO v_name FROM public.users WHERE id = p_performed_by_user_id;
   END IF;
 
   INSERT INTO public.sample_logs (
