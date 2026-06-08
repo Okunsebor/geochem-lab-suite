@@ -86,38 +86,16 @@ export default function HeroSection() {
           transition={{ duration: 0.8, ease: "easeOut", delay: 0.1 }}
           className="space-y-6"
         >
-          <div
-            className="text-white font-medium whitespace-nowrap font-display"
-            style={{ fontSize: "clamp(1.8rem, 3.5vw, 2.8rem)", lineHeight: 1.2 }}
-          >
-            Welcome to GeoChem Suite.
-          </div>
-          
-          <div className="h-px bg-white/15 w-48 mt-2 mb-4" />
-
-          <h1 className="font-extrabold tracking-tight text-white font-display flex flex-col gap-2">
-            <span style={{ fontSize: "clamp(2.8rem, 6vw, 5rem)", fontWeight: 800, lineHeight: 1.1 }}>
-              The Future of
-            </span>
-            <span
-              className="block text-[#00AEEF] whitespace-nowrap overflow-hidden text-clip"
-              style={{
-                fontSize: "clamp(2.4rem, 5vw, 4.2rem)",
-                fontWeight: 800,
-                lineHeight: "1.25",
-                height: "1.5em", // Exactly 1.2 times the line height (1.2 * 1.25 = 1.5em)
-                maxWidth: "100%",
-              }}
-            >
+          <h1 className="text-5xl md:text-7xl xl:text-8xl font-extrabold tracking-tight text-white leading-[1.05] font-display">
+            The Future of
+            <span className="block mt-2 text-[#00AEEF] min-h-[1.15em]">
               {displayed}
               <span
                 className="inline-block w-[3px] md:w-[6px] h-[0.8em] bg-[#00AEEF] ml-2 align-middle"
                 style={{ opacity: cursorVisible ? 1 : 0, transition: "opacity 0.05s" }}
               />
             </span>
-            <span style={{ fontSize: "clamp(2.8rem, 6vw, 5rem)", fontWeight: 800, lineHeight: 1.1 }}>
-              Starts Here.
-            </span>
+            <span className="block mt-2">Starts Here.</span>
           </h1>
 
           <div className="h-px w-24 bg-gradient-to-r from-[#00AEEF] to-transparent" />
