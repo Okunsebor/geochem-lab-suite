@@ -52,18 +52,26 @@ BEGIN
 
   INSERT INTO public.tracking_updates (
     sample_id,
-    update_type,
+    event_type,
+    event_label,
     summary,
     stage,
-    performed_by,
-    metadata
+    status,
+    technician_name,
+    metadata,
+    update_type,
+    performed_by
   ) VALUES (
     p_sample_id,
     p_event_type,
+    p_event_label,
     p_summary,
     p_stage,
+    COALESCE(p_status_after, p_status_before),
     v_name,
-    p_metadata
+    COALESCE(p_metadata, '{}'::jsonb),
+    p_event_type,
+    v_name
   );
 END;
 $$;

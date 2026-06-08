@@ -1137,7 +1137,9 @@ BEGIN
     stage,
     status,
     technician_name,
-    metadata
+    metadata,
+    update_type,
+    performed_by
   ) VALUES (
     p_sample_id,
     p_event_type,
@@ -1146,7 +1148,9 @@ BEGIN
     p_stage,
     COALESCE(p_status_after, p_status_before),
     v_name,
-    COALESCE(p_metadata, '{}'::jsonb)
+    COALESCE(p_metadata, '{}'::jsonb),
+    p_event_type,
+    v_name
   );
 END;
 $$;
