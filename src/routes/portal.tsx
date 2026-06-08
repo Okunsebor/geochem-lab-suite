@@ -26,6 +26,8 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/portal")({
   beforeLoad: async () => {
+    if (typeof window === "undefined") return;
+
     const {
       data: { session },
       error,

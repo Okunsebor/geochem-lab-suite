@@ -11,6 +11,8 @@ import { mapDbRoleToUi, isEmailConfirmed } from "@/lib/auth-utils";
 
 export const Route = createFileRoute("/app")({
   beforeLoad: async () => {
+    if (typeof window === "undefined") return;
+
     const {
       data: { session },
       error,

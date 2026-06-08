@@ -12,6 +12,8 @@ const COORDINATOR_ROLES = ["Lab Coordinator"] as const;
 
 export const Route = createFileRoute("/coordinator")({
   beforeLoad: async () => {
+    if (typeof window === "undefined") return;
+
     const {
       data: { session },
       error,
