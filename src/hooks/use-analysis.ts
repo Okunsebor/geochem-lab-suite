@@ -292,9 +292,18 @@ export function useAnalysis(): UseAnalysisReturn {
 
   const setRunStatus = async (runId: string, status: RunStatus, extra: Partial<AnalyticalRun> = {}) => {
     try {
+      const updatePayload: any = { status };
+      if (extra.startedAt) updatePayload.started_at = extra.startedAt;
+      if (extra.completedAt) updatePayload.completed_at = extra.completedAt;
+      if (extra.rawFileUrl) updatePayload.raw_file_url = extra.rawFileUrl;
+      if (extra.rawFileName) updatePayload.raw_file_name = extra.rawFileName;
+      if (extra.sampleId) updatePayload.sample_id = extra.sampleId;
+      if (extra.instrumentId) updatePayload.instrument_id = extra.instrumentId;
+      if (extra.analystName) updatePayload.analyst_name = extra.analystName;
+
       const { error } = await supabase
         .from("analytical_runs" as any)
-        .update({ status, ...extra })
+        .update(updatePayload)
         .eq("id", runId);
       if (error) throw error;
 
