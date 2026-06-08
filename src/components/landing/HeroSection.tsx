@@ -1,8 +1,52 @@
+import { useState, useEffect } from "react";
 import { Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { Lock, ArrowRight, Server, Shield } from "lucide-react";
 
+const TYPEWRITER_PHRASES = [
+  "Geochemical Analysis",
+  "Mineral Intelligence",
+  "Certified Reporting",
+  "Institutional Research",
+  "Scientific Discovery",
+];
+
 export default function HeroSection() {
+  const [phraseIdx, setPhraseIdx] = useState(0);
+  const [displayed, setDisplayed] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [cursorVisible, setCursorVisible] = useState(true);
+
+  useEffect(() => {
+    const cursorTimer = setInterval(() => setCursorVisible((v) => !v), 530);
+    return () => clearInterval(cursorTimer);
+  }, []);
+
+  useEffect(() => {
+    const phrase = TYPEWRITER_PHRASES[phraseIdx];
+    let timeout: ReturnType<typeof setTimeout>;
+
+    if (!isDeleting && displayed.length < phrase.length) {
+      const delay = 600 / phrase.length;
+      timeout = setTimeout(() => {
+        setDisplayed(phrase.slice(0, displayed.length + 1));
+      }, delay);
+    } else if (!isDeleting && displayed.length === phrase.length) {
+      timeout = setTimeout(() => {
+        setIsDeleting(true);
+      }, 1500);
+    } else if (isDeleting && displayed.length > 0) {
+      const delay = 400 / phrase.length;
+      timeout = setTimeout(() => {
+        setDisplayed(displayed.slice(0, -1));
+      }, delay);
+    } else if (isDeleting && displayed.length === 0) {
+      setIsDeleting(false);
+      setPhraseIdx((idx) => (idx + 1) % TYPEWRITER_PHRASES.length);
+    }
+
+    return () => clearTimeout(timeout);
+  }, [displayed, isDeleting, phraseIdx]);
   return (
     <section className="relative overflow-hidden min-h-[calc(100vh-64px)] flex items-center justify-start py-20 px-4 md:px-12 lg:px-24 select-none">
       {/* BACKGROUND LAYER: Full visibility image */}
@@ -43,8 +87,15 @@ export default function HeroSection() {
           className="space-y-6"
         >
           <h1 className="text-5xl md:text-7xl xl:text-8xl font-extrabold tracking-tight text-white leading-[1.05] font-display">
-            Scientific Infrastructure.
-            <span className="block mt-2 text-[#00AEEF]">Reimagined.</span>
+            The Future of
+            <span className="block mt-2 text-[#00AEEF] min-h-[1.15em]">
+              {displayed}
+              <span
+                className="inline-block w-[3px] md:w-[6px] h-[0.8em] bg-[#00AEEF] ml-2 align-middle"
+                style={{ opacity: cursorVisible ? 1 : 0, transition: "opacity 0.05s" }}
+              />
+            </span>
+            <span className="block mt-2">Starts Here.</span>
           </h1>
 
           <div className="h-px w-24 bg-gradient-to-r from-[#00AEEF] to-transparent" />

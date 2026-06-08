@@ -91,7 +91,7 @@ export default function WhatWeProvideSection() {
                 {card.description}
               </p>
               <span className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-primary opacity-0 group-hover:opacity-100 transition-opacity">
-                Request Access <ArrowRight className="size-3" />
+                Get Started <ArrowRight className="size-3" />
               </span>
             </motion.article>
           ))}

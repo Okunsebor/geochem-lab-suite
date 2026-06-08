@@ -192,8 +192,9 @@ export interface Database {
   };
 }
 
+import { createBrowserClient } from '@supabase/ssr';
 // 3. Central isomorphic typed Supabase client singleton instance
-export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+export const supabase = createBrowserClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
     autoRefreshToken: true,
     persistSession: true,

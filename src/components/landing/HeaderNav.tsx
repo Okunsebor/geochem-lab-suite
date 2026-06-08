@@ -48,7 +48,7 @@ export default function HeaderNav() {
             to="/register"
             className="btn-theme-cyan inline-flex items-center gap-1.5 rounded-md text-sm"
           >
-            Request Access <ArrowRight className="size-3.5" />
+            Get Started <ArrowRight className="size-3.5" />
           </Link>
         </div>
 
@@ -90,7 +90,7 @@ export default function HeaderNav() {
                 onClick={closeMobile}
                 className="btn-theme-cyan inline-flex items-center justify-center gap-1.5 rounded-md text-sm"
               >
-                Request Access <ArrowRight className="size-3.5" />
+                Get Started <ArrowRight className="size-3.5" />
               </Link>
             </div>
           </nav>

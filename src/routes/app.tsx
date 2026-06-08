@@ -9,14 +9,11 @@ import { motion } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 import { mapDbRoleToUi, isEmailConfirmed } from "@/lib/auth-utils";
 
+import { getSessionFromServer, getUserProfileFromServer } from "@/lib/auth-server";
+
 export const Route = createFileRoute("/app")({
   beforeLoad: async () => {
-    if (typeof window === "undefined") return;
-
-    const {
-      data: { session },
-      error,
-    } = await supabase.auth.getSession();
+    const { session, error } = await getSessionFromServer();
     if (error || !session?.user) {
       throw redirect({ to: "/login" });
     }
@@ -25,11 +22,7 @@ export const Route = createFileRoute("/app")({
       throw redirect({ href: getVerifyEmailPath(session.user.email) });
     }
 
-    const { data: profile } = await supabase
-      .from("users" as any)
-      .select("role")
-      .eq("id", session.user.id)
-      .maybeSingle();
+    const { profile } = await getUserProfileFromServer({ data: session.user.id });
 
     // Use the DB profile as the authoritative source.
     // If the profile query returned null (RLS timing race or session not yet

@@ -24,14 +24,11 @@ import { supabase } from "@/lib/supabase";
 import { mapDbRoleToUi, isEmailConfirmed } from "@/lib/auth-utils";
 import { toast } from "sonner";
 
+import { getSessionFromServer, getUserProfileFromServer } from "@/lib/auth-server";
+
 export const Route = createFileRoute("/portal")({
   beforeLoad: async () => {
-    if (typeof window === "undefined") return;
-
-    const {
-      data: { session },
-      error,
-    } = await supabase.auth.getSession();
+    const { session, error } = await getSessionFromServer();
     if (error || !session?.user) {
       throw redirect({ to: "/register" });
     }
@@ -40,11 +37,7 @@ export const Route = createFileRoute("/portal")({
       throw redirect({ href: getVerifyEmailPath(session.user.email) });
     }
 
-    const { data: profile } = await supabase
-      .from("users" as any)
-      .select("role")
-      .eq("id", session.user.id)
-      .maybeSingle();
+    const { profile } = await getUserProfileFromServer({ data: session.user.id });
 
     const rawRole: string | null =
       profile?.role ?? session.user.user_metadata?.role ?? null;
