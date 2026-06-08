@@ -544,7 +544,7 @@ END $$;
 -- ─────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS public.reports (
     id             VARCHAR(50)   PRIMARY KEY,              -- e.g. RPT-2041
-    sample_id      UUID          NOT NULL REFERENCES public.samples(id) ON DELETE CASCADE,
+    sample_id      VARCHAR(100)  NOT NULL REFERENCES public.samples(id) ON DELETE CASCADE,
     client         VARCHAR(100)  NOT NULL,
     client_org_id  VARCHAR(100),
     status         report_status NOT NULL DEFAULT 'Draft',

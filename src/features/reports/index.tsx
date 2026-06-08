@@ -112,9 +112,9 @@ export function ReportsFeature() {
       toast.success(`Report compiled successfully for sample ${selectedSampleForReport}!`);
       setIsCompileOpen(false);
       setSelectedSampleForReport("");
-    } catch (err) {
+    } catch (err: any) {
       toast.dismiss();
-      toast.error("Failed to compile report.");
+      toast.error(`Failed to compile report: ${err.message || err}`);
     }
   };
 
