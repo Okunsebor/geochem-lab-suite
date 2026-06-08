@@ -13,8 +13,7 @@ export const getSessionFromServer = createServerFn({ method: "GET" }).handler(as
 });
 
 export const getUserProfileFromServer = createServerFn({ method: "GET" })
-  .validator((userId: string) => userId)
-  .handler(async ({ data: userId }) => {
+  .handler(async ({ data: userId }: { data: string }) => {
     const supabase = getServerSupabase();
     const { data: profile } = await supabase
       .from("users")

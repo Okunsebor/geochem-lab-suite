@@ -163,6 +163,44 @@ export interface Database {
         Insert: Omit<Database["public"]["Tables"]["notifications"]["Row"], "id" | "created_at">;
         Update: Partial<Database["public"]["Tables"]["notifications"]["Insert"]>;
       };
+      analytical_runs: {
+        Row: {
+          id: string;
+          status: string;
+          created_at: string;
+        };
+        Insert: any; Update: any;
+      };
+      calibration_records: {
+        Row: {
+          id: string;
+          created_at: string;
+        };
+        Insert: any; Update: any;
+      };
+      qa_flags: {
+        Row: {
+          id: string;
+          status: string;
+          created_at: string;
+        };
+        Insert: any; Update: any;
+      };
+      report_logs: {
+        Row: {
+          id: string;
+          report_id: string;
+          created_at: string;
+        };
+        Insert: any; Update: any;
+      };
+      tracking_updates: {
+        Row: {
+          id: string;
+          created_at: string;
+        };
+        Insert: any; Update: any;
+      };
       sample_attachments: {
         Row: {
           id: string;
@@ -179,12 +217,50 @@ export interface Database {
         >;
         Update: Partial<Database["public"]["Tables"]["sample_attachments"]["Insert"]>;
       };
+      auth_audit_events: {
+        Row: {
+          id: string;
+          event_type: string;
+          actor_user_id: string;
+          user_agent: string | null;
+          meta: any;
+          created_at: string;
+        };
+        Insert: Omit<Database["public"]["Tables"]["auth_audit_events"]["Row"], "id" | "created_at">;
+        Update: Partial<Database["public"]["Tables"]["auth_audit_events"]["Insert"]>;
+      };
     };
     Views: {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      get_users_with_email: {
+        Args: Record<string, never>;
+        Returns: any[];
+      };
+      upsert_user_profile: {
+        Args: {
+          p_full_name: string | null;
+          p_role: string;
+          p_phone_number: string | null;
+        };
+        Returns: any;
+      };
+      update_user_profile: {
+        Args: {
+          p_full_name: string | null;
+          p_role: string;
+          p_phone_number: string | null;
+        };
+        Returns: any;
+      };
+      admin_update_user_role: {
+        Args: {
+          p_target_user_id: string;
+          p_new_role: string;
+        };
+        Returns: any;
+      };
     };
     Enums: {
       [_ in never]: never;

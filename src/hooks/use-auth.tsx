@@ -65,7 +65,7 @@ async function waitForProfile(
 ): Promise<boolean> {
   for (let i = 0; i < attempts; i++) {
     const { data } = await supabase
-      .from("users" as any)
+      .from("users")
       .select("id")
       .eq("id", userId)
       .maybeSingle();
@@ -102,7 +102,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Attempt 1: fetch from public.users
     const { data: profile, error: fetchError } = await supabase
-      .from("users" as any)
+      .from("users")
       .select("*, organizations(name)")
       .eq("id", sessionUser.id)
       .maybeSingle();
@@ -133,7 +133,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const metaRole = (sessionUser.user_metadata?.role as string | undefined) ?? "customer";
       const { data: upserted, error: rpcError } = await supabase.rpc(
-        "upsert_user_profile" as any,
+        "upsert_user_profile",
         {
           p_full_name: buildName(sessionUser.user_metadata?.full_name),
           p_role: metaRole,
@@ -248,7 +248,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // Auth audit (best-effort, never blocks login)
       try {
-        await supabase.from("auth_audit_events" as any).insert({
+        await supabase.from("auth_audit_events").insert({
           event_type: "login",
           actor_user_id: user.id,
           user_agent: typeof navigator !== "undefined" ? navigator.userAgent : null,
@@ -363,7 +363,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             "— attempting RPC repair",
           );
           try {
-            const { error: rpcError } = await supabase.rpc("upsert_user_profile" as any, {
+            const { error: rpcError } = await supabase.rpc("upsert_user_profile", {
               p_full_name: fullName,
               p_role: "customer",
               p_phone_number: input.phone.trim() || null,
@@ -417,7 +417,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           data: { session: s },
         } = await supabase.auth.getSession();
         if (s?.user?.id) {
-          await supabase.from("auth_audit_events" as any).insert({
+          await supabase.from("auth_audit_events").insert({
             event_type: "logout",
             actor_user_id: s.user.id,
             user_agent: typeof navigator !== "undefined" ? navigator.userAgent : null,
@@ -493,7 +493,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     if (invitedUserId) {
       try {
-        await supabase.rpc("admin_update_user_role" as any, {
+        await supabase.rpc("admin_update_user_role", {
           p_target_user_id: invitedUserId,
           p_new_role: dbRole,
         });
