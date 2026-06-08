@@ -34,7 +34,7 @@ export default function HeroSection() {
     } else if (!isDeleting && displayed.length === phrase.length) {
       timeout = setTimeout(() => {
         setIsDeleting(true);
-      }, 1500);
+      }, 5000);
     } else if (isDeleting && displayed.length > 0) {
       const delay = 400 / phrase.length;
       timeout = setTimeout(() => {
@@ -66,19 +66,6 @@ export default function HeroSection() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
       >
-        {/* Security badge */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/20 bg-white/10 backdrop-blur-md text-xs font-mono text-white tracking-wider shadow-sm"
-        >
-          <Lock className="size-3.5 text-[#00AEEF]" />
-          <span>CONTROLLED ACCESS</span>
-          <span className="h-3 w-px bg-white/20" />
-          <span className="text-white/80">SECURE SYSTEM</span>
-        </motion.div>
-
         {/* Hero headline */}
         <motion.div
           initial={{ opacity: 0, y: 24 }}
@@ -86,16 +73,16 @@ export default function HeroSection() {
           transition={{ duration: 0.8, ease: "easeOut", delay: 0.1 }}
           className="space-y-6"
         >
-          <h1 className="text-5xl md:text-7xl xl:text-8xl font-extrabold tracking-tight text-white leading-[1.05] font-display">
-            The Future of
-            <span className="block mt-2 text-[#00AEEF] min-h-[1.15em]">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-extrabold tracking-tight text-white leading-[1.05] font-display">
+            <span className="block whitespace-nowrap">The Future of</span>
+            <span className="block mt-2 text-[#00AEEF] min-h-[1.15em] w-[24ch] whitespace-nowrap overflow-hidden">
               {displayed}
               <span
                 className="inline-block w-[3px] md:w-[6px] h-[0.8em] bg-[#00AEEF] ml-2 align-middle"
                 style={{ opacity: cursorVisible ? 1 : 0, transition: "opacity 0.05s" }}
               />
             </span>
-            <span className="block mt-2">Starts Here.</span>
+            <span className="block mt-2 whitespace-nowrap">Starts Here.</span>
           </h1>
 
           <div className="h-px w-24 bg-gradient-to-r from-[#00AEEF] to-transparent" />
