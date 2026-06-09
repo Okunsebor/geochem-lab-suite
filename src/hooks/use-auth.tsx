@@ -469,7 +469,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // ─── inviteUser ───────────────────────────────────────────────────────────
   const inviteUser = async (name: string, email: string, role: User["role"]) => {
-    if (currentUser?.role !== "Admin") {
+    const { data: { session: currentSession } } = await supabase.auth.getSession();
+    if (!currentSession?.user) {
+      throw new Error("Not authenticated.");
+    }
+
+    const { data: profile } = await supabase
+      .from("users")
+      .select("role")
+      .eq("id", currentSession.user.id)
+      .maybeSingle();
+
+    const rawRole = profile?.role ?? currentSession.user.user_metadata?.role ?? "";
+
+    if (String(rawRole).toLowerCase() !== "admin") {
       throw new Error("Only an Admin can invite new users.");
     }
 
