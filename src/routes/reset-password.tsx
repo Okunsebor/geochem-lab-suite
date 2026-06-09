@@ -24,6 +24,14 @@ function ResetPassword() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
+  React.useEffect(() => {
+    import("@/lib/auth-email-verification").then((m) => {
+      m.completeEmailVerificationFromUrl().catch((err) => {
+        console.warn("PKCE code exchange failed or already consumed:", err);
+      });
+    });
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
