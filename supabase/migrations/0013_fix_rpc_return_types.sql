@@ -58,9 +58,16 @@ BEGIN
   -- Note: role is intentionally NOT updated here — role changes go through admin_update_user_role
 
   RETURN QUERY
-    SELECT u.id, u.full_name::TEXT, u.role, u.organization_id, u.phone_number::TEXT, u.created_at, u.updated_at
-    FROM public.users u
-    WHERE u.id = v_uid;
+    SELECT 
+      users.id, 
+      users.full_name::TEXT, 
+      users.role, 
+      users.organization_id, 
+      users.phone_number::TEXT, 
+      users.created_at, 
+      users.updated_at
+    FROM public.users
+    WHERE users.id = v_uid;
 END;
 $$;
 
@@ -92,18 +99,18 @@ BEGIN
 
   RETURN QUERY
     SELECT
-      pu.id,
-      pu.full_name::TEXT,
-      pu.role,
-      pu.organization_id,
-      pu.phone_number::TEXT,
-      au.email::TEXT,
-      (au.email_confirmed_at IS NOT NULL) AS email_confirmed,
-      pu.created_at,
-      pu.updated_at
-    FROM public.users pu
-    JOIN auth.users au ON au.id = pu.id
-    ORDER BY pu.created_at DESC;
+      public.users.id,
+      public.users.full_name::TEXT,
+      public.users.role,
+      public.users.organization_id,
+      public.users.phone_number::TEXT,
+      auth.users.email::TEXT,
+      (auth.users.email_confirmed_at IS NOT NULL) AS email_confirmed,
+      public.users.created_at,
+      public.users.updated_at
+    FROM public.users
+    JOIN auth.users ON auth.users.id = public.users.id
+    ORDER BY public.users.created_at DESC;
 END;
 $$;
 
