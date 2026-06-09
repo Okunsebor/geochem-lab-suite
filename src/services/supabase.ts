@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { createBrowserClient } from "@supabase/ssr";
 import {
   Sample,
   Instrument,
@@ -269,14 +270,16 @@ export interface Database {
 }
 
 // 3. Central isomorphic typed Supabase client singleton instance
-export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: {
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: true,
-    flowType: "pkce",
-  },
-});
+export const supabase = typeof window !== "undefined"
+  ? createBrowserClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY)
+  : createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        autoRefreshToken: true,
+        persistSession: false,
+        detectSessionInUrl: true,
+        flowType: "pkce",
+      },
+    });
 
 // 4. Client helpers for core LIMS data pipelines
 export const supabaseHelpers = {

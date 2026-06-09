@@ -1,6 +1,8 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
+import { useRouterState } from "@tanstack/react-router";
+
 type Theme = "light" | "dark" | "system";
 
 type ThemeProviderProps = {
@@ -34,11 +36,17 @@ export function ThemeProvider({
     return defaultTheme;
   });
 
+  // Check if we are on a public route where we want to enforce light theme
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const isPublicRoute = ["/", "/login", "/register", "/forgot-password", "/reset-password", "/verify-email"].includes(pathname);
+
   useEffect(() => {
     const root = window.document.documentElement;
     root.classList.remove("light", "dark");
 
-    if (theme === "system") {
+    const activeTheme = isPublicRoute ? "light" : theme;
+
+    if (activeTheme === "system") {
       const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches
         ? "dark"
         : "light";
@@ -46,8 +54,8 @@ export function ThemeProvider({
       return;
     }
 
-    root.classList.add(theme);
-  }, [theme]);
+    root.classList.add(activeTheme);
+  }, [theme, isPublicRoute]);
 
   const value = {
     theme,
