@@ -34,6 +34,7 @@ import { PageHeader } from "../../components/layout/PageHeader";
 import { StatCard } from "../../components/shared/StatCard";
 import { StatusBadge } from "../../components/shared/StatusBadge";
 import { calculateThroughput } from "../../lib/dashboard-service";
+import { useDashboardData } from "./use-dashboard-data";
 
 const PIE_COLORS = [
   "var(--color-chart-1)",
@@ -43,13 +44,18 @@ const PIE_COLORS = [
 ];
 
 export function DashboardFeature() {
-  const { samples, instruments, activity, notifications } = useLimsState();
+  const { samples, instruments, activity } = useLimsState();
   const [timeframe, setTimeframe] = useState<14 | 30 | 90>(14);
 
-  // Compute actual dynamic KPIs
-  const activeSamples = useMemo(() => {
-    return samples.filter((s) => s.status !== "Completed" && s.status !== "Report Ready").length;
-  }, [samples]);
+  const {
+    activeSamples,
+    avgTurnaround,
+    qaQcPassRate,
+    overdue,
+    recentSamples,
+    recentNotifications,
+    workflowSplit
+  } = useDashboardData();
 
   // Static KPI structure synced to state
   const kpis = useMemo(
@@ -63,43 +69,22 @@ export function DashboardFeature() {
       },
       {
         label: "Avg. Turnaround",
-        value: "3.2d",
+        value: `${avgTurnaround}d`,
         delta: "-0.4d",
         trend: "up" as const,
         icon: Clock,
       },
       {
         label: "QA/QC Pass Rate",
-        value: "98.6%",
+        value: `${qaQcPassRate}%`,
         delta: "+0.8%",
         trend: "up" as const,
         icon: ShieldCheck,
       },
-      { label: "Overdue", value: "7", delta: "-3", trend: "up" as const, icon: AlertTriangle },
+      { label: "Overdue", value: overdue.toString(), delta: "-3", trend: "up" as const, icon: AlertTriangle },
     ],
-    [activeSamples],
+    [activeSamples, avgTurnaround, qaQcPassRate, overdue],
   );
-
-  const recent = useMemo(() => {
-    return samples.slice(0, 6);
-  }, [samples]);
-
-  // Compute actual workflow splits
-  const workflowSplit = useMemo(() => {
-    const prepCount = samples.filter(
-      (s) => s.status === "In Preparation" || s.status === "Verified",
-    ).length;
-    const analysisCount = samples.filter((s) => s.status === "In Analysis").length;
-    const qaCount = samples.filter((s) => s.status === "Completed").length;
-    const reportingCount = samples.filter((s) => s.status === "Report Ready").length;
-
-    return [
-      { name: "Preparation", value: prepCount || 312 },
-      { name: "Analysis", value: analysisCount || 268 },
-      { name: "QA/QC", value: qaCount || 96 },
-      { name: "Reporting", value: reportingCount || 84 },
-    ];
-  }, [samples]);
 
   // Dynamically calculate operational throughput based on live samples or realistic fallbacks
   const dynamicThroughput = useMemo(() => {
@@ -272,7 +257,7 @@ export function DashboardFeature() {
                 </tr>
               </thead>
               <tbody>
-                {recent.map((s) => (
+                {recentSamples.map((s) => (
                   <tr
                     key={s.id}
                     className="[&>td]:px-5 [&>td]:py-2.5 border-b border-border last:border-0 hover:bg-muted/40 transition-colors"
@@ -302,7 +287,7 @@ export function DashboardFeature() {
         <div className="rounded-xl border border-border bg-card p-5">
           <h3 className="text-sm font-semibold">Alerts & Notifications</h3>
           <ul className="mt-3 space-y-2 max-h-[290px] overflow-y-auto">
-            {notifications.slice(0, 5).map((n) => (
+            {recentNotifications.map((n) => (
               <li
                 key={n.id}
                 className="flex gap-2 rounded-lg border border-border p-2.5 text-xs bg-card"
