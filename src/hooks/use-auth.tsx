@@ -101,7 +101,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       "User";
 
     // Attempt 1: fetch from public.users
-    let { data: profile, error: fetchError } = await supabase
+    let { data: profile, error: fetchError } = await (supabase as any)
       .from("users")
       .select("*, organizations(name)")
       .eq("id", sessionUser.id)
@@ -113,7 +113,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.warn("syncProfile: no public.users row found for", sessionUser.id, "— auto-creating to prevent legacy lockout");
       
       const metaRole = (sessionUser.user_metadata?.role as string | undefined) ?? "customer";
-      const { data: upserted } = await supabase.rpc(
+      const { data: upserted } = await (supabase as any).rpc(
         "upsert_user_profile",
         {
           p_full_name: buildName(sessionUser.user_metadata?.full_name),
@@ -123,7 +123,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       );
 
       // Retry fetching after creation
-      const retryFetch = await supabase
+      const retryFetch = await (supabase as any)
         .from("users")
         .select("*, organizations(name)")
         .eq("id", sessionUser.id)
@@ -233,7 +233,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // Auth audit (best-effort, never blocks login)
       try {
-        await supabase.from("auth_audit_events").insert({
+        await (supabase as any).from("auth_audit_events").insert({
           event_type: "login",
           actor_user_id: user.id,
           user_agent: typeof navigator !== "undefined" ? navigator.userAgent : null,
@@ -348,7 +348,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             "— attempting RPC repair",
           );
           try {
-            const { error: rpcError } = await supabase.rpc("upsert_user_profile", {
+            const { error: rpcError } = await (supabase as any).rpc("upsert_user_profile", {
               p_full_name: fullName,
               p_role: "customer",
               p_phone_number: input.phone.trim() || null,
@@ -402,7 +402,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           data: { session: s },
         } = await supabase.auth.getSession();
         if (s?.user?.id) {
-          await supabase.from("auth_audit_events").insert({
+          await (supabase as any).from("auth_audit_events").insert({
             event_type: "logout",
             actor_user_id: s.user.id,
             user_agent: typeof navigator !== "undefined" ? navigator.userAgent : null,
@@ -459,13 +459,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       throw new Error("Not authenticated.");
     }
 
-    const { data: profile } = await supabase
+    const { data: profile } = await (supabase as any)
       .from("users")
       .select("role")
       .eq("id", currentSession.user.id)
       .maybeSingle();
 
-    const rawRole = profile?.role ?? currentSession.user.user_metadata?.role ?? "";
+    const rawRole = (profile as any)?.role ?? currentSession.user.user_metadata?.role ?? "";
 
     if (String(rawRole).toLowerCase() !== "admin") {
       throw new Error("Only an Admin can invite new users.");

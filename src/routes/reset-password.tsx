@@ -6,13 +6,25 @@ import { InputField } from "../components/shared/form-controls";
 import { toast } from "sonner";
 import { BRAND_ASSETS } from "@/lib/branding";
 import { UniPodLogo } from "@/components/branding/UniPodLogo";
+import { z } from "zod";
+import { supabase } from "../lib/supabase";
+
+const resetPasswordSearchSchema = z.object({
+  code: z.string().optional(),
+  error: z.string().optional(),
+  error_code: z.string().optional(),
+  error_description: z.string().optional(),
+  type: z.string().optional(),
+  token_hash: z.string().optional(),
+});
 
 export const Route = createFileRoute("/reset-password")({
+  validateSearch: resetPasswordSearchSchema,
   component: ResetPassword,
 });
 
 function ResetPassword() {
-  const search: any = Route.useSearch();
+  const search = Route.useSearch();
   const navigate = useNavigate();
   const { resetPassword } = useAuth();
   
@@ -23,14 +35,39 @@ function ResetPassword() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [exchanging, setExchanging] = useState(!!search.code);
 
   React.useEffect(() => {
-    import("@/lib/auth-email-verification").then((m) => {
-      m.completeEmailVerificationFromUrl().catch((err) => {
+    let active = true;
+    async function exchange() {
+      if (!search.code) return;
+      try {
+        // First check if we already have a session
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          if (active) setExchanging(false);
+          return;
+        }
+
+        // Otherwise exchange code
+        const { completeEmailVerificationFromUrl } = await import("@/lib/auth-email-verification");
+        await completeEmailVerificationFromUrl();
+      } catch (err) {
         console.warn("PKCE code exchange failed or already consumed:", err);
-      });
-    });
-  }, []);
+        // Double check session in case it was set in background
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session && active) {
+          setError("Failed to establish secure session. Please try clicking the reset link again.");
+        }
+      } finally {
+        if (active) setExchanging(false);
+      }
+    }
+    exchange();
+    return () => {
+      active = false;
+    };
+  }, [search.code]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -107,7 +144,14 @@ function ResetPassword() {
               Enter your new password below.
             </p>
 
-            {success ? (
+            {exchanging ? (
+              <div className="flex flex-col items-center justify-center py-12 space-y-4">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <p className="text-sm text-muted-foreground animate-pulse">
+                  Establishing secure auth session...
+                </p>
+              </div>
+            ) : success ? (
               <div className="mt-6">
                 <div className="p-4 bg-green-50 text-green-700 rounded-md text-sm border border-green-200 text-center mb-6">
                   Password set successfully. You can now sign in.
@@ -170,3 +214,4 @@ function ResetPassword() {
     </div>
   );
 }
+
