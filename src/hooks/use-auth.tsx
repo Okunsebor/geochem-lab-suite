@@ -486,42 +486,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       throw new Error("Only an Admin can invite new users.");
     }
 
-    const dbRole = mapUiRoleToDb(role);
-
-    const { data: inviteData, error: inviteError } = await supabase.auth.signUp({
-      email: email.trim(),
-      password: crypto.randomUUID(), // Random, discarded — user sets their own via email link
-      options: {
-        data: {
-          full_name: name,
-          role: dbRole,
-        },
-      },
+    const { data, error } = await supabase.functions.invoke("invite-user", {
+      body: { name, email, role },
     });
 
-    if (inviteError) throw inviteError;
-
-    const invitedUserId =
-      (inviteData as any)?.user?.id ?? (inviteData as any)?.data?.user?.id;
-
-    if (invitedUserId) {
-      try {
-        await supabase.rpc("admin_update_user_role", {
-          p_target_user_id: invitedUserId,
-          p_new_role: dbRole,
-        });
-      } catch (roleErr) {
-        console.warn("inviteUser: could not pre-set role via RPC:", roleErr);
-      }
+    if (error) {
+      throw new Error(error.message || "Failed to invite user");
     }
 
-    // Trigger the setup invite via password reset
-    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-      redirectTo: `${window.location.origin}/reset-password`,
-    });
-    if (resetError) {
-      console.warn("inviteUser: could not send setup invite:", resetError);
-      // We don't throw here to avoid failing the whole invite process if only the email fails.
+    if (data?.error) {
+      throw new Error(data.error);
     }
   };
 
