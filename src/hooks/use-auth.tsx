@@ -101,16 +101,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       "User";
 
     // Attempt 1: fetch from public.users
-    const { data: profile, error: fetchError } = await supabase
+    let { data: profile, error: fetchError } = await supabase
       .from("users")
       .select("*, organizations(name)")
       .eq("id", sessionUser.id)
       .maybeSingle();
 
-    if (fetchError) {
-      // Hard DB / RLS error — do not silently swallow
-      console.error("syncProfile: DB error fetching profile:", fetchError);
-      // We still try to recover via RPC below rather than crashing
+    if (!profile) {
+      // User exists in auth but not in public.users. Do not block login.
+      // Automatically create their public.users row using data available from the auth session
+      console.warn("syncProfile: no public.users row found for", sessionUser.id, "— auto-creating to prevent legacy lockout");
+      
+      const metaRole = (sessionUser.user_metadata?.role as string | undefined) ?? "customer";
+      const { data: upserted } = await supabase.rpc(
+        "upsert_user_profile",
+        {
+          p_full_name: buildName(sessionUser.user_metadata?.full_name),
+          p_role: metaRole,
+          p_phone_number: sessionUser.user_metadata?.phone ?? null,
+        },
+      );
+
+      // Retry fetching after creation
+      const retryFetch = await supabase
+        .from("users")
+        .select("*, organizations(name)")
+        .eq("id", sessionUser.id)
+        .maybeSingle();
+        
+      profile = retryFetch.data;
     }
 
     if (profile) {
@@ -128,41 +147,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return uiRole;
     }
 
-    // Attempt 2: profile missing — call upsert_user_profile RPC to create it
-    console.warn("syncProfile: no public.users row found for", sessionUser.id, "— calling upsert RPC");
-    try {
-      const metaRole = (sessionUser.user_metadata?.role as string | undefined) ?? "customer";
-      const { data: upserted, error: rpcError } = await supabase.rpc(
-        "upsert_user_profile",
-        {
-          p_full_name: buildName(sessionUser.user_metadata?.full_name),
-          p_role: metaRole,
-          p_phone_number: sessionUser.user_metadata?.phone ?? null,
-        },
-      );
-
-      if (rpcError) throw rpcError;
-
-      const row = Array.isArray(upserted) ? upserted[0] : upserted;
-      if (row) {
-        const uiRole = mapDbRoleToUi(row.role);
-        setCurrentUser({
-          id: 1,
-          name: buildName(row.full_name),
-          email: sessionUser.email || "",
-          role: uiRole,
-          status: verified ? "Active" : "Invited",
-          lastSeen: "Just now",
-          organization: sessionUser.user_metadata?.organization_name,
-        });
-        return uiRole;
-      }
-    } catch (rpcErr) {
-      console.error("syncProfile: upsert_user_profile RPC failed:", rpcErr);
-    }
-
-    // Attempt 3: RPC also failed — set a minimal user state but treat as Customer
-    // This is a genuine degraded state; log clearly so it can be diagnosed.
+    // Fallback if creation completely failed — set a minimal user state but treat as Customer
     console.error(
       "syncProfile: CRITICAL — could not resolve profile for user",
       sessionUser.id,
