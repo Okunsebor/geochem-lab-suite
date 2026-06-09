@@ -69,10 +69,10 @@
   --muted-foreground: #64748b; /* Slate 500 */
   --accent: #f5b800; /* UniPod brand accent: Gold */
   --accent-foreground: #000000;
-  --destructive: #ef4444;
-  --destructive-foreground: #ffffff;
-  --success: #22c55e;
-  --success-foreground: #ffffff;
+  --destructive: #f5b800; /* Restricted to Gold */
+  --destructive-foreground: #000000;
+  --success: #00aeef; /* Restricted to Cyan */
+  --success-foreground: #000000;
   --warning: #f5b800;
   --warning-foreground: #000000;
   --info: #00aeef;
@@ -82,7 +82,7 @@
   --ring: #00aeef;
   --chart-1: #00aeef;
   --chart-2: #f5b800;
-  --chart-3: #22c55e;
+  --chart-3: #008cbe;
   --chart-4: #0f172a;
   --chart-5: #64748b;
   --sidebar: #ffffff;
@@ -129,13 +129,13 @@
   --secondary-foreground: #f8fafc;
   --muted: #1a1a1a;
   --muted-foreground: #888888;
-  --accent: #00aeef; /* Replaced Gold with Cyan for strict monochrome styling */
+  --accent: #f5b800; /* Gold */
   --accent-foreground: #000000;
-  --destructive: #7f1d1d;
+  --destructive: #5c4400; /* Dark Gold */
   --destructive-foreground: #f8fafc;
-  --success: #14532d;
+  --success: #005a7a; /* Dark Cyan */
   --success-foreground: #f8fafc;
-  --warning: #78350f;
+  --warning: #5c4400;
   --warning-foreground: #f8fafc;
   --info: #00aeef;
   --info-foreground: #000000;
@@ -196,7 +196,7 @@
 
 @layer utilities {
   .gradient-primary {
-    background: linear-gradient(135deg, #00aeef 0%, #000000 100%);
+    background: linear-gradient(135deg, #00AEEF 0%, #008CBE 100%);
   }
   .gradient-accent {
     background: linear-gradient(135deg, #f5b800 0%, #000000 100%);

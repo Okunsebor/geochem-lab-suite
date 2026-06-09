@@ -169,11 +169,11 @@ export function ReportsFeature() {
             <p className="text-xs font-semibold text-muted-foreground uppercase">
               Awaiting Sign-off
             </p>
-            <p className="text-2xl font-bold text-amber-600 dark:text-amber-500 mt-1">
+            <p className="text-2xl font-bold text-warning mt-1">
               {pendingCount}
             </p>
           </div>
-          <div className="rounded-lg bg-amber-500/10 p-2.5 text-amber-500">
+          <div className="rounded-lg bg-warning/10 p-2.5 text-warning">
             <Clock className="size-5" />
           </div>
         </div>
@@ -182,22 +182,22 @@ export function ReportsFeature() {
             <p className="text-xs font-semibold text-muted-foreground uppercase">
               Approved & Signed
             </p>
-            <p className="text-2xl font-bold text-green-600 dark:text-green-500 mt-1">
+            <p className="text-2xl font-bold text-success mt-1">
               {approvedCount}
             </p>
           </div>
-          <div className="rounded-lg bg-green-500/10 p-2.5 text-green-500">
+          <div className="rounded-lg bg-success/10 p-2.5 text-success">
             <FileCheck2 className="size-5" />
           </div>
         </div>
         <div className="rounded-xl border border-border bg-card p-4 flex items-center justify-between shadow-sm">
           <div>
             <p className="text-xs font-semibold text-muted-foreground uppercase">Delivered</p>
-            <p className="text-2xl font-bold text-blue-600 dark:text-blue-500 mt-1">
+            <p className="text-2xl font-bold text-info mt-1">
               {deliveredCount}
             </p>
           </div>
-          <div className="rounded-lg bg-blue-500/10 p-2.5 text-blue-500">
+          <div className="rounded-lg bg-info/10 p-2.5 text-info">
             <Send className="size-5" />
           </div>
         </div>
@@ -428,11 +428,11 @@ export function ReportsFeature() {
                       </span>
                     </p>
                     {activeReport.status === "Approved" || activeReport.status === "Delivered" ? (
-                      <p className="text-[5px] text-green-600 font-semibold bg-green-50 px-1 py-0.5 rounded w-fit">
+                      <p className="text-[5px] text-success font-semibold bg-success/10 px-1 py-0.5 rounded w-fit">
                         ✓ Digitally Signed & Sealed
                       </p>
                     ) : (
-                      <p className="text-[5px] text-amber-600 font-semibold bg-amber-50 px-1 py-0.5 rounded w-fit">
+                      <p className="text-[5px] text-warning font-semibold bg-warning/10 px-1 py-0.5 rounded w-fit">
                         ⚠ Document Draft Only
                       </p>
                     )}
@@ -440,7 +440,7 @@ export function ReportsFeature() {
 
                   {/* Visual Certification stamp watermark */}
                   {activeReport.status === "Approved" || activeReport.status === "Delivered" ? (
-                    <div className="border border-green-600 text-green-600 p-1 text-[5px] font-extrabold rotate-[-6deg] bg-green-50/20 rounded">
+                    <div className="border border-success text-success p-1 text-[5px] font-extrabold rotate-[-6deg] bg-success/10 rounded">
                       GEOCHEM LABS
                       <br />✓ APPROVED & SEALED
                     </div>
@@ -542,7 +542,7 @@ export function ReportsFeature() {
           >
             <div className="p-5 border-b border-border flex items-center justify-between">
               <h3 className="font-semibold text-foreground inline-flex items-center gap-1.5">
-                <AlertCircle className="size-4 text-red-500" /> Reject Report Draft
+                <AlertCircle className="size-4 text-destructive" /> Reject Report Draft
               </h3>
               <button
                 type="button"
@@ -580,7 +580,7 @@ export function ReportsFeature() {
               </button>
               <button
                 type="submit"
-                className="rounded-md bg-red-600 text-white px-3.5 py-1.5 font-semibold hover:bg-red-750 cursor-pointer shadow-sm transition"
+                className="rounded-md bg-destructive text-destructive-foreground px-3.5 py-1.5 font-semibold hover:opacity-90 cursor-pointer shadow-sm transition"
               >
                 Confirm Rejection
               </button>
@@ -692,7 +692,7 @@ export function ReportsFeature() {
                   ))}
                 </select>
                 {compileEligibleSamples.length === 0 && (
-                  <p className="text-[10px] text-red-500 font-semibold mt-1">
+                  <p className="text-[10px] text-destructive font-semibold mt-1">
                     No completed samples awaiting report compilation.
                   </p>
                 )}
