@@ -11,6 +11,7 @@ import {
 import { Toaster } from "sonner";
 import { LimsStateProvider } from "../hooks/use-lims-state";
 import { AuthProvider } from "../hooks/use-auth";
+import { ThemeProvider } from "@/components/ThemeProvider";
 
 import appCss from "../styles.css?url";
 
@@ -118,7 +119,6 @@ function RootShell({ children }: { children: React.ReactNode }) {
   );
 }
 
-import { ThemeProvider } from "@/components/ThemeProvider";
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
