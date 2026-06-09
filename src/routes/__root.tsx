@@ -118,6 +118,8 @@ function RootShell({ children }: { children: React.ReactNode }) {
   );
 }
 
+import { ThemeProvider } from "@/components/ThemeProvider";
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
@@ -130,13 +132,15 @@ function RootComponent() {
   }
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <LimsStateProvider>
-          <Outlet />
-          <Toaster position="top-right" richColors />
-        </LimsStateProvider>
-      </AuthProvider>
-    </QueryClientProvider>
+    <ThemeProvider defaultTheme="system" storageKey="geochem-ui-theme">
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <LimsStateProvider>
+            <Outlet />
+            <Toaster position="top-right" richColors />
+          </LimsStateProvider>
+        </AuthProvider>
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 }
