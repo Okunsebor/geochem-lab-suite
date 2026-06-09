@@ -27,7 +27,6 @@ import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { TopbarSearch } from "./TopbarSearch";
 import { TopbarUserMenu } from "./TopbarUserMenu";
-import { ThemeSwitcher } from "./ThemeSwitcher";
 
 
 // Hierarchical LIMS sidebar menus
@@ -107,10 +106,7 @@ export function AppTopbar() {
           <TopbarSearch />
         </div>
 
-        <div className="flex items-center gap-3">
-          <ThemeSwitcher />
-          <TopbarUserMenu />
-        </div>
+        <TopbarUserMenu />
       </header>
 
       {/* Mobile Sidebar Navigation Drawer Panel */}

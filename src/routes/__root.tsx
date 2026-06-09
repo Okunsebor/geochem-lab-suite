@@ -11,7 +11,6 @@ import {
 import { Toaster } from "sonner";
 import { LimsStateProvider } from "../hooks/use-lims-state";
 import { AuthProvider } from "../hooks/use-auth";
-import { ThemeProvider } from "../components/ThemeProvider";
 
 import appCss from "../styles.css?url";
 
@@ -124,14 +123,12 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <AuthProvider>
-          <LimsStateProvider>
-            <Outlet />
-            <Toaster position="top-right" richColors />
-          </LimsStateProvider>
-        </AuthProvider>
-      </ThemeProvider>
+      <AuthProvider>
+        <LimsStateProvider>
+          <Outlet />
+          <Toaster position="top-right" richColors />
+        </LimsStateProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
