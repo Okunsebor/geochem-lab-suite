@@ -50,10 +50,15 @@ function ResetPassword() {
   React.useEffect(() => {
     let active = true;
     async function exchange() {
-      if (!search.code) return;
+      console.log("[AUDIT: AUTH FLOW] Reset password exchange() triggered. search.code:", search.code);
+      if (!search.code) {
+        console.warn("[AUDIT: AUTH FLOW] exchangeCodeForSession is NOT called because search.code is undefined.");
+        return;
+      }
       try {
         // First check if we already have a session
         const { data: { session } } = await supabase.auth.getSession();
+        console.log("[AUDIT: AUTH FLOW] Initial getSession() check. Session exists?", !!session);
         if (session) {
           if (active) setExchanging(false);
           return;
