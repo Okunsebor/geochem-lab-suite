@@ -121,6 +121,14 @@ function RootShell({ children }: { children: React.ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
+  if (typeof window !== "undefined") {
+    console.log("[AUDIT: URL TRACE] Stage 4: Root component render", {
+      href: window.location.href,
+      search: window.location.search,
+      hash: window.location.hash,
+    });
+  }
+
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>

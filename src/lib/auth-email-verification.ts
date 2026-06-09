@@ -56,22 +56,46 @@ export function clearAuthCallbackFromUrl(): void {
  */
 export async function completeEmailVerificationFromUrl(): Promise<boolean> {
   const callback = parseEmailVerificationCallback();
-  if (callback.kind === "none") return false;
-
-  if (callback.kind === "pkce_code") {
-    const { data, error } = await supabase.auth.exchangeCodeForSession(callback.code);
-    if (error) throw error;
-    clearAuthCallbackFromUrl();
-    return Boolean(data.session);
+  console.log("[AUDIT: AUTH FLOW] Step 1: URL code extraction. Extracted callback:", callback);
+  if (callback.kind === "none") {
+    console.log("[AUDIT: AUTH FLOW] Step 1.1: No code/token found in URL.");
+    return false;
   }
 
+  if (callback.kind === "pkce_code") {
+    console.log("[AUDIT: AUTH FLOW] Step 2: exchangeCodeForSession() request for code:", callback.code);
+    const { data, error } = await supabase.auth.exchangeCodeForSession(callback.code);
+    console.log("[AUDIT: AUTH FLOW] Step 3: exchangeCodeForSession() response. Data:", data, "Error:", error);
+    if (error) {
+      console.error("[AUDIT: AUTH FLOW] Supabase exchange error exact details:", error);
+      throw error;
+    }
+    console.log("[AUDIT: AUTH FLOW] Step 4 & 5: Session creation and persistence check.");
+    console.log("[AUDIT: AUTH FLOW] Access token received:", data?.session?.access_token);
+    console.log("[AUDIT: AUTH FLOW] Refresh token received:", data?.session?.refresh_token);
+    console.log("[AUDIT: AUTH FLOW] Session object received:", data?.session);
+
+    clearAuthCallbackFromUrl();
+    return Boolean(data?.session);
+  }
+
+  console.log("[AUDIT: AUTH FLOW] Step 2: verifyOtp() request for token_hash:", callback.token_hash);
   const { data, error } = await supabase.auth.verifyOtp({
     token_hash: callback.token_hash,
     type: callback.type,
   });
-  if (error) throw error;
+  console.log("[AUDIT: AUTH FLOW] Step 3: verifyOtp() response. Data:", data, "Error:", error);
+  if (error) {
+    console.error("[AUDIT: AUTH FLOW] Supabase verifyOtp error exact details:", error);
+    throw error;
+  }
+  console.log("[AUDIT: AUTH FLOW] Step 4 & 5: Session creation and persistence check.");
+  console.log("[AUDIT: AUTH FLOW] Access token received:", data?.session?.access_token);
+  console.log("[AUDIT: AUTH FLOW] Refresh token received:", data?.session?.refresh_token);
+  console.log("[AUDIT: AUTH FLOW] Session object received:", data?.session);
+
   clearAuthCallbackFromUrl();
-  return Boolean(data.session);
+  return Boolean(data?.session);
 }
 
 /** Options passed to signUp / resend so Supabase emails link back to this app. */

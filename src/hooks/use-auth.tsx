@@ -77,6 +77,13 @@ async function waitForProfile(
 
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  if (typeof window !== "undefined") {
+    console.log("[AUDIT: URL TRACE] Stage 6: AuthProvider initialization", {
+      href: window.location.href,
+      search: window.location.search,
+      hash: window.location.hash,
+    });
+  }
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [emailVerified, setEmailVerified] = useState(false);

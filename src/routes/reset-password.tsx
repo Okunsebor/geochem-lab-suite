@@ -28,6 +28,16 @@ function ResetPassword() {
   const navigate = useNavigate();
   const { resetPassword } = useAuth();
   
+  if (typeof window !== "undefined") {
+    console.log("[AUDIT: URL TRACE] Stage 5: reset-password route render", {
+      href: window.location.href,
+      search: window.location.search,
+      hash: window.location.hash,
+      parsedSearchCode: search.code,
+      parsedSearchHash: search.token_hash,
+    });
+  }
+
   const isExpired = search.error === "access_denied" || search.error_code === "otp_expired";
   
   const [password, setPassword] = useState("");

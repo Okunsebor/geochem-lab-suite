@@ -2,6 +2,14 @@ import { QueryClient } from "@tanstack/react-query";
 import { createRouter } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
 
+if (typeof window !== "undefined") {
+  console.log("[AUDIT: URL TRACE] Stage 2 & 3: Browser arrival & Router initialization", {
+    href: window.location.href,
+    search: window.location.search,
+    hash: window.location.hash,
+  });
+}
+
 export const getRouter = () => {
   const queryClient = new QueryClient({
     defaultOptions: {
