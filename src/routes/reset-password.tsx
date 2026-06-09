@@ -29,16 +29,6 @@ function ResetPassword() {
   const authContext = useAuth();
   const { resetPassword, loading: authLoading, session: authSession, currentUser } = authContext;
   
-  if (typeof window !== "undefined") {
-    console.log("[AUDIT: URL TRACE] Stage 5: reset-password route render", {
-      href: window.location.href,
-      search: window.location.search,
-      hash: window.location.hash,
-      parsedSearchCode: search.code,
-      parsedSearchHash: search.token_hash,
-    });
-  }
-
   const isExpired = search.error === "access_denied" || search.error_code === "otp_expired";
   
   const [password, setPassword] = useState("");
@@ -48,39 +38,61 @@ function ResetPassword() {
   const [success, setSuccess] = useState(false);
   const [exchanging, setExchanging] = useState(!!search.code);
 
-  if (typeof window !== "undefined") {
-    console.log(`[AUDIT: CONTEXT LIFECYCLE] ResetPassword render - authLoading: ${authLoading}, authSession: ${authSession ? "EXISTS" : "null"}, user: ${currentUser?.email || "null"}, exchanging: ${exchanging}`);
-  }
+  // DEBUG STATE
+  const [debugUrl, setDebugUrl] = useState("");
+  const [debugSearch, setDebugSearch] = useState("");
+  const [debugHash, setDebugHash] = useState("");
+  const [debugExchangeResult, setDebugExchangeResult] = useState("");
+  const [debugUpdateResult, setDebugUpdateResult] = useState("");
+  const [authEvents, setAuthEvents] = useState<string[]>([]);
 
-  React.useEffect(() => {
-    supabase.auth.getSession().then((s) =>
-      console.log("[AUDIT: PERSISTENCE] Component mount:", s.data.session ? "EXISTS" : "LOST", s.data.session)
-    );
+  useEffect(() => {
+    setDebugUrl(window.location.href);
+    setDebugSearch(window.location.search);
+    setDebugHash(window.location.hash);
+
+    const interval = setInterval(() => {
+      setDebugUrl(window.location.href);
+      setDebugSearch(window.location.search);
+      setDebugHash(window.location.hash);
+    }, 500);
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      setAuthEvents(prev => [...prev, `${new Date().toLocaleTimeString()} - ${event}`]);
+    });
+
+    return () => {
+      clearInterval(interval);
+      subscription.unsubscribe();
+    };
   }, []);
 
   React.useEffect(() => {
     let active = true;
     async function exchange() {
-      console.log("[AUDIT: AUTH FLOW] Reset password exchange() triggered. search.code:", search.code);
       if (!search.code) {
-        console.warn("[AUDIT: AUTH FLOW] exchangeCodeForSession is NOT called because search.code is undefined.");
+        setDebugExchangeResult("Skipped: no search.code found");
         return;
       }
       try {
-        // First check if we already have a session
         const { data: { session } } = await supabase.auth.getSession();
-        console.log("[AUDIT: AUTH FLOW] Initial getSession() check. Session exists?", !!session);
         if (session) {
+          setDebugExchangeResult("Skipped: existing session found");
           if (active) setExchanging(false);
           return;
         }
 
-        // Otherwise exchange code
-        const { completeEmailVerificationFromUrl } = await import("@/lib/auth-email-verification");
-        await completeEmailVerificationFromUrl();
-      } catch (err) {
-        console.warn("PKCE code exchange failed or already consumed:", err);
-        // Double check session in case it was set in background
+        setDebugExchangeResult("Calling exchangeCodeForSession...");
+        const { error, data } = await supabase.auth.exchangeCodeForSession(search.code);
+        if (error) {
+          setDebugExchangeResult(`Failed: ${error.message}`);
+          throw error;
+        }
+        setDebugExchangeResult(`Success: session ${data.session?.user.id}`);
+        const { clearAuthCallbackFromUrl } = await import("@/lib/auth-email-verification");
+        clearAuthCallbackFromUrl();
+      } catch (err: any) {
+        setDebugExchangeResult(`Error caught: ${err?.message || err}`);
         const { data: { session } } = await supabase.auth.getSession();
         if (!session && active) {
           setError("Failed to establish secure session. Please try clicking the reset link again.");
@@ -92,35 +104,41 @@ function ResetPassword() {
     exchange();
     return () => {
       active = false;
-      supabase.auth.getSession().then((s) =>
-        console.log("[AUDIT: PERSISTENCE] Component unmount / Route change:", s.data.session ? "EXISTS" : "LOST", s.data.session)
-      );
     };
   }, [search.code]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setDebugUpdateResult("Submitting...");
 
     if (password.length < 8) {
       setError("Password must be at least 8 characters.");
+      setDebugUpdateResult("Validation failed: too short");
       return;
     }
     
     if (password !== confirmPassword) {
       setError("Passwords do not match.");
+      setDebugUpdateResult("Validation failed: mismatch");
       return;
     }
 
     setLoading(true);
     try {
-      await resetPassword(password);
+      const response = await supabase.auth.updateUser({ password });
+      if (response.error) {
+        setDebugUpdateResult(`Error: ${response.error.message}`);
+        throw response.error;
+      }
+      setDebugUpdateResult("Success!");
       setSuccess(true);
       toast.success("Password set successfully.");
       setTimeout(() => {
         navigate({ to: "/login" });
       }, 3000);
     } catch (err) {
+      setDebugUpdateResult(`Exception: ${err instanceof Error ? err.message : String(err)}`);
       setError(formatAuthError(err));
     } finally {
       setLoading(false);
@@ -129,23 +147,45 @@ function ResetPassword() {
 
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
-      <div className="hidden lg:block relative overflow-hidden">
-        <img
-          src={BRAND_ASSETS.entrance}
-          alt="UniPod Nsuk"
-          className="absolute inset-0 w-full h-full object-cover"
-          loading="lazy"
-          decoding="async"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
-        <div className="relative flex flex-col justify-between p-10 min-h-full text-white">
-          <UniPodLogo height={36} linkToHome showTagline />
-          <blockquote className="text-xl leading-snug max-w-md">
-            &ldquo;Precision geochemistry for exploration and mining — from UniPod Nsuk.&rdquo;
-          </blockquote>
+      <div className="hidden lg:block relative overflow-hidden bg-slate-900 p-8 overflow-y-auto font-mono text-xs text-green-400">
+        <h2 className="text-xl text-white mb-4 border-b border-green-800 pb-2">PASSWORD RESET DEBUG PANEL</h2>
+        
+        <div className="space-y-4">
+          <section>
+            <h3 className="text-white font-bold">1. Routing State (Polled 500ms)</h3>
+            <div><strong>URL:</strong> {debugUrl}</div>
+            <div><strong>Search:</strong> {debugSearch || "empty"}</div>
+            <div><strong>Hash:</strong> {debugHash || "empty"}</div>
+            <div><strong>Parsed Code:</strong> {search.code || "undefined"}</div>
+          </section>
+
+          <section>
+            <h3 className="text-white font-bold">2. Context State</h3>
+            <div><strong>Auth Loading:</strong> {authLoading ? "true" : "false"}</div>
+            <div><strong>Has Session:</strong> {authSession ? `true (${authSession.user.id})` : "false"}</div>
+            <div><strong>Current User:</strong> {currentUser ? JSON.stringify(currentUser) : "null"}</div>
+          </section>
+
+          <section>
+            <h3 className="text-white font-bold">3. Local State</h3>
+            <div><strong>Exchanging:</strong> {exchanging ? "true" : "false"}</div>
+            <div><strong>Submit Loading:</strong> {loading ? "true" : "false"}</div>
+            <div><strong>Error:</strong> {error || "none"}</div>
+          </section>
+
+          <section>
+            <h3 className="text-white font-bold">4. Execution Results</h3>
+            <div><strong>Exchange Result:</strong> {debugExchangeResult || "Pending..."}</div>
+            <div><strong>Update Result:</strong> {debugUpdateResult || "Pending..."}</div>
+          </section>
+
+          <section>
+            <h3 className="text-white font-bold">5. Auth Listener Events</h3>
+            {authEvents.length === 0 ? "No events yet" : authEvents.map((e, i) => <div key={i}>{e}</div>)}
+          </section>
         </div>
       </div>
-      <div className="flex items-center justify-center p-6 sm:p-10 bg-background">
+      <div className="flex items-center justify-center p-6 sm:p-10 bg-background relative border-l border-border">
         {isExpired ? (
           <div className="w-full max-w-sm bg-card p-6 sm:p-8 rounded-xl border border-border shadow-lg flex flex-col items-center text-center">
             <div className="h-12 w-12 rounded-full bg-destructive/10 flex items-center justify-center mb-4">
