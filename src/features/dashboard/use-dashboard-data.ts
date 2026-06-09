@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
-import { differenceInDays, subDays, formatDistanceToNow, parseISO } from "date-fns";
+import { differenceInDays, subDays, formatDistanceToNow, parseISO, format, eachDayOfInterval, isSameDay } from "date-fns";
 
 export function useDashboardData() {
   const [activeSamples, setActiveSamples] = useState(0);
@@ -10,6 +10,7 @@ export function useDashboardData() {
   const [recentSamples, setRecentSamples] = useState<any[]>([]);
   const [recentNotifications, setRecentNotifications] = useState<any[]>([]);
   const [workflowSplit, setWorkflowSplit] = useState<any[]>([]);
+  const [throughputData, setThroughputData] = useState<any[]>([]);
 
   const fetchDashboardData = useCallback(async () => {
     try {
@@ -48,12 +49,11 @@ export function useDashboardData() {
         .limit(5);
         
       if (recentData) {
-        // Try to fetch users for technician names if needed, but for simplicity we will just map what we have
-        setRecentSamples(recentData.map(s => ({
+        setRecentSamples(recentData.map((s: any) => ({
           id: s.id,
           client: s.project_name || "Unknown Project", 
           type: s.sample_type,
-          technician: "Lab Staff", // Could join users table, but keeping it simple for dashboard
+          technician: "Lab Staff",
           status: s.status
         })));
       }
@@ -66,7 +66,7 @@ export function useDashboardData() {
         .limit(10);
         
       if (notifData) {
-        setRecentNotifications(notifData.map(n => ({
+        setRecentNotifications(notifData.map((n: any) => ({
           id: n.id,
           title: n.title,
           kind: n.kind,
@@ -77,7 +77,7 @@ export function useDashboardData() {
       // 5. QA/QC Pass Rate
       const { data: qaFlags } = await supabase.from("qa_flags").select("status");
       if (qaFlags && qaFlags.length > 0) {
-        const resolved = qaFlags.filter((f) => 
+        const resolved = qaFlags.filter((f: any) => 
           f.status.toLowerCase() === "resolved" || 
           f.status.toLowerCase() === "approved" ||
           f.status.toLowerCase() === "closed" ||
@@ -95,7 +95,7 @@ export function useDashboardData() {
         .in("status", ["Completed", "Report Ready"]);
 
       if (completedSamples && completedSamples.length > 0) {
-        const sampleIds = completedSamples.map((s) => s.id);
+        const sampleIds = completedSamples.map((s: any) => s.id);
         const { data: trackingUpdates } = await supabase
           .from("tracking_updates")
           .select("sample_id, created_at")
@@ -106,8 +106,8 @@ export function useDashboardData() {
           let totalDays = 0;
           let count = 0;
 
-          completedSamples.forEach(s => {
-            const updates = trackingUpdates.filter(u => u.sample_id === s.id);
+          completedSamples.forEach((s: any) => {
+            const updates = trackingUpdates.filter((u: any) => u.sample_id === s.id);
             if (updates.length > 0) {
               const latestUpdate = new Date(updates[0].created_at);
               const createdAt = new Date(s.created_at);
@@ -135,9 +135,8 @@ export function useDashboardData() {
         .order("created_at", { ascending: false });
 
       if (trackingSplit && trackingSplit.length > 0) {
-        // Get the latest stage per sample
         const latestStagePerSample = new Map<string, string>();
-        trackingSplit.forEach(u => {
+        trackingSplit.forEach((u: any) => {
           if (!latestStagePerSample.has(u.sample_id) && u.stage) {
             latestStagePerSample.set(u.sample_id, u.stage);
           }
@@ -148,7 +147,7 @@ export function useDashboardData() {
           counts[stage] = (counts[stage] || 0) + 1;
         });
 
-        const splitData = Object.keys(counts).map(stage => ({
+        const splitData = Object.keys(counts).map((stage: string) => ({
           name: stage,
           value: counts[stage]
         }));
@@ -158,6 +157,36 @@ export function useDashboardData() {
         setWorkflowSplit([]);
       }
 
+      // 8. Throughput Data
+      const fourteenDaysAgoDate = subDays(new Date(), 13);
+      const fourteenDaysAgoIso = fourteenDaysAgoDate.toISOString();
+
+      const { data: recentReceived } = await supabase
+        .from("samples")
+        .select("created_at")
+        .gte("created_at", fourteenDaysAgoIso);
+
+      const { data: recentCompleted } = await supabase
+        .from("tracking_updates")
+        .select("created_at, status")
+        .in("status", ["Completed", "Report Ready"])
+        .gte("created_at", fourteenDaysAgoIso);
+
+      const daysArray = eachDayOfInterval({ start: fourteenDaysAgoDate, end: new Date() });
+      
+      const throughput = daysArray.map(day => {
+        const receivedCount = recentReceived ? recentReceived.filter((s: any) => isSameDay(new Date(s.created_at), day)).length : 0;
+        const completedCount = recentCompleted ? recentCompleted.filter((u: any) => isSameDay(new Date(u.created_at), day)).length : 0;
+        
+        return {
+          day: format(day, "MMM dd"),
+          received: receivedCount,
+          completed: completedCount
+        };
+      });
+
+      setThroughputData(throughput);
+
     } catch (err) {
       console.error("Error fetching dashboard data", err);
     }
@@ -166,7 +195,6 @@ export function useDashboardData() {
   useEffect(() => {
     fetchDashboardData();
 
-    // realtime subscriptions
     const subSamples = supabase.channel("dashboard-samples")
       .on("postgres_changes", { event: "*", schema: "public", table: "samples" }, fetchDashboardData)
       .subscribe();
@@ -198,6 +226,7 @@ export function useDashboardData() {
     overdue,
     recentSamples,
     recentNotifications,
-    workflowSplit
+    workflowSplit,
+    throughputData
   };
 }

@@ -45,7 +45,6 @@ const PIE_COLORS = [
 
 export function DashboardFeature() {
   const { samples, instruments, activity } = useLimsState();
-  const [timeframe, setTimeframe] = useState<14 | 30 | 90>(14);
 
   const {
     activeSamples,
@@ -54,7 +53,8 @@ export function DashboardFeature() {
     overdue,
     recentSamples,
     recentNotifications,
-    workflowSplit
+    workflowSplit,
+    throughputData
   } = useDashboardData();
 
   // Static KPI structure synced to state
@@ -86,10 +86,16 @@ export function DashboardFeature() {
     [activeSamples, avgTurnaround, qaQcPassRate, overdue],
   );
 
-  // Dynamically calculate operational throughput based on live samples or realistic fallbacks
-  const dynamicThroughput = useMemo(() => {
-    return calculateThroughput(samples, timeframe);
-  }, [samples, timeframe]);
+  const maxY = useMemo(() => {
+    if (!throughputData || throughputData.length === 0) return 5;
+    let maxVal = 0;
+    for (const d of throughputData) {
+      if (d.received > maxVal) maxVal = d.received;
+      if (d.completed > maxVal) maxVal = d.completed;
+    }
+    if (maxVal === 0) return 5;
+    return Math.ceil((maxVal * 1.2) / 5) * 5;
+  }, [throughputData]);
 
   return (
     <div className="space-y-6">
@@ -146,28 +152,13 @@ export function DashboardFeature() {
             <div>
               <h3 className="text-sm font-semibold">Throughput</h3>
               <p className="text-xs text-muted-foreground">
-                Samples received vs completed · {timeframe} days
+                Samples received vs completed · 14 days
               </p>
-            </div>
-            <div className="flex gap-1 rounded-md border border-border bg-background p-0.5 text-xs">
-              {([14, 30, 90] as const).map((daysNum) => (
-                <button
-                  key={daysNum}
-                  onClick={() => setTimeframe(daysNum)}
-                  className={
-                    timeframe === daysNum
-                      ? "rounded bg-primary px-2.5 py-1 text-primary-foreground font-semibold cursor-pointer"
-                      : "px-2.5 py-1 text-muted-foreground cursor-pointer hover:bg-muted/40 rounded transition"
-                  }
-                >
-                  {daysNum}d
-                </button>
-              ))}
             </div>
           </div>
           <div className="mt-4 h-64">
             <ResponsiveContainer>
-              <AreaChart data={dynamicThroughput}>
+              <AreaChart data={throughputData}>
                 <defs>
                   <linearGradient id="r" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="var(--color-chart-1)" stopOpacity={0.4} />
@@ -180,7 +171,7 @@ export function DashboardFeature() {
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
                 <XAxis dataKey="day" stroke="var(--color-muted-foreground)" fontSize={11} />
-                <YAxis stroke="var(--color-muted-foreground)" fontSize={11} />
+                <YAxis stroke="var(--color-muted-foreground)" fontSize={11} domain={[0, maxY]} />
                 <Tooltip
                   contentStyle={{
                     background: "var(--color-card)",
@@ -342,7 +333,7 @@ export function DashboardFeature() {
           <div className="mt-3 h-40">
             <ResponsiveContainer>
               <BarChart
-                data={dynamicThroughput.slice(0, 7).map((d, i) => ({
+                data={throughputData.slice(0, 7).map((d: any, i: number) => ({
                   day: d.day,
                   pass: 92 + (i % 5),
                   fail: (i % 5) * 1.5,
