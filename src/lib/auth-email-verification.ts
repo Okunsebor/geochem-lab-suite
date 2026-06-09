@@ -75,6 +75,15 @@ export async function completeEmailVerificationFromUrl(): Promise<boolean> {
     console.log("[AUDIT: AUTH FLOW] Refresh token received:", data?.session?.refresh_token);
     console.log("[AUDIT: AUTH FLOW] Session object received:", data?.session);
 
+    const checkSession = async (label: string) => {
+      const s = await supabase.auth.getSession();
+      console.log(`[AUDIT: PERSISTENCE] ${label}:`, s.data.session ? "EXISTS" : "LOST", s.data.session);
+    };
+
+    await checkSession("Immediately after exchange");
+    setTimeout(() => checkSession("After 1 second"), 1000);
+    setTimeout(() => checkSession("After 3 seconds"), 3000);
+
     clearAuthCallbackFromUrl();
     return Boolean(data?.session);
   }

@@ -26,7 +26,8 @@ export const Route = createFileRoute("/reset-password")({
 function ResetPassword() {
   const search = Route.useSearch();
   const navigate = useNavigate();
-  const { resetPassword } = useAuth();
+  const authContext = useAuth();
+  const { resetPassword, loading: authLoading, session: authSession, currentUser } = authContext;
   
   if (typeof window !== "undefined") {
     console.log("[AUDIT: URL TRACE] Stage 5: reset-password route render", {
@@ -46,6 +47,16 @@ function ResetPassword() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [exchanging, setExchanging] = useState(!!search.code);
+
+  if (typeof window !== "undefined") {
+    console.log(`[AUDIT: CONTEXT LIFECYCLE] ResetPassword render - authLoading: ${authLoading}, authSession: ${authSession ? "EXISTS" : "null"}, user: ${currentUser?.email || "null"}, exchanging: ${exchanging}`);
+  }
+
+  React.useEffect(() => {
+    supabase.auth.getSession().then((s) =>
+      console.log("[AUDIT: PERSISTENCE] Component mount:", s.data.session ? "EXISTS" : "LOST", s.data.session)
+    );
+  }, []);
 
   React.useEffect(() => {
     let active = true;
@@ -81,6 +92,9 @@ function ResetPassword() {
     exchange();
     return () => {
       active = false;
+      supabase.auth.getSession().then((s) =>
+        console.log("[AUDIT: PERSISTENCE] Component unmount / Route change:", s.data.session ? "EXISTS" : "LOST", s.data.session)
+      );
     };
   }, [search.code]);
 
