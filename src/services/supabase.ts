@@ -1,3 +1,4 @@
+import { createBrowserClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 import {
   Sample,
@@ -268,15 +269,31 @@ export interface Database {
   };
 }
 
-// 3. Central isomorphic typed Supabase client singleton instance
-export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: {
+// 3. Central typed Supabase client singleton.
+// Browser: cookie-backed session via @supabase/ssr so TanStack Start server
+// functions (route beforeLoad guards) can read the same session as the client.
+// Server module evaluation: inert client — auth always goes through getServerSupabase().
+function createSupabaseClient() {
+  const authOptions = {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true,
-    flowType: "pkce",
-  },
-});
+    flowType: "pkce" as const,
+  };
+
+  if (typeof window !== "undefined") {
+    return createBrowserClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: authOptions,
+      isSingleton: true,
+    });
+  }
+
+  return createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: { ...authOptions, persistSession: false },
+  });
+}
+
+export const supabase = createSupabaseClient();
 
 // 4. Client helpers for core LIMS data pipelines
 export const supabaseHelpers = {

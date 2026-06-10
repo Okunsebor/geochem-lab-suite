@@ -1,18 +1,12 @@
 import { Sun, Moon, HelpCircle, ChevronDown, LogOut, User as UserIcon } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useLimsState } from "@/hooks/use-lims-state";
+import { useTheme } from "@/hooks/use-theme";
 import { toast } from "sonner";
 import { TopbarNotifications } from "./TopbarNotifications";
 
 export function TopbarUserMenu() {
-  const [dark, setDark] = useState(() => {
-    try {
-      const saved = localStorage.getItem("gcs_dark_mode");
-      return saved === "true";
-    } catch {
-      return false;
-    }
-  });
+  const { dark, toggleDark } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -25,12 +19,6 @@ export function TopbarUserMenu() {
       .join("")
       .slice(0, 2) || "US";
   const firstName = currentUser?.name?.split(" ")[0] || "User";
-
-  // Persist dark mode and prevent flashes
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark", dark);
-    localStorage.setItem("gcs_dark_mode", String(dark));
-  }, [dark]);
 
   // Click outside to close
   useEffect(() => {
@@ -64,7 +52,7 @@ export function TopbarUserMenu() {
         <HelpCircle className="size-4" />
       </button>
       <button
-        onClick={() => setDark((d) => !d)}
+        onClick={toggleDark}
         className="rounded-md p-2 text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer"
         aria-label="Toggle theme"
       >

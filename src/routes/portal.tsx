@@ -1,5 +1,5 @@
 import { createFileRoute, Link, Outlet, redirect, useRouterState } from "@tanstack/react-router";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Home,
   FilePlus2,
@@ -16,11 +16,11 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
+import { useTheme } from "@/hooks/use-theme";
 import { getVerifyEmailPath } from "@/lib/auth-routes";
 import { motion, AnimatePresence } from "framer-motion";
 import { Portal3DScene } from "@/components/portal/Portal3DScene";
 import { UniPodLogo } from "@/components/branding/UniPodLogo";
-import { supabase } from "@/lib/supabase";
 import { mapDbRoleToUi, isEmailConfirmed } from "@/lib/auth-utils";
 import { toast } from "sonner";
 
@@ -71,24 +71,10 @@ function PortalLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const resolvedPathname = useRouterState({ select: (s) => (s.resolvedLocation || s.location).pathname });
   const { currentUser, loading, logout } = useAuth();
+  const { dark, toggleDark } = useTheme();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
-
-  const [dark, setDark] = useState(() => {
-    try {
-      const saved = localStorage.getItem("gcs_dark_mode");
-      return saved === "true";
-    } catch {
-      return false;
-    }
-  });
-
   const [showMobileNav, setShowMobileNav] = useState(false);
-
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark", dark);
-    localStorage.setItem("gcs_dark_mode", String(dark));
-  }, [dark]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -140,7 +126,15 @@ function PortalLayout() {
     );
   }
 
-  if (!currentUser) return null;
+  if (!currentUser) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-background">
+        <p className="text-[10px] uppercase font-mono tracking-widest text-primary font-bold">
+          Loading portal…
+        </p>
+      </div>
+    );
+  }
 
   const initials = currentUser.name
     .split(" ")
@@ -193,7 +187,7 @@ function PortalLayout() {
 
           <div className="flex items-center gap-2 shrink-0">
             <button
-              onClick={() => setDark((d) => !d)}
+              onClick={toggleDark}
               className="rounded-md p-2 text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer transition"
               aria-label="Toggle theme"
             >

@@ -6,7 +6,6 @@ import { supabaseHelpers } from "@/lib/supabase";
 import { useAuth } from "@/hooks/use-auth";
 import { getVerifyEmailPath } from "@/lib/auth-routes";
 import { motion } from "framer-motion";
-import { supabase } from "@/lib/supabase";
 import { mapDbRoleToUi, isEmailConfirmed } from "@/lib/auth-utils";
 
 import { getSessionFromServer, getUserProfileFromServer } from "@/lib/auth-server";
@@ -85,7 +84,15 @@ function AppLayout() {
     );
   }
 
-  if (!currentUser) return null;
+  if (!currentUser) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-background">
+        <p className="text-[10px] uppercase font-mono tracking-widest text-primary font-bold">
+          Loading workspace…
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen w-full bg-background">

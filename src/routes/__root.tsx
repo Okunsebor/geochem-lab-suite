@@ -11,6 +11,7 @@ import {
 import { Toaster } from "sonner";
 import { LimsStateProvider } from "../hooks/use-lims-state";
 import { AuthProvider } from "../hooks/use-auth";
+import { ThemeProvider, THEME_INIT_SCRIPT } from "../hooks/use-theme";
 
 import appCss from "../styles.css?url";
 
@@ -106,8 +107,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <HeadContent />
       </head>
       <body>
@@ -121,22 +123,16 @@ function RootShell({ children }: { children: React.ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
-  if (typeof window !== "undefined") {
-    console.log("[AUDIT: URL TRACE] Stage 4: Root component render", {
-      href: window.location.href,
-      search: window.location.search,
-      hash: window.location.hash,
-    });
-  }
-
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <LimsStateProvider>
-          <Outlet />
-          <Toaster position="top-right" richColors />
-        </LimsStateProvider>
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <LimsStateProvider>
+            <Outlet />
+            <Toaster position="top-right" richColors />
+          </LimsStateProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

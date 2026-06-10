@@ -77,21 +77,10 @@ async function waitForProfile(
 
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  if (typeof window !== "undefined") {
-    console.log("[AUDIT: URL TRACE] Stage 6: AuthProvider initialization", {
-      href: window.location.href,
-      search: window.location.search,
-      hash: window.location.hash,
-    });
-  }
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [emailVerified, setEmailVerified] = useState(false);
   const [loading, setLoading] = useState(true);
-
-  if (typeof window !== "undefined") {
-    console.log(`[AUDIT: CONTEXT LIFECYCLE] AuthProvider render - loading: ${loading}, user: ${currentUser?.email || "null"}, session: ${session ? "EXISTS" : "null"}`);
-  }
 
   // ─── syncProfile ──────────────────────────────────────────────────────────
   // Single source of truth: public.users is authoritative for role.
@@ -179,7 +168,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // ─── handleSession ────────────────────────────────────────────────────────
   const handleSession = useCallback(
     async (nextSession: Session | null) => {
-      console.log(`[AUDIT: CONTEXT LIFECYCLE] handleSession called - nextSession exists:`, !!nextSession);
       setSession(nextSession);
       if (nextSession?.user) {
         await syncProfile(nextSession.user);
@@ -196,7 +184,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     supabase.auth.getSession().then(({ data: { session: initial } }: { data: { session: Session | null } }) => {
       if (!mounted) return;
-      console.log(`[AUDIT: CONTEXT LIFECYCLE] Initial getSession() result exists:`, !!initial);
       handleSession(initial).finally(() => {
         if (mounted) setLoading(false);
       });
@@ -204,8 +191,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((event: any, nextSession: Session | null) => {
-      console.log(`[AUDIT: CONTEXT LIFECYCLE] onAuthStateChange event: ${event}, session exists:`, !!nextSession);
+    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
       handleSession(nextSession);
     });
 
@@ -458,26 +444,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const resetPassword = async (password: string) => {
     setLoading(true);
     try {
-      console.log("[AUDIT: PASSWORD UPDATE] Preparing to update password...");
-      const { data: sessionData } = await supabase.auth.getSession();
-      const s = sessionData.session;
-      console.log("[AUDIT: PASSWORD UPDATE] Pre-update state:", {
-        sessionExists: !!s,
-        userId: s?.user?.id,
-        userEmail: s?.user?.email,
-        hasAccessToken: !!s?.access_token,
-        hasRefreshToken: !!s?.refresh_token,
-        sessionObject: s,
-      });
-
-      console.log("[AUDIT: PASSWORD UPDATE] Executing updateUser with payload: { password: '***[REDACTED]***' }");
       const response = await supabase.auth.updateUser({ password });
-      
-      console.log("[AUDIT: PASSWORD UPDATE] updateUser response payload:", response);
-      if (response.error) {
-        console.error("[AUDIT: PASSWORD UPDATE] updateUser error exact details:", response.error);
-        throw response.error;
-      }
+      if (response.error) throw response.error;
       toast.success("Your password has been updated.");
     } finally {
       setLoading(false);

@@ -3,12 +3,18 @@ import { getServerSupabase } from "./supabase-server";
 
 export const getSessionFromServer = createServerFn({ method: "GET" }).handler(async () => {
   const supabase = getServerSupabase();
+
+  // Validate JWT server-side; getSession alone can return stale local cache.
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+  if (userError || !userData.user) {
+    return { session: null, error: userError?.message ?? "No authenticated user" };
+  }
+
   const { data, error } = await supabase.auth.getSession();
-  
   if (error) {
     return { session: null, error: error.message };
   }
-  
+
   return { session: data.session, error: null };
 });
 
