@@ -11,7 +11,8 @@ import {
 import { Toaster } from "sonner";
 import { LimsStateProvider } from "../hooks/use-lims-state";
 import { AuthProvider } from "../hooks/use-auth";
-import { ThemeProvider, THEME_INIT_SCRIPT } from "../hooks/use-theme";
+import { ThemeProvider } from "../components/ThemeProvider";
+import { THEME_INIT_SCRIPT } from "../hooks/use-theme";
 
 import appCss from "../styles.css?url";
 
@@ -120,19 +121,20 @@ function RootShell({ children }: { children: React.ReactNode }) {
   );
 }
 
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
+    <ThemeProvider defaultTheme="system" storageKey="geochem-ui-theme">
+      <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <LimsStateProvider>
             <Outlet />
             <Toaster position="top-right" richColors />
           </LimsStateProvider>
         </AuthProvider>
-      </ThemeProvider>
-    </QueryClientProvider>
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 }
