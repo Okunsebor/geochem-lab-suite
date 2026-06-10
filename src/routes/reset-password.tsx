@@ -46,7 +46,7 @@ function ResetPassword() {
   const [debugUpdateResult, setDebugUpdateResult] = useState("");
   const [authEvents, setAuthEvents] = useState<string[]>([]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     setDebugUrl(window.location.href);
     setDebugSearch(window.location.search);
     setDebugHash(window.location.hash);
