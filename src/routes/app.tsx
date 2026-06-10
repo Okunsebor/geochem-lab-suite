@@ -12,23 +12,43 @@ import { getSessionFromServer, getUserProfileFromServer } from "@/lib/auth-serve
 
 export const Route = createFileRoute("/app")({
   beforeLoad: async () => {
-    const { session, error } = await getSessionFromServer();
-    if (error || !session?.user) {
+    let session = null;
+    let rawRole: string | null = null;
+    let emailConfirmed = false;
+    let email: string | undefined = undefined;
+
+    if (typeof window !== "undefined") {
+      const { supabase } = await import("@/lib/supabase");
+      const { data } = await supabase.auth.getSession();
+      session = data.session;
+      if (session?.user) {
+        email = session.user.email;
+        emailConfirmed = isEmailConfirmed(session.user);
+        const { data: profile } = await supabase
+          .from("users")
+          .select("role")
+          .eq("id", session.user.id)
+          .maybeSingle();
+        rawRole = (profile as any)?.role ?? session.user.user_metadata?.role ?? null;
+      }
+    } else {
+      const { session: serverSession, error } = await getSessionFromServer();
+      if (!error && serverSession?.user) {
+        session = serverSession;
+        email = session.user.email;
+        emailConfirmed = isEmailConfirmed(session.user);
+        const { profile } = await getUserProfileFromServer();
+        rawRole = profile?.role ?? session.user.user_metadata?.role ?? null;
+      }
+    }
+
+    if (!session?.user) {
       throw redirect({ to: "/login" });
     }
 
-    if (!isEmailConfirmed(session.user)) {
-      throw redirect({ href: getVerifyEmailPath(session.user.email) });
+    if (!emailConfirmed) {
+      throw redirect({ href: getVerifyEmailPath(email) });
     }
-
-    const { profile } = await getUserProfileFromServer();
-
-    // Use the DB profile as the authoritative source.
-    // If the profile query returned null (RLS timing race or session not yet
-    // propagated to the DB connection), fall back to session metadata which
-    // is always present in the JWT. Only redirect to login if both are absent.
-    const rawRole: string | null =
-      profile?.role ?? session.user.user_metadata?.role ?? null;
 
     if (!rawRole) {
       throw redirect({ to: "/login" });
