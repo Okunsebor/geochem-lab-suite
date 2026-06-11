@@ -157,8 +157,36 @@ export function useSamplesCore(
     receivedFrom?: string;
     specialInstructions?: string;
   }) => {
-    const nextIdNum = 24000 + samples.length;
-    const newSampleId = `GCS-${nextIdNum}`;
+    let newSampleId = "";
+    try {
+      const { data: nextId, error: rpcErr } = await supabase.rpc("get_next_sample_id");
+      if (rpcErr || !nextId) {
+        throw new Error(rpcErr?.message || "Failed to generate next sample ID via RPC");
+      }
+      newSampleId = nextId;
+    } catch (rpcError) {
+      console.warn("RPC get_next_sample_id failed, trying direct select:", rpcError);
+      try {
+        const { data: latestSamples } = (await supabase
+          .from("samples")
+          .select("id")
+          .order("id", { ascending: false })
+          .limit(1)) as any;
+        const latestId = latestSamples?.[0]?.id;
+        let nextIdNum = 24000 + samples.length;
+        if (latestId) {
+          const match = latestId.match(/GCS-(\d+)/);
+          if (match) {
+            nextIdNum = parseInt(match[1], 10) + 1;
+          }
+        }
+        newSampleId = `GCS-${nextIdNum}`;
+      } catch (selectError) {
+        console.warn("Direct select failed, falling back to local count:", selectError);
+        const nextIdNum = 24000 + samples.length;
+        newSampleId = `GCS-${nextIdNum}`;
+      }
+    }
     const cleanWeight = sampleData.weight.endsWith(" kg")
       ? sampleData.weight
       : `${sampleData.weight} kg`;

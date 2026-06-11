@@ -239,6 +239,10 @@ export interface Database {
         Args: Record<string, never>;
         Returns: any[];
       };
+      get_next_sample_id: {
+        Args: Record<string, never>;
+        Returns: string;
+      };
       upsert_user_profile: {
         Args: {
           p_full_name: string | null;
