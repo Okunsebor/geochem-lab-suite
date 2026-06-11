@@ -43,8 +43,8 @@ export function CoordinatorSidebar() {
     <>
       <div className="hidden lg:block w-[68px] shrink-0 border-r border-sidebar-border/30 bg-sidebar/5" />
       <aside className="group hidden lg:flex fixed left-0 top-0 bottom-0 w-[68px] hover:w-64 transition-[width] duration-200 ease-in-out z-50 flex-col text-sidebar-foreground border-y-0 border-l-0 border-r border-sidebar-border rounded-none shadow-xl glass overflow-hidden bg-background/95 backdrop-blur-md hover:bg-background">
-        <div className="w-64 flex flex-col h-full">
-          <div className="flex h-14 items-center gap-3 px-5 border-b border-sidebar-border shrink-0">
+        <div className="flex flex-col h-full w-full min-w-0">
+          <div className="flex h-14 items-center gap-3 px-[18px] border-b border-sidebar-border shrink-0">
             <UniPodLogo height={28} linkToHome={false} />
             <div className="flex flex-col leading-tight min-w-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
               <span className="text-xs font-semibold text-sidebar-foreground truncate whitespace-nowrap">
@@ -71,7 +71,8 @@ export function CoordinatorSidebar() {
                           to={item.to}
                           title={item.label}
                           className={cn(
-                            "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition font-medium",
+                            "flex items-center gap-3 rounded-md py-2 text-sm transition font-medium",
+                            "justify-center group-hover:justify-start px-0 group-hover:px-3",
                             active
                               ? "bg-primary/15 text-primary font-bold border-l-2 border-accent"
                               : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
@@ -90,7 +91,7 @@ export function CoordinatorSidebar() {
             ))}
           </nav>
           <div className="border-t border-sidebar-border p-3 shrink-0 relative">
-            <div className="flex items-center gap-3 rounded-lg bg-sidebar-accent/30 p-2 overflow-hidden">
+            <div className="flex items-center gap-3 rounded-lg bg-sidebar-accent/30 p-2 overflow-hidden justify-center group-hover:justify-start">
               <div className="grid size-8 place-items-center rounded-full gradient-accent text-[10px] font-bold text-accent-foreground shrink-0">
                 {initials}
               </div>
